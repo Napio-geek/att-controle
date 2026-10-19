@@ -40,6 +40,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 .toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);background:#173247;color:#fff;padding:11px 15px;border-radius:10px;z-index:100;display:none;font-size:13px;box-shadow:var(--shadow)}
 .modal-shield{position:fixed;inset:0;background:#0007;z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
 .modalbox{background:#fff;border-radius:18px;max-width:440px;width:100%;padding:20px;box-shadow:0 15px 50px #0006}.modalbox h2{margin:0 0 8px}.modalbox p{color:var(--mut);font-size:14px;line-height:1.45}.modal-actions{display:flex;gap:10px;margin-top:14px}.modal-actions button{flex:1}
+.route-badge{display:inline-block;background:#eaf1f2;color:var(--p);font-weight:700;font-size:13px;padding:4px 10px;border-radius:8px;margin-top:4px}
 @media(max-width:650px){.logo{height:46px;max-width:250px}.stats{gap:6px}.stat{padding:9px 6px}.stat strong{font-size:24px}.stat span{font-size:10px}.grid2,.filters{grid-template-columns:1fr}.nav button{max-width:none}}
 </style>
 </head>
@@ -58,13 +59,18 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <div class="stat o"><span>Próximos / Pendentes</span><strong id="nO">0</strong></div>
 <div class="stat g"><span>Em dia</span><strong id="nG">0</strong></div>
 </div>
-<input id="searchPanel" class="search" placeholder="🔎 Buscar veículo..." oninput="renderPanel()">
+<input id="searchPanel" class="search" placeholder="🔎 Buscar por código do veículo ou roteiro..." oninput="renderPanel()">
 <div id="panelList"></div>
 </section>
 
 <section id="p-detail" class="page">
-<div class="actions"><button class="btn secondary small" onclick="show('painel')">← Voltar</button></div>
-<h1 id="detailTitle">Veículo</h1><div id="activities"></div>
+<div class="actions" style="justify-content:space-between;align-items:center;margin-bottom:12px">
+  <button class="btn secondary small" onclick="show('painel')">← Voltar</button>
+  <button class="btn secondary small" onclick="openRouteModal()">✏️ Alterar Roteiro</button>
+</div>
+<h1 id="detailTitle" style="margin-bottom:4px">Veículo</h1>
+<div id="detailRoute" class="route-badge" style="margin-bottom:16px">Roteiro: Não informado</div>
+<div id="activities"></div>
 <div class="card"><h3>Histórico</h3><div id="history"></div></div>
 </section>
 
@@ -72,10 +78,13 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <h1>Cadastro</h1>
 <div class="card">
 <h3>Novo veículo</h3>
-<label>Código do veículo</label><input id="newCode" class="field" maxlength="40" placeholder="Digite o código do veículo">
+<label>Código do veículo</label>
+<input id="newCode" class="field" maxlength="40" placeholder="Digite o código do veículo (Ex: V-102)">
+<label style="margin-top:10px">Roteiro / Linha (Opcional)</label>
+<input id="newRoute" class="field" maxlength="60" placeholder="Digite a linha/roteiro atual (Ex: Linha 01 - Centro)">
 <button class="btn" style="margin-top:14px" onclick="addVehicle()">＋ Cadastrar veículo</button>
 </div>
-<input id="searchCad" class="search" placeholder="🔎 Buscar veículo..." oninput="renderCad()">
+<input id="searchCad" class="search" placeholder="🔎 Buscar por código ou roteiro..." oninput="renderCad()">
 <div id="cadList"></div>
 </section>
 
@@ -91,7 +100,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <button class="btn" style="margin-top:15px" onclick="exportExcel()">⬇ Exportar dados (Excel)</button>
 </div>
 
-<!-- Secção de Gestão de Resets -->
 <div class="card">
   <h3>⚙️ Gerenciamento e Limpeza</h3>
   <p class="muted">Opções avançadas para reiniciar o histórico de atividades.</p>
@@ -108,7 +116,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
   <button class="btn danger" onclick="resetAllHistory()">🗑️ Resetar Histórico de Todos os Veículos</button>
 </div>
 
-<div class="notice" style="margin-top:15px">O arquivo Excel terá: Veículo, Atividade, Data, Hora, Status e Observação.</div>
+<div class="notice" style="margin-top:15px">O arquivo Excel terá: Veículo, Roteiro, Atividade, Data, Hora, Status e Observação.</div>
 </section>
 </main>
 
@@ -120,6 +128,20 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 </div>
 
 <div id="toast" class="toast"></div>
+
+<!-- Modal para Alterar Roteiro -->
+<div id="routeModal" class="modal-shield">
+  <div class="modalbox">
+    <h2>✏️ Alterar Roteiro / Linha</h2>
+    <p>Atualize o roteiro vinculado a este veículo:</p>
+    <label>Novo Roteiro / Linha</label>
+    <input id="editRouteInput" class="field" placeholder="Ex: Linha 05 - Bairro">
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeRouteModal()">Cancelar</button>
+      <button class="btn" onclick="saveRouteUpdate()">Salvar Roteiro</button>
+    </div>
+  </div>
+</div>
 
 <!-- Modal de Justificativa -->
 <div id="justModal" class="modal-shield">
@@ -237,12 +259,14 @@ function show(p,id){
 function renderPanel(){
  let r=0,o=0,g=0;db.veiculos.forEach(v=>{let s=vState(v);s==='r'?r++:s==='o'?o++:g++});
  nR.textContent=r;nO.textContent=o;nG.textContent=g;
- let q=(searchPanel.value||'').toLowerCase(),arr=db.veiculos.filter(v=>v.codigo.toLowerCase().includes(q));
+ let q=(searchPanel.value||'').toLowerCase();
+ let arr=db.veiculos.filter(v=>v.codigo.toLowerCase().includes(q) || (v.roteiro && v.roteiro.toLowerCase().includes(q)));
  panelList.innerHTML=arr.length?arr.map(v=>{
    let s=vState(v), priority=ACTS.find(a=>state(v,a).c===s)||ACTS[0],e=state(v,priority);
    let msg=s==='g'?'Todas as atividades em dia':priority+' — '+e.text;
-   return `<div class="vehicle" onclick="show('detail','${v.id}')"><span class="dot ${s}"></span><div class="main"><div class="code">${esc(v.codigo)}</div><div class="msg">${esc(msg)}</div></div><b>›</b></div>`
- }).join(''):'<div class="empty">Nenhum veículo cadastrado.</div>';
+   let rotTxt = v.roteiro ? `<span style="font-size:12px;color:var(--p);font-weight:bold;"> 📍 ${esc(v.roteiro)}</span>` : '';
+   return `<div class="vehicle" onclick="show('detail','${v.id}')"><span class="dot ${s}"></span><div class="main"><div class="code">${esc(v.codigo)}${rotTxt}</div><div class="msg">${esc(msg)}</div></div><b>›</b></div>`
+ }).join(''):'<div class="empty">Nenhum veículo encontrado.</div>';
 }
 
 function icon(a){return a==='Checagem Diária Validador'?'📄':a==='Checagem de Cartão SD'?'💾':'📷'}
@@ -250,10 +274,10 @@ function icon(a){return a==='Checagem Diária Validador'?'📄':a==='Checagem de
 function renderDetail(id){
  let v=db.veiculos.find(x=>x.id===id);if(!v)return show('painel');currentVehicle=id;
  detailTitle.textContent='Veículo '+v.codigo;
+ detailRoute.textContent='Roteiro: ' + (v.roteiro || 'Não informado');
  
  activities.innerHTML=ACTS.map(a=>{
    let e=state(v,a), last=v.atividades && v.atividades[a];
-   
    let btnLabel = '✓ Registrar';
    if(a==='Checagem Diária Validador') btnLabel = '✓ Registrar Checagem Diária';
    if(a==='Checagem de Cartão SD') btnLabel = '✓ Registrar Cartão SD';
@@ -285,9 +309,28 @@ function renderDetail(id){
  history.innerHTML=hs.length?`<table><thead><tr><th>Data/Hora</th><th>Atividade</th><th>Status</th><th>Observação</th></tr></thead><tbody>${hs.map(h=>`<tr><td>${fmt(h.dataHora)}</td><td>${esc(h.atividade)}</td><td><b>${esc(h.status)}</b></td><td>${esc(h.observacao||'-')}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Nenhum registro realizado.</div>';
 }
 
+function openRouteModal(){
+ if(!currentVehicle) return;
+ let v=db.veiculos.find(x=>x.id===currentVehicle); if(!v) return;
+ editRouteInput.value = v.roteiro || '';
+ document.getElementById('routeModal').style.display = 'flex';
+}
+function closeRouteModal(){
+ document.getElementById('routeModal').style.display = 'none';
+}
+function saveRouteUpdate(){
+ if(!currentVehicle) return;
+ let v=db.veiculos.find(x=>x.id===currentVehicle); if(!v) return;
+ v.roteiro = editRouteInput.value.trim();
+ save();
+ closeRouteModal();
+ renderDetail(currentVehicle);
+ renderPanel();
+ toast('Roteiro atualizado com sucesso!');
+}
+
 function registerActivity(id,a){
  let v=db.veiculos.find(x=>x.id===id);if(!v)return;
- 
  let e = state(v, a);
  if(e.doneToday && !e.justified) {
    toast('Esta atividade já foi registrada neste período.');
@@ -302,6 +345,7 @@ function registerActivity(id,a){
  db.historico.push({
    veiculoId: id,
    veiculo: v.codigo,
+   roteiro: v.roteiro || 'Não informado',
    atividade: a,
    dataHora: t,
    status: 'Realizada',
@@ -341,6 +385,7 @@ function confirmJustification(){
  db.historico.push({
    veiculoId: currentVehicle,
    veiculo: v.codigo,
+   roteiro: v.roteiro || 'Não informado',
    atividade: pendingJustActivity,
    dataHora: t,
    status: 'Ausente / Justificado',
@@ -363,14 +408,17 @@ function clearJustification(id, a){
 }
 
 function addVehicle(){
- let c=newCode.value.trim();if(!c)return alert('Informe o código do veículo.');
+ let c=newCode.value.trim();
+ let r=newRoute.value.trim();
+ if(!c)return alert('Informe o código do veículo.');
  if(db.veiculos.some(v=>v.codigo.toLowerCase()===c.toLowerCase()))return alert('Este veículo já está cadastrado.');
- db.veiculos.push({id:crypto.randomUUID(),codigo:c,criadoEm:now().toISOString(),atividades:{},justificativas:{}});save();newCode.value='';renderCad();renderPanel();toast('Veículo cadastrado.');
+ db.veiculos.push({id:crypto.randomUUID(),codigo:c,roteiro:r,criadoEm:now().toISOString(),atividades:{},justificativas:{}});save();newCode.value='';newRoute.value='';renderCad();renderPanel();toast('Veículo cadastrado.');
 }
 
 function renderCad(){
- let q=(searchCad.value||'').toLowerCase(),arr=db.veiculos.filter(v=>v.codigo.toLowerCase().includes(q));
- cadList.innerHTML=arr.length?arr.map(v=>`<div class="vehicle"><span class="dot ${vState(v)}"></span><div class="main"><div class="code">${esc(v.codigo)}</div><div class="msg">Cadastrado em ${new Date(v.criadoEm).toLocaleDateString('pt-BR')}</div></div><button class="btn secondary small" onclick="show('detail','${v.id}')">Abrir</button><button class="btn danger small" onclick="removeVehicle('${v.id}')">🗑</button></div>`).join(''):'<div class="empty">Nenhum veículo cadastrado.</div>';
+ let q=(searchCad.value||'').toLowerCase();
+ let arr=db.veiculos.filter(v=>v.codigo.toLowerCase().includes(q) || (v.roteiro && v.roteiro.toLowerCase().includes(q)));
+ cadList.innerHTML=arr.length?arr.map(v=>`<div class="vehicle"><span class="dot ${vState(v)}"></span><div class="main"><div class="code">${esc(v.codigo)}</div><div class="msg">Roteiro: <b>${esc(v.roteiro||'Não informado')}</b> • Cadastrado em ${new Date(v.criadoEm).toLocaleDateString('pt-BR')}</div></div><button class="btn secondary small" onclick="show('detail','${v.id}')">Abrir</button><button class="btn danger small" onclick="removeVehicle('${v.id}')">🗑</button></div>`).join(''):'<div class="empty">Nenhum veículo cadastrado.</div>';
 }
 
 function removeVehicle(id){
@@ -380,12 +428,11 @@ function removeVehicle(id){
 }
 
 function renderFilters(){
- let optionsHTML = '<option value="">Todos os veículos</option>' + db.veiculos.map(v=>`<option value="${v.id}">${esc(v.codigo)}</option>`).join('');
+ let optionsHTML = '<option value="">Todos os veículos</option>' + db.veiculos.map(v=>`<option value="${v.id}">${esc(v.codigo)} ${v.roteiro?'('+esc(v.roteiro)+')':''}</option>`).join('');
  fVeic.innerHTML = optionsHTML;
  resetSingleVeic.innerHTML = optionsHTML;
 }
 
-// Funções de Reset
 function resetAllHistory(){
  if(confirm('ATENÇÃO: Deseja realmente apagar todo o histórico de registros e redefinir as atividades de TODOS os veículos?')) {
    db.historico = [];
@@ -420,7 +467,19 @@ function resetSingleVehicleHistory(){
 function exportExcel(){
  if(typeof XLSX==='undefined')return alert('A biblioteca do Excel não carregou. Verifique a conexão e tente novamente.');
  let ini=fIni.value?new Date(fIni.value+'T00:00:00'):null,fim=fFim.value?new Date(fFim.value+'T23:59:59'):null;
- let rows=db.historico.filter(h=>{let d=new Date(h.dataHora);return(!ini||d>=ini)&&(!fim||d<=fim)&&(!fVeic.value||h.veiculoId===fVeic.value)&&(!fAtiv.value||h.atividade===fAtiv.value)}).map(h=>{let d=new Date(h.dataHora);return{'Veículo':h.veiculo,'Atividade':h.atividade,'Data':d.toLocaleDateString('pt-BR'),'Hora':d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),'Status':h.status,'Observação':h.observacao||''}});
+ let rows=db.historico.filter(h=>{let d=new Date(h.dataHora);return(!ini||d>=ini)&&(!fim||d<=fim)&&(!fVeic.value||h.veiculoId===fVeic.value)&&(!fAtiv.value||h.atividade===fAtiv.value)}).map(h=>{
+   let d=new Date(h.dataHora);
+   let v=db.veiculos.find(x=>x.id===h.veiculoId);
+   return {
+     'Veículo': h.veiculo,
+     'Roteiro Atual': v ? (v.roteiro || 'Não informado') : (h.roteiro || '-'),
+     'Atividade': h.atividade,
+     'Data': d.toLocaleDateString('pt-BR'),
+     'Hora': d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+     'Status': h.status,
+     'Observação': h.observacao||''
+   };
+ });
  if(!rows.length)return alert('Não há dados para exportar com os filtros selecionados.');
  let ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Histórico');
  XLSX.writeFile(wb,'atlantico_historico_'+new Date().toISOString().slice(0,10)+'.xlsx');toast('Excel gerado.');
