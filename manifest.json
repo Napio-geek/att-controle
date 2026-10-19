@@ -1,0 +1,16 @@
+JSON
+{
+  "name": "Atlântico Controle de Atividades",
+  "short_name": "Atlântico Atividades",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#031b22",
+  "theme_color": "#07898c",
+  "icons": [
+    {
+      "src": "logo-atlantico.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}
