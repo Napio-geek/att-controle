@@ -52,6 +52,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 .line-code {font-size:11px;color:var(--mut);font-weight:700}
 .sched-box {font-size:12px;background:#fafcfd;border-radius:8px;border:1px solid var(--bd);padding:8px;margin:8px 0}
 .assigned-chip {background:#eaf1f2;border:1px solid var(--p);border-radius:8px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;color:var(--txt);margin-top:6px}
+.sub-alloc-title {font-size:11px;font-weight:bold;color:var(--mut);margin-top:6px;margin-bottom:2px}
 
 @media(max-width:650px){.logo{height:46px;max-width:250px}.stats{gap:6px}.stat{padding:9px 6px}.stat strong{font-size:24px}.stat span{font-size:10px}.grid2,.filters{grid-template-columns:1fr}.nav button{max-width:none}}
 </style>
@@ -77,7 +78,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
 <section id="p-linhas" class="page">
 <h1>Escala e Logística de Linhas</h1>
-<p class="muted">Linhas organizadas na sequência oficial. Selecione o dia para ajustar a frota.</p>
+<p class="muted">Linhas oficiais com suporte a horários cruzados (Sede e Destino simultâneos).</p>
 
 <div class="days-bar" id="daysBar">
   <button class="day-btn" onclick="setDay('segunda', this)">Segunda</button>
@@ -144,15 +145,12 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <div class="card">
   <h3>⚙️ Gerenciamento e Limpeza</h3>
   <p class="muted">Opções avançadas para reiniciar o histórico de atividades.</p>
-  
   <label style="margin-top:15px">Resetar histórico de um veículo específico</label>
   <div style="display:flex;gap:10px;flex-wrap:wrap">
     <select id="resetSingleVeic" class="field" style="flex:1;min-width:200px"></select>
     <button class="btn danger small" style="width:auto" onclick="resetSingleVehicleHistory()">Resetar este veículo</button>
   </div>
-
   <hr style="border:0;border-top:1px solid var(--bd);margin:20px 0">
-
   <label>Resetar histórico geral de TUDO</label>
   <button class="btn danger" onclick="resetAllHistory()">🗑️ Resetar Histórico de Todos os Veículos</button>
 </div>
@@ -173,9 +171,9 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
   <div class="modalbox">
     <h2>⚙️ Editar Horários (<span id="editDayTitle"></span>)</h2>
     <p id="editSchedLineTitle" style="font-weight:bold;color:var(--p)"></p>
-    <label>Horários de IDA (Separe por vírgula)</label>
+    <label>Horários de IDA (Sede ➔ Destino) [Separe por vírgula]</label>
     <input id="editIdaInput" type="text" class="field">
-    <label style="margin-top:10px">Horários de VOLTA (Separe por vírgula)</label>
+    <label style="margin-top:10px">Horários de VOLTA (Destino ➔ Sede) [Separe por vírgula]</label>
     <input id="editVoltaInput" type="text" class="field">
     <div class="modal-actions">
       <button class="btn secondary" onclick="closeEditSchedModal()">Cancelar</button>
@@ -240,13 +238,13 @@ function loadDB(){
 let db = loadDB(), currentVehicle = null, pendingJustActivity = null, currentEditingLineCode = null;
 
 const DEFAULT_LINHAS = [
-  { code: "99991", nome: "R05 - JABEQUARA / SEDE", sched: { util: { ida: "06:30, 09:00, 12:30, 16:30", volta: "07:30, 10:30, 15:00, 17:20" }, sab: { ida: "06:30, 16:00", volta: "08:00, 17:00" }, dom: { ida: "10:00, 16:00", volta: "11:00, 17:00" } } },
-  { code: "99997", nome: "R10 - SANTO ESTEVAO / SEDE", sched: { util: { ida: "06:10, 07:50, 10:00, 12:30, 15:00, 17:30", volta: "06:10, 07:50, 10:00, 12:30, 15:00, 17:30" }, sab: { ida: "06:10, 09:30, 12:30, 15:30", volta: "08:00, 11:00, 14:00, 17:00" }, dom: { ida: "09:30, 13:00, 16:00", volta: "08:00, 11:00, 14:30, 17:20" } } },
-  { code: "99993", nome: "R09 - FERROLHO / SEDE", sched: { util: { ida: "06:20, 07:50, 10:00, 12:30, 15:00, 17:30", volta: "06:20, 07:50, 10:00, 12:30, 15:00, 17:30" }, sab: { ida: "06:20, 12:00, 16:00", volta: "08:00, 16:00" }, dom: { ida: "12:00, 16:00", volta: "10:00, 14:30, 17:00" } } },
-  { code: "99989", nome: "R08 - CURUPEBA / SEDE", sched: { util: { ida: "07:30, 11:40, 14:10, 17:00", volta: "06:10, 09:00, 13:00, 15:40" }, sab: { ida: "08:00, 11:00, 15:30, 18:10", volta: "06:10, 09:30, 14:00, 17:00" }, dom: { ida: "08:00, 11:00, 15:30, 18:10", volta: "06:20, 09:30, 14:30, 17:00" } } },
-  { code: "99987", nome: "R11 - COROADO / SEDE", sched: { util: { ida: "06:20, 09:30, 14:00, 17:00", volta: "08:00, 12:00, 15:30, 18:00" }, sab: { ida: "07:00, 11:00, 15:00", volta: "08:00, 12:00, 15:30, 17:00" }, dom: { ida: "10:00, 17:00", volta: "12:00, 18:00" } } },
-  { code: "99988", nome: "SEDE - COROADO", sched: { util: { ida: "06:20, 09:30, 14:00, 17:00", volta: "08:00, 12:00, 15:30, 18:00" }, sab: { ida: "07:00, 11:00, 15:00", volta: "08:00, 12:00, 15:30, 17:00" }, dom: { ida: "10:00, 17:00", volta: "12:00, 18:00" } } },
-  { code: "99995", nome: "R07 - SANTA ELISA / ROSEIRA", sched: { util: { ida: "06:20, 09:00, 13:00, 15:30, 18:00", volta: "07:30, 11:00, 14:00, 17:00" }, sab: { ida: "07:00, 12:00, 16:00", volta: "08:00, 14:00, 17:00" }, dom: { ida: "12:00, 17:00", volta: "10:00, 16:00" } } }
+  { code: "99991", nome: "R05 - JABEQUARA / SEDE", cruzado: false, sched: { util: { ida: "06:30, 09:00, 12:30, 16:30", volta: "07:30, 10:30, 15:00, 17:20" }, sab: { ida: "06:30, 16:00", volta: "08:00, 17:00" }, dom: { ida: "10:00, 16:00", volta: "11:00, 17:00" } } },
+  { code: "99997", nome: "R10 - SANTO ESTEVAO / SEDE", cruzado: true, sched: { util: { ida: "06:10, 07:50, 10:00, 12:30, 15:00, 17:30", volta: "06:10, 07:50, 10:00, 12:30, 15:00, 17:30" }, sab: { ida: "06:10, 09:30, 12:30, 15:30", volta: "08:00, 11:00, 14:00, 17:00" }, dom: { ida: "09:30, 13:00, 16:00", volta: "08:00, 11:00, 14:30, 17:20" } } },
+  { code: "99993", nome: "R09 - FERROLHO / SEDE", cruzado: true, sched: { util: { ida: "06:20, 07:50, 10:00, 12:30, 15:00, 17:30", volta: "06:20, 07:50, 10:00, 12:30, 15:00, 17:30" }, sab: { ida: "06:20, 12:00, 16:00", volta: "08:00, 16:00" }, dom: { ida: "12:00, 16:00", volta: "10:00, 14:30, 17:00" } } },
+  { code: "99989", nome: "R08 - CURUPEBA / SEDE", cruzado: false, sched: { util: { ida: "07:30, 11:40, 14:10, 17:00", volta: "06:10, 09:00, 13:00, 15:40" }, sab: { ida: "08:00, 11:00, 15:30, 18:10", volta: "06:10, 09:30, 14:00, 17:00" }, dom: { ida: "08:00, 11:00, 15:30, 18:10", volta: "06:20, 09:30, 14:30, 17:00" } } },
+  { code: "99987", nome: "R11 - COROADO / SEDE", cruzado: false, sched: { util: { ida: "06:20, 09:30, 14:00, 17:00", volta: "08:00, 12:00, 15:30, 18:00" }, sab: { ida: "07:00, 11:00, 15:00", volta: "08:00, 12:00, 15:30, 17:00" }, dom: { ida: "10:00, 17:00", volta: "12:00, 18:00" } } },
+  { code: "99988", nome: "SEDE - COROADO", cruzado: false, sched: { util: { ida: "06:20, 09:30, 14:00, 17:00", volta: "08:00, 12:00, 15:30, 18:00" }, sab: { ida: "07:00, 11:00, 15:00", volta: "08:00, 12:00, 15:30, 17:00" }, dom: { ida: "10:00, 17:00", volta: "12:00, 18:00" } } },
+  { code: "99995", nome: "R07 - SANTA ELISA / ROSEIRA", cruzado: false, sched: { util: { ida: "06:20, 09:00, 13:00, 15:30, 18:00", volta: "07:30, 11:00, 14:00, 17:00" }, sab: { ida: "07:00, 12:00, 16:00", volta: "08:00, 14:00, 17:00" }, dom: { ida: "12:00, 17:00", volta: "10:00, 16:00" } } }
 ];
 
 const DIAS_SEMANA = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
@@ -362,29 +360,63 @@ function renderLinhas(){
   if(grid){
     grid.innerHTML = DEFAULT_LINHAS.map(l => {
       let sched = getLineSchedule(l.code);
-      let allocatedIds = db.escalas[currentDay][l.code] || [];
-      
-      let chipsHtml = allocatedIds.map(id => {
-        let vObj = db.veiculos.find(x => x.id === id);
-        let vCode = vObj ? vObj.codigo : 'Desconhecido';
-        return `<div class="assigned-chip"><span>🚌 ${esc(vCode)}</span><button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeBusFromLine('${l.code}','${id}')">✕</button></div>`;
-      }).join('');
+      let dayEscala = db.escalas[currentDay][l.code];
 
-      return `<div class="line-card">
-        <div class="line-header">
-          <span>📍 ${l.nome}</span>
-          <button class="btn secondary small" style="padding:3px 7px;font-size:11px" onclick="openEditSchedModal('${l.code}','${esc(l.nome)}')">⚙️ Editar</button>
-        </div>
-        <div class="line-code">Código: ${l.code} (${currentDay.toUpperCase()})</div>
-        <div class="sched-box">
-          <div><b>IDA:</b> ${sched.ida}</div>
-          <div style="margin-top:4px"><b>VOLTA:</b> ${sched.volta}</div>
-        </div>
-        <div style="margin-top:6px">
-          ${chipsHtml || '<div style="font-size:12px;color:var(--mut);text-align:center;padding:8px;background:#fafcfd;border-radius:6px;border:1px dashed #d6e1e4">Nenhum veículo alocado</div>'}
-        </div>
-        <button class="btn secondary small" style="width:100%;margin-top:10px" onclick="allocBusToLine('${l.code}')">+ Alocar Veículo Selecionado</button>
-      </div>`;
+      if(l.cruzado){
+        // Linhas cruzadas (Santo Estêvão e Ferrolho): separadas por sub-alocação (ida e volta)
+        let idaId = dayEscala && typeof dayEscala === 'object' ? dayEscala.ida : null;
+        let voltaId = dayEscala && typeof dayEscala === 'object' ? dayEscala.volta : null;
+
+        let vIdaObj = db.veiculos.find(x => x.id === idaId);
+        let vVoltaObj = db.veiculos.find(x => x.id === voltaId);
+
+        let idaChip = vIdaObj ? `<div class="assigned-chip"><span>🚌 Sede ➔ Destino: <b>${esc(vIdaObj.codigo)}</b></span><button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeCruzadoBus('${l.code}','ida')">✕</button></div>` : '<div style="font-size:11px;color:var(--mut);padding:4px">Nenhum na Sede</div>';
+        
+        let voltaChip = vVoltaObj ? `<div class="assigned-chip"><span>🚌 Destino ➔ Sede: <b>${esc(vVoltaObj.codigo)}</b></span><button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeCruzadoBus('${l.code}','volta')">✕</button></div>` : '<div style="font-size:11px;color:var(--mut);padding:4px">Nenhum no Destino</div>';
+
+        return `<div class="line-card">
+          <div class="line-header">
+            <span>📍 ${l.nome}</span>
+            <button class="btn secondary small" style="padding:3px 7px;font-size:11px" onclick="openEditSchedModal('${l.code}','${esc(l.nome)}')">⚙️ Editar</button>
+          </div>
+          <div class="line-code">Código: ${l.code} (${currentDay.toUpperCase()}) • <span style="color:var(--p)">Horários Cruzados</span></div>
+          <div class="sched-box">
+            <div><b>IDA:</b> ${sched.ida}</div>
+            <div style="margin-top:4px"><b>VOLTA:</b> ${sched.volta}</div>
+          </div>
+          <div class="sub-alloc-title">Sede ➔ Destino</div>
+          <div>${idaChip}</div>
+          <button class="btn secondary small" style="width:100%;margin-top:4px;font-size:11px" onclick="allocCruzadoBus('${l.code}','ida')">+ Alocar p/ Sede ➔ Destino</button>
+
+          <div class="sub-alloc-title" style="margin-top:8px">Destino ➔ Sede</div>
+          <div>${voltaChip}</div>
+          <button class="btn secondary small" style="width:100%;margin-top:4px;font-size:11px" onclick="allocCruzadoBus('${l.code}','volta')">+ Alocar p/ Destino ➔ Sede</button>
+        </div>`;
+      } else {
+        // Linhas normais
+        let allocatedIds = Array.isArray(dayEscala) ? dayEscala : [];
+        let chipsHtml = allocatedIds.map(id => {
+          let vObj = db.veiculos.find(x => x.id === id);
+          let vCode = vObj ? vObj.codigo : 'Desconhecido';
+          return `<div class="assigned-chip"><span>🚌 ${esc(vCode)}</span><button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeBusFromLine('${l.code}','${id}')">✕</button></div>`;
+        }).join('');
+
+        return `<div class="line-card">
+          <div class="line-header">
+            <span>📍 ${l.nome}</span>
+            <button class="btn secondary small" style="padding:3px 7px;font-size:11px" onclick="openEditSchedModal('${l.code}','${esc(l.nome)}')">⚙️ Editar</button>
+          </div>
+          <div class="line-code">Código: ${l.code} (${currentDay.toUpperCase()})</div>
+          <div class="sched-box">
+            <div><b>IDA:</b> ${sched.ida}</div>
+            <div style="margin-top:4px"><b>VOLTA:</b> ${sched.volta}</div>
+          </div>
+          <div style="margin-top:6px">
+            ${chipsHtml || '<div style="font-size:12px;color:var(--mut);text-align:center;padding:8px;background:#fafcfd;border-radius:6px;border:1px dashed #d6e1e4">Nenhum veículo alocado</div>'}
+          </div>
+          <button class="btn secondary small" style="width:100%;margin-top:10px" onclick="allocBusToLine('${l.code}')">+ Alocar Veículo Selecionado</button>
+        </div>`;
+      }
     }).join('');
   }
 }
@@ -424,20 +456,50 @@ function allocBusToLine(lineCode){
   if(!busId) return alert('Selecione um veículo na lista do topo primeiro.');
   if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
 
-  for(let l in db.escalas[currentDay]){
-    db.escalas[currentDay][l] = db.escalas[currentDay][l].filter(id => id !== busId);
+  // Remove o carro de outras linhas normais
+  for(let lCode in db.escalas[currentDay]){
+    if(Array.isArray(db.escalas[currentDay][lCode])){
+      db.escalas[currentDay][lCode] = db.escalas[currentDay][lCode].filter(id => id !== busId);
+    }
   }
 
-  if(!db.escalas[currentDay][lineCode]) db.escalas[currentDay][lineCode] = [];
-  db.escalas[currentDay][lineCode].push(busId);
+  if(!Array.isArray(db.escalas[currentDay][lineCode])) db.escalas[currentDay][lineCode] = [];
+  if(!db.escalas[currentDay][lineCode].includes(busId)){
+    db.escalas[currentDay][lineCode].push(busId);
+  }
   save();
   renderLinhas();
   toast('Veículo alocado!');
 }
 
+function allocCruzadoBus(lineCode, sentido){
+  let selectBus = document.getElementById('selectBusToAlloc');
+  let busId = selectBus ? selectBus.value : '';
+  if(!busId) return alert('Selecione um veículo na lista do topo primeiro.');
+  if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
+
+  if(!db.escalas[currentDay][lineCode] || typeof db.escalas[currentDay][lineCode] !== 'object' || Array.isArray(db.escalas[currentDay][lineCode])){
+    db.escalas[currentDay][lineCode] = { ida: null, volta: null };
+  }
+
+  db.escalas[currentDay][lineCode][sentido] = busId;
+  save();
+  renderLinhas();
+  toast('Veículo alocado na ' + (sentido === 'ida' ? 'Sede ➔ Destino' : 'Destino ➔ Sede') + '!');
+}
+
 function removeBusFromLine(lineCode, busId){
-  if(db.escalas && db.escalas[currentDay] && db.escalas[currentDay][lineCode]){
+  if(db.escalas && db.escalas[currentDay] && Array.isArray(db.escalas[currentDay][lineCode])){
     db.escalas[currentDay][lineCode] = db.escalas[currentDay][lineCode].filter(id => id !== busId);
+    save();
+    renderLinhas();
+    toast('Removido.');
+  }
+}
+
+function removeCruzadoBus(lineCode, sentido){
+  if(db.escalas && db.escalas[currentDay] && db.escalas[currentDay][lineCode] && typeof db.escalas[currentDay][lineCode] === 'object'){
+    db.escalas[currentDay][lineCode][sentido] = null;
     save();
     renderLinhas();
     toast('Removido.');
@@ -455,9 +517,17 @@ function exportWhatsAppEscala(){
   let texto = `*🚌 ESCALA - ${tName}*\n\n`;
   DEFAULT_LINHAS.forEach(l => {
     let sched = getLineSchedule(l.code);
-    let ids = (db.escalas && db.escalas[currentDay] && db.escalas[currentDay][l.code]) || [];
-    let codigos = ids.map(id => { let v = db.veiculos.find(x => x.id === id); return v ? v.codigo : ''; }).filter(Boolean);
-    texto += `📍 *${l.nome}*\n   *Frota:* ${codigos.length ? codigos.join(', ') : 'Nenhum'}\n   *IDA:* ${sched.ida}\n   *VOLTA:* ${sched.volta}\n\n`;
+    let dayEscala = db.escalas && db.escalas[currentDay] && db.escalas[currentDay][l.code];
+    
+    if(l.cruzado && dayEscala && typeof dayEscala === 'object'){
+      let vIda = db.veiculos.find(x => x.id === dayEscala.ida);
+      let vVolta = db.veiculos.find(x => x.id === dayEscala.volta);
+      texto += `📍 *${l.nome}*\n   *Sede ➔ Destino:* ${vIda ? vIda.codigo : 'Nenhum'}\n   *Destino ➔ Sede:* ${vVolta ? vVolta.codigo : 'Nenhum'}\n   *IDA:* ${sched.ida} | *VOLTA:* ${sched.volta}\n\n`;
+    } else {
+      let ids = Array.isArray(dayEscala) ? dayEscala : [];
+      let codigos = ids.map(id => { let v = db.veiculos.find(x => x.id === id); return v ? v.codigo : ''; }).filter(Boolean);
+      texto += `📍 *${l.nome}*\n   *Frota:* ${codigos.length ? codigos.join(', ') : 'Nenhum'}\n   *IDA:* ${sched.ida} | *VOLTA:* ${sched.volta}\n\n`;
+    }
   });
   navigator.clipboard.writeText(texto).then(() => toast('Escala copiada para o WhatsApp!'));
 }
