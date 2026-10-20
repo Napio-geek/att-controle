@@ -76,4 +76,109 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <div class="stat o"><span>Próximos / Pendentes</span><strong id="nO">0</strong></div>
 <div class="stat g"><span>Em dia</span><strong id="nG">0</strong></div>
 </div>
-<input id="searchPanel" class="search" placeholder="🔎 Buscar por código do veículo ou roteiro..." oninput="
+<input id="searchPanel" class="search" placeholder="🔎 Buscar por código do veículo ou roteiro..." oninput="renderPanel()">
+<div id="panelList"></div>
+</section>
+
+<section id="p-linhas" class="page">
+<h1>Escala e Logística de Linhas</h1>
+<p class="muted">Linhas oficiais com alternância automática de carros em horários cruzados.</p>
+
+<div class="days-bar" id="daysBar">
+  <button class="day-btn" onclick="setDay('segunda', this)">Segunda</button>
+  <button class="day-btn" onclick="setDay('terca', this)">Terça</button>
+  <button class="day-btn" onclick="setDay('quarta', this)">Quarta</button>
+  <button class="day-btn" onclick="setDay('quinta', this)">Quinta</button>
+  <button class="day-btn" onclick="setDay('sexta', this)">Sexta</button>
+  <button class="day-btn" onclick="setDay('sabado', this)">Sábado</button>
+  <button class="day-btn" onclick="setDay('domingo', this)">Domingo</button>
+</div>
+
+<div class="card" style="margin-bottom:14px">
+  <h3>🚌 Alocar Veículo na Linha</h3>
+  <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+    <select id="selectBusToAlloc" class="field" style="flex:1;min-width:200px"></select>
+  </div>
+</div>
+
+<div class="actions" style="margin-bottom:14px">
+  <button class="btn secondary" onclick="exportWhatsAppEscala()">📱 Copiar Escala p/ WhatsApp</button>
+  <button class="btn danger small" onclick="resetEscalaDia()">🔄 Resetar Dia</button>
+</div>
+
+<div class="lines-grid" id="linesGrid"></div>
+</section>
+
+<section id="p-detail" class="page">
+<div class="actions" style="justify-content:space-between;align-items:center;margin-bottom:12px">
+  <button class="btn secondary small" onclick="show('painel')">← Voltar</button>
+  <button class="btn secondary small" onclick="openRouteModal()">✏️ Alterar Roteiro</button>
+</div>
+<h1 id="detailTitle" style="margin-bottom:4px">Veículo</h1>
+<div id="detailRoute" class="route-badge" style="margin-bottom:16px">Roteiro: Não informado</div>
+<div id="activities"></div>
+<div class="card"><h3>Histórico</h3><div id="history"></div></div>
+</section>
+
+<section id="p-cadastro" class="page">
+<h1>Cadastro</h1>
+<div class="card">
+<h3>Novo veículo</h3>
+<label>Código do veículo</label>
+<input id="newCode" class="field" maxlength="40" placeholder="Digite o código do veículo (Ex: V-102)">
+<label style="margin-top:10px">Roteiro / Linha (Opcional)</label>
+<input id="newRoute" class="field" maxlength="60" placeholder="Digite a linha/roteiro atual (Ex: Linha 01 - Centro)">
+<button class="btn" style="margin-top:14px" onclick="addVehicle()">＋ Cadastrar veículo</button>
+</div>
+<input id="searchCad" class="search" placeholder="🔎 Buscar por código ou roteiro..." oninput="renderCad()">
+<div id="cadList"></div>
+</section>
+
+<section id="p-exportacao" class="page">
+<h1>Exportação e Configurações</h1>
+<div class="card"><h3>📤 Exportar dados</h3><p class="muted">Gere um arquivo Excel com os registros realizados.</p>
+<div class="filters">
+<div><label>Data inicial</label><input id="fIni" type="date" class="field"></div>
+<div><label>Data final</label><input id="fFim" type="date" class="field"></div>
+<div><label>Veículo</label><select id="fVeic" class="field"></select></div>
+<div><label>Atividade</label><select id="fAtiv" class="field"><option value="">Todas</option><option>Checagem Diária Validador</option><option>Checagem de Cartão SD</option><option>Checagem de Câmera</option></select></div>
+</div>
+<button class="btn" style="margin-top:15px" onclick="exportExcel()">⬇ Exportar dados (Excel)</button>
+</div>
+
+<div class="card">
+  <h3>⚙️ Gerenciamento e Limpeza</h3>
+  <p class="muted">Opções avançadas para reiniciar o histórico de atividades.</p>
+  <label style="margin-top:15px">Resetar histórico de um veículo específico</label>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <select id="resetSingleVeic" class="field" style="flex:1;min-width:200px"></select>
+    <button class="btn danger small" style="width:auto" onclick="resetSingleVehicleHistory()">Resetar este veículo</button>
+  </div>
+  <hr style="border:0;border-top:1px solid var(--bd);margin:20px 0">
+  <label>Resetar histórico geral de TUDO</label>
+  <button class="btn danger" onclick="resetAllHistory()">🗑️ Resetar Histórico de Todos os Veículos</button>
+</div>
+</section>
+</main>
+
+<nav class="nav">
+<button id="nav-painel" class="active" onclick="show('painel')"><span class="ico">⌂</span>Painel</button>
+<button id="nav-linhas" onclick="show('linhas')"><span class="ico">🚌</span>Linhas</button>
+<button id="nav-cadastro" onclick="show('cadastro')"><span class="ico">🚗</span>Cadastro</button>
+<button id="nav-exportacao" onclick="show('exportacao')"><span class="ico">▣</span>Exportação</button>
+</nav>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<div id="editSchedModal" class="modal-shield">
+  <div class="modalbox">
+    <h2>⚙️ Editar Horários (<span id="editDayTitle"></span>)</h2>
+    <p id="editSchedLineTitle" style="font-weight:bold;color:var(--p)"></p>
+    <label>Horários de IDA (Separe por vírgula)</label>
+    <input id="editIdaInput" type="text" class="field">
+    <label style="margin-top:10px">Horários de VOLTA (Separe por vírgula)</label>
+    <input id="editVoltaInput" type="text" class="field">
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeEditSchedModal()">Cancelar</button>
+      <button class="btn" onclick="saveLineSchedUpdate()">Salvar Horários</button>
