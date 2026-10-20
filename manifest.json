@@ -1,17 +1,17 @@
-JSON
 {
   "name": "Atlântico Atividades e Frota",
   "short_name": "Atlântico",
   "description": "Controle de Atividades e Frota da Atlântico",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f3f7f7",
+  "background_color": "#07898c",
   "theme_color": "#07898c",
   "icons": [
     {
       "src": "logo-atlantico.png",
       "sizes": "192x192 512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
