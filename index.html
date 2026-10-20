@@ -36,7 +36,7 @@ h1{font-size:26px;margin:3px 0 18px}.muted{color:var(--mut);font-size:13px}
 .act-btns button{flex:1;min-width:140px}
 .justified-box{background:#fff8e6;border:1px solid #fde68a;border-radius:10px;padding:10px;margin-top:10px;font-size:13px;color:#92400e}
 label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}.grid2,.filters{display:grid;grid-template-columns:1fr 1fr;gap:12px}.notice{background:#e8f6f7;color:#155e61;border-radius:13px;padding:13px;font-size:13px}.empty{text-align:center;color:var(--mut);padding:32px}
-.nav{position:fixed;z-index:30;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--bd);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}.nav button{flex:1;max-width:190px;border:0;background:#fff;color:#63767e;padding:10px 5px 8px;font-size:12px}.nav button.active{color:var(--p);font-weight:700}.ico{display:block;font-size:21px;margin-bottom:3px}
+.nav{position:fixed;z-index:30;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--bd);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}.nav button{flex:1;max-width:140px;border:0;background:#fff;color:#63767e;padding:10px 5px 8px;font-size:11px}.nav button.active{color:var(--p);font-weight:700}.ico{display:block;font-size:19px;margin-bottom:3px}
 table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:9px;border-bottom:1px solid var(--bd)}th{background:#f4f8f9}
 .toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);background:#173247;color:#fff;padding:11px 15px;border-radius:10px;z-index:100;display:none;font-size:13px;box-shadow:var(--shadow)}
 .modal-shield{position:fixed;inset:0;background:#0007;z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
@@ -82,7 +82,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
 <section id="p-linhas" class="page">
 <h1>Escala e Logística de Linhas</h1>
-<p class="muted">Linhas oficiais com sincronização inteligente para Coroado.</p>
+<p class="muted">Linhas oficiais unificadas (Coroado com Ida e Volta integradas).</p>
 
 <div class="days-bar" id="daysBar">
   <button class="day-btn" onclick="setDay('segunda', this)">Segunda</button>
@@ -107,6 +107,38 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 </div>
 
 <div class="lines-grid" id="linesGrid"></div>
+</section>
+
+<section id="p-pernoite" class="page">
+<h1>Controle de Pernoite (Garagem)</h1>
+<p class="muted">Defina quais veículos dormem dentro da garagem e quais dormem fora (na rua/ponto base).</p>
+
+<div class="card">
+  <h3>🏠 Garagem (Dentro / Fora)</h3>
+  <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+    <select id="selectBusPernoite" class="field" style="flex:1;min-width:200px"></select>
+    <select id="selectTipoPernoite" class="field" style="width:180px">
+      <option value="dentro">Dorme na Garagem</option>
+      <option value="fora">Dorme Fora (Rua)</option>
+    </select>
+    <button class="btn small" style="width:auto" onclick="salvarPernoite()">Salvar Pernoite</button>
+  </div>
+</div>
+
+<div class="actions" style="margin-bottom:14px">
+  <button class="btn secondary" onclick="exportWhatsAppPernoite()">📱 Copiar Pernoite p/ WhatsApp</button>
+</div>
+
+<div class="grid2">
+  <div class="card">
+    <h3 style="color:var(--p)">🟢 Dormem na Garagem (Dentro)</h3>
+    <div id="listDentro" style="margin-top:10px"></div>
+  </div>
+  <div class="card">
+    <h3 style="color:var(--o)">🟠 Dormem Fora (Rua / Base)</h3>
+    <div id="listFora" style="margin-top:10px"></div>
+  </div>
+</div>
 </section>
 
 <section id="p-detail" class="page">
@@ -164,8 +196,9 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <nav class="nav">
 <button id="nav-painel" class="active" onclick="show('painel')"><span class="ico">⌂</span>Painel</button>
 <button id="nav-linhas" onclick="show('linhas')"><span class="ico">🚌</span>Linhas</button>
+<button id="nav-pernoite" onclick="show('pernoite')"><span class="ico">🏠</span>Pernoite</button>
 <button id="nav-cadastro" onclick="show('cadastro')"><span class="ico">🚗</span>Cadastro</button>
-<button id="nav-exportacao" onclick="show('exportacao')"><span class="ico">▣</span>Exportação</button>
+<button id="nav-exportacao" onclick="show('exportacao')"><span class="ico">▣</span>Export</button>
 </nav>
 </div>
 
@@ -233,21 +266,22 @@ function loadDB(){
     if(!Array.isArray(data.historico)) data.historico = [];
     if(!data.escalas || typeof data.escalas !== 'object') data.escalas = {};
     if(!data.linhasCustom || typeof data.linhasCustom !== 'object') data.linhasCustom = {};
+    if(!data.pernoite || typeof data.pernoite !== 'object') data.pernoite = {};
     return data;
   }catch(e){
-    return {veiculos:[], historico:[], escalas:{}, linhasCustom:{}};
+    return {veiculos:[], historico:[], escalas:{}, linhasCustom:{}, pernoite:{}};
   }
 }
 
 let db = loadDB(), currentVehicle = null, pendingJustActivity = null, currentEditingLineCode = null;
 
+// Linhas oficiais unificadas (Coroado único unindo Ida e Volta)
 const DEFAULT_LINHAS = [
   { code: "99991", nome: "R05 - JABEQUARA / SEDE", cruzado: false, sched: { util: { ida: "06:30, 09:00, 12:30, 16:30", volta: "07:30, 10:30, 15:00, 17:20" }, sab: { ida: "06:30, 16:00", volta: "08:00, 17:00" }, dom: { ida: "10:00, 16:00", volta: "11:00, 17:00" } } },
   { code: "99997", nome: "R10 - SANTO ESTEVAO / SEDE", cruzado: true, sched: { util: { ida: "06:10, 07:50, 10:00, 12:30, 15:00, 17:30", volta: "06:10, 07:50, 10:00, 12:30, 15:00, 17:30" }, sab: { ida: "06:10, 09:30, 12:30, 15:30", volta: "08:00, 11:00, 14:00, 17:00" }, dom: { ida: "09:30, 13:00, 16:00", volta: "08:00, 11:00, 14:30, 17:20" } } },
   { code: "99993", nome: "R09 - FERROLHO / SEDE", cruzado: true, sched: { util: { ida: "06:20, 07:50, 10:00, 12:30, 15:00, 17:30", volta: "06:20, 07:50, 10:00, 12:30, 15:00, 17:30" }, sab: { ida: "06:20, 12:00, 16:00", volta: "08:00, 16:00" }, dom: { ida: "12:00, 16:00", volta: "10:00, 14:30, 17:00" } } },
   { code: "99989", nome: "R08 - CURUPEBA / SEDE", cruzado: false, sched: { util: { ida: "07:30, 11:40, 14:10, 17:00", volta: "06:10, 09:00, 13:00, 15:40" }, sab: { ida: "08:00, 11:00, 15:30, 18:10", volta: "06:10, 09:30, 14:00, 17:00" }, dom: { ida: "08:00, 11:00, 15:30, 18:10", volta: "06:20, 09:30, 14:30, 17:00" } } },
-  { code: "99987", nome: "R11 - COROADO / SEDE", cruzado: false, sched: { util: { ida: "06:20, 09:30, 14:00, 17:00", volta: "08:00, 12:00, 15:30, 18:00" }, sab: { ida: "07:00, 11:00, 15:00", volta: "08:00, 12:00, 15:30, 17:00" }, dom: { ida: "10:00, 17:00", volta: "12:00, 18:00" } } },
-  { code: "99988", nome: "SEDE - COROADO", cruzado: false, sched: { util: { ida: "06:20, 09:30, 14:00, 17:00", volta: "08:00, 12:00, 15:30, 18:00" }, sab: { ida: "07:00, 11:00, 15:00", volta: "08:00, 12:00, 15:30, 17:00" }, dom: { ida: "10:00, 17:00", volta: "12:00, 18:00" } } },
+  { code: "99987", nome: "R11 - COROADO / SEDE (Ida e Volta)", cruzado: false, sched: { util: { ida: "06:20, 09:30, 14:00, 17:00", volta: "08:00, 12:00, 15:30, 18:00" }, sab: { ida: "07:00, 11:00, 15:00", volta: "08:00, 12:00, 15:30, 17:00" }, dom: { ida: "10:00, 17:00", volta: "12:00, 18:00" } } },
   { code: "99995", nome: "R07 - SANTA ELISA / ROSEIRA", cruzado: false, sched: { util: { ida: "06:20, 09:00, 13:00, 15:30, 18:00", volta: "07:30, 11:00, 14:00, 17:00" }, sab: { ida: "07:00, 12:00, 16:00", volta: "08:00, 14:00, 17:00" }, dom: { ida: "12:00, 17:00", volta: "10:00, 16:00" } } }
 ];
 
@@ -271,6 +305,7 @@ function show(p, id){
 
   if(p==='painel') renderPanel();
   if(p==='linhas') renderLinhas();
+  if(p==='pernoite') renderPernoite();
   if(p==='cadastro') renderCad();
   if(p==='exportacao') renderFilters();
   if(p==='detail') renderDetail(id);
@@ -369,11 +404,6 @@ function renderLinhas(){
       let sched = getLineSchedule(l.code);
       let dayEscala = db.escalas[currentDay][l.code];
 
-      // Sede - Coroado (99988) usa exatamente a mesma alocação do R11 (99987) e exibe o mesmo carro integrado
-      if(l.code === "99988"){
-        dayEscala = db.escalas[currentDay]["99987"];
-      }
-
       if(l.cruzado){
         if(Array.isArray(dayEscala)) dayEscala = { ida: dayEscala[0] || null, volta: dayEscala[1] || null };
         
@@ -438,13 +468,8 @@ function renderLinhas(){
         let chipsHtml = allocatedIds.map(id => {
           let vObj = db.veiculos.find(x => x.id === id);
           let vCode = vObj ? vObj.codigo : 'Desconhecido';
-          let removeBtn = (l.code !== "99988") ? `<button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeBusFromLine('${l.code}','${id}')">✕</button>` : '';
-          return `<div class="assigned-chip"><span>🚌 ${esc(vCode)}</span>${removeBtn}</div>`;
+          return `<div class="assigned-chip"><span>🚌 ${esc(vCode)}</span><button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeBusFromLine('${l.code}','${id}')">✕</button></div>`;
         }).join('');
-
-        let actionArea = (l.code !== "99988") ? 
-          `<button class="btn secondary small" style="width:100%;margin-top:10px" onclick="allocBusToLine('${l.code}')">+ Alocar Veículo Selecionado</button>` :
-          `<div style="font-size:11px;color:var(--mut);text-align:center;margin-top:6px;">ℹ️ O mesmo veículo alocado em R11 atende esta linha automaticamente.</div>`;
 
         return `<div class="line-card">
           <div class="line-header">
@@ -459,11 +484,91 @@ function renderLinhas(){
           <div style="margin-top:6px">
             ${chipsHtml || '<div style="font-size:12px;color:var(--mut);text-align:center;padding:8px;background:#fafcfd;border-radius:6px;border:1px dashed #d6e1e4">Nenhum veículo alocado</div>'}
           </div>
-          ${actionArea}
+          <button class="btn secondary small" style="width:100%;margin-top:10px" onclick="allocBusToLine('${l.code}')">+ Alocar Veículo Selecionado</button>
         </div>`;
       }
     }).join('');
   }
+}
+
+function renderPernoite(){
+  let selectBus = document.getElementById('selectBusPernoite');
+  if(selectBus){
+    let options = '<option value="">-- Selecione o veículo --</option>';
+    db.veiculos.forEach(v => {
+      options += `<option value="${v.id}">${esc(v.codigo)} ${v.roteiro ? '('+esc(v.roteiro)+')' : ''}</option>`;
+    });
+    selectBus.innerHTML = options;
+  }
+
+  if(!db.pernoite) db.pernoite = {};
+
+  let dentroArr = [];
+  let foraArr = [];
+
+  db.veiculos.forEach(v => {
+    let status = db.pernoite[v.id] || 'dentro'; // por defeito assume dentro
+    if(status === 'fora') foraArr.push(v);
+    else dentroArr.push(v);
+  });
+
+  let listDentro = document.getElementById('listDentro');
+  let listFora = document.getElementById('listFora');
+
+  if(listDentro){
+    listDentro.innerHTML = dentroArr.length ? dentroArr.map(v => `
+      <div class="assigned-chip" style="border-color:var(--g)">
+        <span>🚌 ${esc(v.codigo)} ${v.roteiro ? '• '+esc(v.roteiro) : ''}</span>
+        <button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="mudarPernoite('${v.id}','fora')">Mudar p/ Fora ➔</button>
+      </div>
+    `).join('') : '<div class="empty">Nenhum veículo registrado.</div>';
+  }
+
+  if(listFora){
+    listFora.innerHTML = foraArr.length ? foraArr.map(v => `
+      <div class="assigned-chip" style="border-color:var(--o)">
+        <span>🚌 ${esc(v.codigo)} ${v.roteiro ? '• '+esc(v.roteiro) : ''}</span>
+        <button class="btn secondary small" style="padding:2px 6px;font-size:10px" onclick="mudarPernoite('${v.id}','dentro')">← Garagem</button>
+      </div>
+    `).join('') : '<div class="empty">Nenhum veículo fora.</div>';
+  }
+}
+
+function salvarPernoite(){
+  let busId = document.getElementById('selectBusPernoite').value;
+  let tipo = document.getElementById('selectTipoPernoite').value;
+  if(!busId) return alert('Selecione um veículo.');
+  if(!db.pernoite) db.pernoite = {};
+  db.pernoite[busId] = tipo;
+  save();
+  renderPernoite();
+  toast('Pernoite atualizado!');
+}
+
+function mudarPernoite(busId, novoTipo){
+  if(!db.pernoite) db.pernoite = {};
+  db.pernoite[busId] = novoTipo;
+  save();
+  renderPernoite();
+  toast('Movido com sucesso!');
+}
+
+function exportWhatsAppPernoite(){
+  if(!db.pernoite) db.pernoite = {};
+  let dentroList = [];
+  let foraList = [];
+
+  db.veiculos.forEach(v => {
+    let status = db.pernoite[v.id] || 'dentro';
+    if(status === 'fora') foraList.push(v.codigo);
+    else dentroList.push(v.codigo);
+  });
+
+  let texto = `*🏠 CONTROLE DE PERNOITE (FROTA)*\n\n`;
+  texto += `🟢 *Dormem na Garagem (Dentro):*\n${dentroList.length ? dentroList.join(', ') : 'Nenhum'}\n\n`;
+  texto += `🟠 *Dormem Fora (Rua / Base):*\n${foraList.length ? foraList.join(', ') : 'Nenhum'}`;
+
+  navigator.clipboard.writeText(texto).then(() => toast('Relatório de pernoite copiado para o WhatsApp!'));
 }
 
 function openEditSchedModal(code, nome){
@@ -562,7 +667,6 @@ function exportWhatsAppEscala(){
   let tName = getDayType() === 'util' ? 'DIAS ÚTEIS (SEG-SEX)' : currentDay.toUpperCase();
   let texto = `*🚌 ESCALA OPERACIONAL - ${tName}*\n\n`;
   DEFAULT_LINHAS.forEach(l => {
-    if(l.code === "99988") return; // Ignora duplicado visual do whats
     let sched = getLineSchedule(l.code);
     let dayEscala = db.escalas && db.escalas[currentDay] && db.escalas[currentDay][l.code];
     
@@ -726,6 +830,7 @@ setInterval(()=>{
 window.onload = function(){
   renderPanel();
   renderLinhas();
+  renderPernoite();
   renderCad();
   renderFilters();
 };
