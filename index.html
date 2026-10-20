@@ -82,7 +82,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
 <section id="p-linhas" class="page">
 <h1>Escala e Logística de Linhas</h1>
-<p class="muted">Linhas oficiais com alternância automática e suporte integrado.</p>
+<p class="muted">Linhas oficiais com sincronização inteligente para Coroado.</p>
 
 <div class="days-bar" id="daysBar">
   <button class="day-btn" onclick="setDay('segunda', this)">Segunda</button>
@@ -369,7 +369,7 @@ function renderLinhas(){
       let sched = getLineSchedule(l.code);
       let dayEscala = db.escalas[currentDay][l.code];
 
-      // SINCRONIZAÇÃO INTELIGENTE: Se a linha for Sede - Coroado (99988), usa a mesma alocação de R11 - Coroado / Sede (99987)
+      // Sede - Coroado (99988) usa exatamente a mesma alocação do R11 (99987) e exibe o mesmo carro integrado
       if(l.code === "99988"){
         dayEscala = db.escalas[currentDay]["99987"];
       }
@@ -434,15 +434,17 @@ function renderLinhas(){
           <button class="btn secondary small" style="width:100%;margin-top:4px;font-size:11px" onclick="allocCruzadoBus('${l.code}','volta')">+ Alocar p/ Carro B (Inicial Destino)</button>
         </div>`;
       } else {
-        // Linhas normais (incluindo Sede - Coroado que espelha o Coroado / Sede)
         let allocatedIds = Array.isArray(dayEscala) ? dayEscala : [];
         let chipsHtml = allocatedIds.map(id => {
           let vObj = db.veiculos.find(x => x.id === id);
           let vCode = vObj ? vObj.codigo : 'Desconhecido';
-          return `<div class="assigned-chip"><span>🚌 ${esc(vCode)}</span>${l.code !== "99988" ? `<button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeBusFromLine('${l.code}','${id}')">✕</button>` : ''}</div>`;
+          let removeBtn = (l.code !== "99988") ? `<button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeBusFromLine('${l.code}','${id}')">✕</button>` : '';
+          return `<div class="assigned-chip"><span>🚌 ${esc(vCode)}</span>${removeBtn}</div>`;
         }).join('');
 
-        let allocBtn = l.code !== "99988" ? `<button class="btn secondary small" style="width:100%;margin-top:10px" onclick="allocBusToLine('${l.code}')">+ Alocar Veículo Selecionado</button>` : '<div style="font-size:11px;color:var(--mut);margin-top:8px;text-align:center;">Mesmo carro da linha R11 (Ida/Volta automática)</div>';
+        let actionArea = (l.code !== "99988") ? 
+          `<button class="btn secondary small" style="width:100%;margin-top:10px" onclick="allocBusToLine('${l.code}')">+ Alocar Veículo Selecionado</button>` :
+          `<div style="font-size:11px;color:var(--mut);text-align:center;margin-top:6px;">ℹ️ O mesmo veículo alocado em R11 atende esta linha automaticamente.</div>`;
 
         return `<div class="line-card">
           <div class="line-header">
@@ -457,7 +459,7 @@ function renderLinhas(){
           <div style="margin-top:6px">
             ${chipsHtml || '<div style="font-size:12px;color:var(--mut);text-align:center;padding:8px;background:#fafcfd;border-radius:6px;border:1px dashed #d6e1e4">Nenhum veículo alocado</div>'}
           </div>
-          ${allocBtn}
+          ${actionArea}
         </div>`;
       }
     }).join('');
@@ -560,7 +562,7 @@ function exportWhatsAppEscala(){
   let tName = getDayType() === 'util' ? 'DIAS ÚTEIS (SEG-SEX)' : currentDay.toUpperCase();
   let texto = `*🚌 ESCALA OPERACIONAL - ${tName}*\n\n`;
   DEFAULT_LINHAS.forEach(l => {
-    if(l.code === "99988") return; // Ignora o duplicado do espelho para o whatsapp
+    if(l.code === "99988") return; // Ignora duplicado visual do whats
     let sched = getLineSchedule(l.code);
     let dayEscala = db.escalas && db.escalas[currentDay] && db.escalas[currentDay][l.code];
     
@@ -702,7 +704,6 @@ function resetSingleVehicleHistory(){
 }
 
 function exportExcel(){
-  exportWhatsAppEscala(); // Facilitar cópia rápida caso prefira
   if(typeof XLSX==='undefined') return alert('Biblioteca do Excel indisponível.');
   let rows = db.historico.map(h=>({'Veículo':h.veiculo, 'Atividade':h.atividade, 'Data':fmt(h.dataHora), 'Status':h.status}));
   let ws = XLSX.utils.json_to_sheet(rows), wb = XLSX.utils.book_new();
