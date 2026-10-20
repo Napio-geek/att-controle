@@ -35,7 +35,7 @@ h1{font-size:26px;margin:3px 0 18px}.muted{color:var(--mut);font-size:13px}
 .act-btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .act-btns button{flex:1;min-width:140px}
 label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}.grid2,.filters{display:grid;grid-template-columns:1fr 1fr;gap:12px}.notice{background:#e8f6f7;color:#155e61;border-radius:13px;padding:13px;font-size:13px}.empty{text-align:center;color:var(--mut);padding:32px}
-.nav{position:fixed;z-index:30;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--bd);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}.nav button{flex:1;max-width:140px;border:0;background:#fff;color:#63767e;padding:10px 5px 8px;font-size:11px}.nav button.active{color:var(--p);font-weight:700}.ico{display:block;font-size:19px;margin-bottom:3px}
+.nav{position:fixed;z-index:30;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--bd);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}.nav button{flex:1;max-width:110px;border:0;background:#fff;color:#63767e;padding:10px 2px 8px;font-size:10px}.nav button.active{color:var(--p);font-weight:700}.ico{display:block;font-size:17px;margin-bottom:3px}
 table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:9px;border-bottom:1px solid var(--bd)}th{background:#f4f8f9}
 .toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);background:#173247;color:#fff;padding:11px 15px;border-radius:10px;z-index:100;display:none;font-size:13px;box-shadow:var(--shadow)}
 .modal-shield{position:fixed;inset:0;background:#0007;z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
@@ -45,13 +45,13 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 .days-bar {display:flex;background:#fff;border:1px solid var(--bd);border-radius:12px;overflow-x:auto;padding:6px;gap:6px;margin-bottom:16px}
 .day-btn {background:#f3f7f7;border:1px solid var(--bd);color:var(--mut);padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
 .day-btn.active {background:var(--p);color:#fff;border-color:var(--p)}
-.lines-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:12px}
+.lines-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:12px;margin-top:12px}
 .line-card {background:#fff;border:1px solid var(--bd);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
 .line-header {font-size:15px;font-weight:700;color:var(--p);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
 .line-code {font-size:11px;color:var(--mut);font-weight:700}
 .sched-box {font-size:12px;background:#fafcfd;border-radius:8px;border:1px solid var(--bd);padding:8px;margin:8px 0}
-.assigned-chip {background:#eaf1f2;border:1px solid var(--p);border-radius:8px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;color:var(--txt);margin-top:6px}
-.sub-alloc-title {font-size:11px;font-weight:bold;color:var(--mut);margin-top:6px;margin-bottom:2px}
+.assigned-chip {background:#eaf1f2;border:1px solid var(--p);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--txt);margin-top:6px}
+.sub-alloc-title {font-size:11px;font-weight:bold;color:var(--mut);margin-top:8px;margin-bottom:2px}
 
 .cross-row {background:#fafcfd;border:1px solid var(--bd);border-radius:8px;padding:6px 10px;margin:4px 0;font-size:11px}
 .cross-row.active {background:#e8f6f7;border-color:var(--p);font-weight:bold}
@@ -81,7 +81,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
 <section id="p-linhas" class="page">
 <h1>Escala e Logística de Linhas</h1>
-<p class="muted">Linhas oficiais unificadas (Coroado com Ida e Volta integradas).</p>
+<p class="muted">Gerencie horários, veículos e turnos de motoristas (Manhã / Tarde).</p>
 
 <div class="days-bar" id="daysBar">
   <button class="day-btn" onclick="setDay('segunda', this)">Segunda</button>
@@ -106,6 +106,18 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 </div>
 
 <div class="lines-grid" id="linesGrid"></div>
+</section>
+
+<section id="p-motoristas" class="page">
+<h1>Equipe de Motoristas</h1>
+<p class="muted">Cadastre os motoristas para alocá-los nos turnos de Manhã e Tarde.</p>
+<div class="card">
+  <h3>Novo Motorista</h3>
+  <label>Nome Completo</label>
+  <input id="newDriverName" class="field" placeholder="Ex: João Silva">
+  <button class="btn" style="margin-top:12px" onclick="addDriver()">＋ Cadastrar Motorista</button>
+</div>
+<div id="driverList"></div>
 </section>
 
 <section id="p-pernoite" class="page">
@@ -152,13 +164,13 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 </section>
 
 <section id="p-cadastro" class="page">
-<h1>Cadastro</h1>
+<h1>Cadastro de Veículos</h1>
 <div class="card">
 <h3>Novo veículo</h3>
 <label>Código do veículo</label>
-<input id="newCode" class="field" maxlength="40" placeholder="Digite o código do veículo (Ex: V-102)">
+<input id="newCode" class="field" maxlength="40" placeholder="Digite o código (Ex: V-102)">
 <label style="margin-top:10px">Roteiro / Linha (Opcional)</label>
-<input id="newRoute" class="field" maxlength="60" placeholder="Digite a linha/roteiro atual (Ex: Linha 01 - Centro)">
+<input id="newRoute" class="field" maxlength="60" placeholder="Digite a linha atual (Ex: Linha 01)">
 <button class="btn" style="margin-top:14px" onclick="addVehicle()">＋ Cadastrar veículo</button>
 </div>
 <input id="searchCad" class="search" placeholder="🔎 Buscar por código ou roteiro..." oninput="renderCad()">
@@ -179,15 +191,14 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
 <div class="card">
   <h3>⚙️ Gerenciamento e Limpeza</h3>
-  <p class="muted">Opções avançadas para reiniciar o histórico de atividades.</p>
   <label style="margin-top:15px">Resetar histórico de um veículo específico</label>
   <div style="display:flex;gap:10px;flex-wrap:wrap">
     <select id="resetSingleVeic" class="field" style="flex:1;min-width:200px"></select>
-    <button class="btn danger small" style="width:auto" onclick="resetSingleVehicleHistory()">Resetar este veículo</button>
+    <button class="btn danger small" style="width:auto" onclick="resetSingleVehicleHistory()">Resetar veículo</button>
   </div>
   <hr style="border:0;border-top:1px solid var(--bd);margin:20px 0">
   <label>Resetar histórico geral de TUDO</label>
-  <button class="btn danger" onclick="resetAllHistory()">🗑️ Resetar Histórico de Todos os Veículos</button>
+  <button class="btn danger" onclick="resetAllHistory()">🗑️ Resetar Histórico Geral</button>
 </div>
 </section>
 </main>
@@ -195,8 +206,9 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <nav class="nav">
 <button id="nav-painel" class="active" onclick="show('painel')"><span class="ico">⌂</span>Painel</button>
 <button id="nav-linhas" onclick="show('linhas')"><span class="ico">🚌</span>Linhas</button>
+<button id="nav-motoristas" onclick="show('motoristas')"><span class="ico">👨‍✈️</span>Equipe</button>
 <button id="nav-pernoite" onclick="show('pernoite')"><span class="ico">🏠</span>Pernoite</button>
-<button id="nav-cadastro" onclick="show('cadastro')"><span class="ico">🚗</span>Cadastro</button>
+<button id="nav-cadastro" onclick="show('cadastro')"><span class="ico">🚗</span>Veículos</button>
 <button id="nav-exportacao" onclick="show('exportacao')"><span class="ico">▣</span>Export</button>
 </nav>
 </div>
@@ -262,13 +274,14 @@ function loadDB(){
     }
     if(!data || typeof data !== 'object') data = {};
     if(!Array.isArray(data.veiculos)) data.veiculos = [];
+    if(!Array.isArray(data.motoristas)) data.motoristas = [];
     if(!Array.isArray(data.historico)) data.historico = [];
     if(!data.escalas || typeof data.escalas !== 'object') data.escalas = {};
     if(!data.linhasCustom || typeof data.linhasCustom !== 'object') data.linhasCustom = {};
     if(!data.pernoite || typeof data.pernoite !== 'object') data.pernoite = {};
     return data;
   }catch(e){
-    return {veiculos:[], historico:[], escalas:{}, linhasCustom:{}, pernoite:{}};
+    return {veiculos:[], motoristas:[], historico:[], escalas:{}, linhasCustom:{}, pernoite:{}};
   }
 }
 
@@ -303,6 +316,7 @@ function show(p, id){
 
   if(p==='painel') renderPanel();
   if(p==='linhas') renderLinhas();
+  if(p==='motoristas') renderMotoristas();
   if(p==='pernoite') renderPernoite();
   if(p==='cadastro') renderCad();
   if(p==='exportacao') renderFilters();
@@ -376,6 +390,39 @@ function getLineSchedule(code){
   return def ? def.sched[t] : { ida: "06:00", volta: "18:00" };
 }
 
+function renderMotoristas(){
+  let driverList = document.getElementById('driverList');
+  if(driverList){
+    driverList.innerHTML = db.motoristas.length ? db.motoristas.map(d => `
+      <div class="vehicle">
+        <div class="main">
+          <div class="code">👨‍✈️ ${esc(d.name)}</div>
+        </div>
+        <button class="btn danger small" onclick="removeDriver('${d.id}')">🗑️ Excluir</button>
+      </div>
+    `).join('') : '<div class="empty">Nenhum motorista cadastrado.</div>';
+  }
+}
+
+function addDriver(){
+  let name = document.getElementById('newDriverName').value.trim();
+  if(!name) return alert('Digite o nome do motorista.');
+  db.motoristas.push({ id: crypto.randomUUID(), name: name });
+  save();
+  document.getElementById('newDriverName').value = '';
+  renderMotoristas();
+  toast('Motorista cadastrado!');
+}
+
+function removeDriver(id){
+  if(confirm('Excluir motorista?')){
+    db.motoristas = db.motoristas.filter(d => d.id !== id);
+    save();
+    renderMotoristas();
+    toast('Motorista excluído.');
+  }
+}
+
 function renderLinhas(){
   document.querySelectorAll('.day-btn').forEach(b => {
     if(b.getAttribute('onclick') && b.getAttribute('onclick').includes(`'${currentDay}'`)) b.classList.add('active');
@@ -403,14 +450,18 @@ function renderLinhas(){
       let dayEscala = db.escalas[currentDay][l.code];
 
       if(l.cruzado){
-        if(Array.isArray(dayEscala)) dayEscala = { ida: dayEscala[0] || null, volta: dayEscala[1] || null };
+        if(!dayEscala || typeof dayEscala !== 'object' || Array.isArray(dayEscala)) {
+          dayEscala = { ida: { id: null, manha: '', tarde: '' }, volta: { id: null, manha: '', tarde: '' } };
+        }
         
         let idaList = (sched.ida || '').split(',').map(s=>s.trim()).filter(Boolean);
-        let idaId = dayEscala && typeof dayEscala === 'object' ? dayEscala.ida : null;
-        let voltaId = dayEscala && typeof dayEscala === 'object' ? dayEscala.volta : null;
+        let busA = dayEscala.ida || { id: null, manha: '', tarde: '' };
+        let busB = dayEscala.volta || { id: null, manha: '', tarde: '' };
+        if(typeof busA !== 'object') busA = { id: busA, manha: '', tarde: '' };
+        if(typeof busB !== 'object') busB = { id: busB, manha: '', tarde: '' };
 
-        let vA = db.veiculos.find(x => x.id === idaId);
-        let vB = db.veiculos.find(x => x.id === voltaId);
+        let vA = db.veiculos.find(x => x.id === busA.id);
+        let vB = db.veiculos.find(x => x.id === busB.id);
 
         let codeA = vA ? vA.codigo : 'Carro A (Pendente)';
         let codeB = vB ? vB.codigo : 'Carro B (Pendente)';
@@ -443,30 +494,78 @@ function renderLinhas(){
             <span>📍 ${l.nome}</span>
             <button class="btn secondary small" style="padding:3px 7px;font-size:11px" onclick="openEditSchedModal('${l.code}','${esc(l.nome)}')">⚙️ Editar</button>
           </div>
-          <div class="line-code">Código: ${l.code} (${currentDay.toUpperCase()}) • <span style="color:var(--p)">Cruzamento Automático</span></div>
+          <div class="line-code">Código: ${l.code} (${currentDay.toUpperCase()}) • Cruzamento Automático</div>
           
           <div style="margin:8px 0">${rowsHtml}</div>
 
           <div class="sub-alloc-title">1. Carro A (Inicia na Sede):</div>
           <div class="assigned-chip">
-            <span>🚌 ${vA ? esc(vA.codigo) : 'Nenhum'}</span>
-            ${vA ? `<button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeCruzadoBus('${l.code}','ida')">✕</button>` : ''}
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span>🚌 ${vA ? esc(vA.codigo) : 'Nenhum'}</span>
+              ${vA ? `<button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeCruzadoBus('${l.code}','ida')">✕</button>` : ''}
+            </div>
+            ${vA ? `
+              <div style="margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                <select class="field" style="padding:6px;font-size:11px" onchange="updateDriver('${l.code}','ida','manha',this.value)">
+                  <option value="">🌅 Manhã: [Selecione]</option>
+                  ${db.motoristas.map(d=>`<option value="${esc(d.name)}" ${busA.manha===d.name?'selected':''}>${esc(d.name)}</option>`).join('')}
+                </select>
+                <select class="field" style="padding:6px;font-size:11px" onchange="updateDriver('${l.code}','ida','tarde',this.value)">
+                  <option value="">🌇 Tarde: [Selecione]</option>
+                  ${db.motoristas.map(d=>`<option value="${esc(d.name)}" ${busA.tarde===d.name?'selected':''}>${esc(d.name)}</option>`).join('')}
+                </select>
+              </div>
+            ` : ''}
           </div>
-          <button class="btn secondary small" style="width:100%;margin-top:4px;font-size:11px" onclick="allocCruzadoBus('${l.code}','ida')">+ Alocar p/ Carro A (Inicial Sede)</button>
+          <button class="btn secondary small" style="width:100%;margin-top:4px;font-size:11px" onclick="allocCruzadoBus('${l.code}','ida')">+ Alocar p/ Carro A</button>
 
           <div class="sub-alloc-title" style="margin-top:8px">2. Carro B (Inicia no Destino):</div>
           <div class="assigned-chip">
-            <span>🚌 ${vB ? esc(vB.codigo) : 'Nenhum'}</span>
-            ${vB ? `<button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeCruzadoBus('${l.code}','volta')">✕</button>` : ''}
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span>🚌 ${vB ? esc(vB.codigo) : 'Nenhum'}</span>
+              ${vB ? `<button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeCruzadoBus('${l.code}','volta')">✕</button>` : ''}
+            </div>
+            ${vB ? `
+              <div style="margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                <select class="field" style="padding:6px;font-size:11px" onchange="updateDriver('${l.code}','volta','manha',this.value)">
+                  <option value="">🌅 Manhã: [Selecione]</option>
+                  ${db.motoristas.map(d=>`<option value="${esc(d.name)}" ${busB.manha===d.name?'selected':''}>${esc(d.name)}</option>`).join('')}
+                </select>
+                <select class="field" style="padding:6px;font-size:11px" onchange="updateDriver('${l.code}','volta','tarde',this.value)">
+                  <option value="">🌇 Tarde: [Selecione]</option>
+                  ${db.motoristas.map(d=>`<option value="${esc(d.name)}" ${busB.tarde===d.name?'selected':''}>${esc(d.name)}</option>`).join('')}
+                </select>
+              </div>
+            ` : ''}
           </div>
-          <button class="btn secondary small" style="width:100%;margin-top:4px;font-size:11px" onclick="allocCruzadoBus('${l.code}','volta')">+ Alocar p/ Carro B (Inicial Destino)</button>
+          <button class="btn secondary small" style="width:100%;margin-top:4px;font-size:11px" onclick="allocCruzadoBus('${l.code}','volta')">+ Alocar p/ Carro B</button>
         </div>`;
       } else {
-        let allocatedIds = Array.isArray(dayEscala) ? dayEscala : [];
-        let chipsHtml = allocatedIds.map(id => {
-          let vObj = db.veiculos.find(x => x.id === id);
+        let allocatedItems = Array.isArray(dayEscala) ? dayEscala : [];
+        let chipsHtml = allocatedItems.map(item => {
+          let busId = typeof item === 'object' ? item.id : item;
+          let manha = typeof item === 'object' ? (item.manha || '') : '';
+          let tarde = typeof item === 'object' ? (item.tarde || '') : '';
+
+          let vObj = db.veiculos.find(x => x.id === busId);
           let vCode = vObj ? vObj.codigo : 'Desconhecido';
-          return `<div class="assigned-chip"><span>🚌 ${esc(vCode)}</span><button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeBusFromLine('${l.code}','${id}')">✕</button></div>`;
+
+          return `<div class="assigned-chip">
+            <div style="display:flex;justify-content:space-between;align-items:center;font-weight:bold">
+              <span>🚌 ${esc(vCode)}</span>
+              <button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeBusFromLine('${l.code}','${busId}')">✕</button>
+            </div>
+            <div style="margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+              <select class="field" style="padding:6px;font-size:11px" onchange="updateSimpleDriver('${l.code}','${busId}','manha',this.value)">
+                <option value="">🌅 Manhã: [Selecione]</option>
+                ${db.motoristas.map(d=>`<option value="${esc(d.name)}" ${manha===d.name?'selected':''}>${esc(d.name)}</option>`).join('')}
+              </select>
+              <select class="field" style="padding:6px;font-size:11px" onchange="updateSimpleDriver('${l.code}','${busId}','tarde',this.value)">
+                <option value="">🌇 Tarde: [Selecione]</option>
+                ${db.motoristas.map(d=>`<option value="${esc(d.name)}" ${tarde===d.name?'selected':''}>${esc(d.name)}</option>`).join('')}
+              </select>
+            </div>
+          </div>`;
         }).join('');
 
         return `<div class="line-card">
@@ -486,6 +585,33 @@ function renderLinhas(){
         </div>`;
       }
     }).join('');
+  }
+}
+
+function updateSimpleDriver(lineCode, busId, turno, val){
+  if(!db.escalas || !db.escalas[currentDay] || !Array.isArray(db.escalas[currentDay][lineCode])) return;
+  let arr = db.escalas[currentDay][lineCode];
+  let item = arr.find(x => (typeof x === 'object' ? x.id === busId : x === busId));
+  if(item){
+    if(typeof item !== 'object') {
+      let idx = arr.indexOf(item);
+      arr[idx] = { id: busId, manha: '', tarde: '' };
+      item = arr[idx];
+    }
+    item[turno] = val;
+    save();
+    toast('Motorista atualizado!');
+  }
+}
+
+function updateDriver(lineCode, sentido, turno, val){
+  if(!db.escalas || !db.escalas[currentDay] || !db.escalas[currentDay][lineCode]) return;
+  let obj = db.escalas[currentDay][lineCode];
+  if(obj && obj[sentido]){
+    if(typeof obj[sentido] !== 'object') obj[sentido] = { id: obj[sentido], manha: '', tarde: '' };
+    obj[sentido][turno] = val;
+    save();
+    toast('Motorista atualizado!');
   }
 }
 
@@ -605,15 +731,9 @@ function allocBusToLine(lineCode){
   if(!db.escalas) db.escalas = {};
   if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
 
-  for(let lCode in db.escalas[currentDay]){
-    if(Array.isArray(db.escalas[currentDay][lCode])){
-      db.escalas[currentDay][lCode] = db.escalas[currentDay][lCode].filter(id => id !== busId);
-    }
-  }
-
   if(!Array.isArray(db.escalas[currentDay][lineCode])) db.escalas[currentDay][lineCode] = [];
-  if(!db.escalas[currentDay][lineCode].includes(busId)){
-    db.escalas[currentDay][lineCode].push(busId);
+  if(!db.escalas[currentDay][lineCode].some(x => (typeof x === 'object' ? x.id === busId : x === busId))){
+    db.escalas[currentDay][lineCode].push({ id: busId, manha: '', tarde: '' });
   }
   save();
   renderLinhas();
@@ -628,10 +748,10 @@ function allocCruzadoBus(lineCode, sentido){
   if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
 
   if(!db.escalas[currentDay][lineCode] || typeof db.escalas[currentDay][lineCode] !== 'object' || Array.isArray(db.escalas[currentDay][lineCode])){
-    db.escalas[currentDay][lineCode] = { ida: null, volta: null };
+    db.escalas[currentDay][lineCode] = { ida: { id: null, manha: '', tarde: '' }, volta: { id: null, manha: '', tarde: '' } };
   }
 
-  db.escalas[currentDay][lineCode][sentido] = busId;
+  db.escalas[currentDay][lineCode][sentido] = { id: busId, manha: '', tarde: '' };
   save();
   renderLinhas();
   toast('Veículo alocado!');
@@ -639,7 +759,7 @@ function allocCruzadoBus(lineCode, sentido){
 
 function removeBusFromLine(lineCode, busId){
   if(db.escalas && db.escalas[currentDay] && Array.isArray(db.escalas[currentDay][lineCode])){
-    db.escalas[currentDay][lineCode] = db.escalas[currentDay][lineCode].filter(id => id !== busId);
+    db.escalas[currentDay][lineCode] = db.escalas[currentDay][lineCode].filter(x => (typeof x === 'object' ? x.id !== busId : x !== busId));
     save();
     renderLinhas();
     toast('Removido.');
@@ -648,7 +768,7 @@ function removeBusFromLine(lineCode, busId){
 
 function removeCruzadoBus(lineCode, sentido){
   if(db.escalas && db.escalas[currentDay] && db.escalas[currentDay][lineCode] && typeof db.escalas[currentDay][lineCode] === 'object'){
-    db.escalas[currentDay][lineCode][sentido] = null;
+    db.escalas[currentDay][lineCode][sentido] = { id: null, manha: '', tarde: '' };
     save();
     renderLinhas();
     toast('Removido.');
@@ -669,13 +789,32 @@ function exportWhatsAppEscala(){
     let dayEscala = db.escalas && db.escalas[currentDay] && db.escalas[currentDay][l.code];
     
     if(l.cruzado && dayEscala && typeof dayEscala === 'object'){
-      let vA = db.veiculos.find(x => x.id === dayEscala.ida);
-      let vB = db.veiculos.find(x => x.id === dayEscala.volta);
-      texto += `📍 *${l.nome}* (Cruzada)\n   *Carro A (Inicial Sede):* ${vA ? vA.codigo : 'Nenhum'}\n   *Carro B (Inicial Destino):* ${vB ? vB.codigo : 'Nenhum'}\n   *Horários:* ${sched.ida}\n\n`;
+      let busA = dayEscala.ida || { id: null, manha: '', tarde: '' };
+      let busB = dayEscala.volta || { id: null, manha: '', tarde: '' };
+      let vA = db.veiculos.find(x => x.id === busA.id);
+      let vB = db.veiculos.find(x => x.id === busB.id);
+
+      texto += `📍 *${l.nome}* (Cruzada)\n`;
+      texto += `   • *Carro A:* ${vA ? vA.codigo : 'Nenhum'} (Manhã: ${busA.manha||'-'} / Tarde: ${busA.tarde||'-'})\n`;
+      texto += `   • *Carro B:* ${vB ? vB.codigo : 'Nenhum'} (Manhã: ${busB.manha||'-'} / Tarde: ${busB.tarde||'-'})\n`;
+      texto += `   • *Horários:* ${sched.ida}\n\n`;
     } else {
-      let ids = Array.isArray(dayEscala) ? dayEscala : [];
-      let codigos = ids.map(id => { let v = db.veiculos.find(x => x.id === id); return v ? v.codigo : ''; }).filter(Boolean);
-      texto += `📍 *${l.nome}*\n   *Frota:* ${codigos.length ? codigos.join(', ') : 'Nenhum'}\n   *IDA:* ${sched.ida} | *VOLTA:* ${sched.volta}\n\n`;
+      let arr = Array.isArray(dayEscala) ? dayEscala : [];
+      texto += `📍 *${l.nome}*\n`;
+      if(arr.length){
+        arr.forEach(item => {
+          let busId = typeof item === 'object' ? item.id : item;
+          let manha = typeof item === 'object' ? (item.manha || '-') : '-';
+          let tarde = typeof item === 'object' ? (item.tarde || '-') : '-';
+          let v = db.veiculos.find(x => x.id === busId);
+          if(v){
+            texto += `   • *Veículo:* ${v.codigo} | 🌅 Manhã: ${manha} | 🌇 Tarde: ${tarde}\n`;
+          }
+        });
+      } else {
+        texto += `   • *Frota:* Nenhum alocado\n`;
+      }
+      texto += `   • *IDA:* ${sched.ida} | *VOLTA:* ${sched.volta}\n\n`;
     }
   });
   navigator.clipboard.writeText(texto).then(() => toast('Escala copiada para o WhatsApp!'));
@@ -828,6 +967,7 @@ setInterval(()=>{
 window.onload = function(){
   renderPanel();
   renderLinhas();
+  renderMotoristas();
   renderPernoite();
   renderCad();
   renderFilters();
