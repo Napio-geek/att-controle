@@ -8,7 +8,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Atlântico Atividades">
 <title>Atlântico — Controle de Atividades e Frota</title>
-<link rel="manifest" href="manifest.json">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
 :root{--p:#07898c;--pd:#066f72;--bg:#f3f7f7;--txt:#173247;--mut:#6b7c84;--g:#16a765;--o:#f59e0b;--r:#e53935;--card:#fff;--bd:#e1eaec;--shadow:0 5px 18px #123b4518;--rad:16px}
@@ -19,8 +18,8 @@ button,input,select,textarea{font:inherit}
 button{cursor:pointer}
 .app{min-height:100vh}
 .header{background:var(--p);color:#fff;padding:13px 16px 15px;position:sticky;top:0;z-index:20;box-shadow:0 2px 10px #0002}
-.header-inner{max-width:1080px;margin:auto;display:flex;align-items:center;justify-content:space-between}
-.logo{height:46px;max-width:250px;width:auto;object-fit:contain}
+.header-inner{max-width:1080px;margin:auto;display:flex;align-items:center;gap:12px}
+.logo{height:54px;max-width:300px;width:auto;object-fit:contain}
 .header-sub{font-size:12px;opacity:.9}
 main{max-width:1080px;margin:auto;padding:18px 14px 92px}
 .page{display:none}.page.active{display:block}
@@ -36,7 +35,7 @@ h1{font-size:26px;margin:3px 0 18px}.muted{color:var(--mut);font-size:13px}
 .act-btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .act-btns button{flex:1;min-width:140px}
 label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}.grid2,.filters{display:grid;grid-template-columns:1fr 1fr;gap:12px}.notice{background:#e8f6f7;color:#155e61;border-radius:13px;padding:13px;font-size:13px}.empty{text-align:center;color:var(--mut);padding:32px}
-.nav{position:fixed;z-index:30;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--bd);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}.nav button{flex:1;max-width:120px;border:0;background:#fff;color:#63767e;padding:10px 2px 8px;font-size:10px}.nav button.active{color:var(--p);font-weight:700}.ico{display:block;font-size:18px;margin-bottom:3px}
+.nav{position:fixed;z-index:30;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--bd);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}.nav button{flex:1;max-width:140px;border:0;background:#fff;color:#63767e;padding:10px 5px 8px;font-size:11px}.nav button.active{color:var(--p);font-weight:700}.ico{display:block;font-size:19px;margin-bottom:3px}
 table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:9px;border-bottom:1px solid var(--bd)}th{background:#f4f8f9}
 .toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);background:#173247;color:#fff;padding:11px 15px;border-radius:10px;z-index:100;display:none;font-size:13px;box-shadow:var(--shadow)}
 .modal-shield{position:fixed;inset:0;background:#0007;z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
@@ -46,30 +45,26 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 .days-bar {display:flex;background:#fff;border:1px solid var(--bd);border-radius:12px;overflow-x:auto;padding:6px;gap:6px;margin-bottom:16px}
 .day-btn {background:#f3f7f7;border:1px solid var(--bd);color:var(--mut);padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
 .day-btn.active {background:var(--p);color:#fff;border-color:var(--p)}
-.lines-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:12px;margin-top:12px}
+.lines-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:12px}
 .line-card {background:#fff;border:1px solid var(--bd);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
 .line-header {font-size:15px;font-weight:700;color:var(--p);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
 .line-code {font-size:11px;color:var(--mut);font-weight:700}
 .sched-box {font-size:12px;background:#fafcfd;border-radius:8px;border:1px solid var(--bd);padding:8px;margin:8px 0}
-.assigned-chip {background:#eaf1f2;border:1px solid var(--p);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--txt);margin-top:6px}
-.sub-alloc-title {font-size:11px;font-weight:bold;color:var(--mut);margin-top:8px;margin-bottom:2px}
+.assigned-chip {background:#eaf1f2;border:1px solid var(--p);border-radius:8px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;color:var(--txt);margin-top:6px}
+.sub-alloc-title {font-size:11px;font-weight:bold;color:var(--mut);margin-top:6px;margin-bottom:2px}
 
 .cross-row {background:#fafcfd;border:1px solid var(--bd);border-radius:8px;padding:6px 10px;margin:4px 0;font-size:11px}
 .cross-row.active {background:#e8f6f7;border-color:var(--p);font-weight:bold}
 .cross-badge {background:var(--p);color:#fff;font-size:9px;padding:2px 6px;border-radius:4px;float:right}
 
-.live-alert {background:linear-gradient(135deg, #07898c, #066f72);color:#fff;border-radius:14px;padding:14px;margin-bottom:16px;box-shadow:var(--shadow)}
-.live-alert h4{margin:0 0 4px;font-size:14px;display:flex;align-items:center;gap:6px}
-.live-alert p{margin:0;font-size:12px;opacity:.95}
-
-@media(max-width:650px){.logo{height:38px;max-width:180px}.stats{gap:6px}.stat{padding:9px 6px}.stat strong{font-size:24px}.stat span{font-size:10px}.grid2,.filters{grid-template-columns:1fr}.nav button{max-width:none}}
+@media(max-width:650px){.logo{height:46px;max-width:250px}.stats{gap:6px}.stat{padding:9px 6px}.stat strong{font-size:24px}.stat span{font-size:10px}.grid2,.filters{grid-template-columns:1fr}.nav button{max-width:none}}
 </style>
 </head>
 <body>
 <div class="app">
 <header class="header"><div class="header-inner">
   <img src="logo-atlantico.png" class="logo" alt="Atlântico" onerror="this.style.display='none'">
-  <button class="btn secondary small" style="padding:6px 10px;font-size:11px" onclick="requestNotificationPermission()">🔔 Alertas</button>
+  <div class="header-sub">Controle de Atividades e Frota</div>
 </div></header>
 
 <main>
@@ -86,12 +81,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
 <section id="p-linhas" class="page">
 <h1>Escala e Logística de Linhas</h1>
-<p class="muted">Gerencie horários, veículos e turnos de motoristas (Manhã / Tarde).</p>
-
-<div id="liveAlertBox" class="live-alert" style="display:none">
-  <h4>🔔 Próxima Partida / Chegada</h4>
-  <p id="liveAlertText">Calculando próximo horário...</p>
-</div>
+<p class="muted">Linhas oficiais unificadas (Coroado com Ida e Volta integradas).</p>
 
 <div class="days-bar" id="daysBar">
   <button class="day-btn" onclick="setDay('segunda', this)">Segunda</button>
@@ -116,18 +106,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 </div>
 
 <div class="lines-grid" id="linesGrid"></div>
-</section>
-
-<section id="p-motoristas" class="page">
-<h1>Equipe de Motoristas</h1>
-<p class="muted">Cadastre os motoristas para alocá-los nos turnos de Manhã e Tarde.</p>
-<div class="card">
-  <h3>Novo Motorista</h3>
-  <label>Nome Completo</label>
-  <input id="newDriverName" class="field" placeholder="Ex: João Silva">
-  <button class="btn" style="margin-top:12px" onclick="addDriver()">＋ Cadastrar Motorista</button>
-</div>
-<div id="driverList"></div>
 </section>
 
 <section id="p-pernoite" class="page">
@@ -174,13 +152,13 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 </section>
 
 <section id="p-cadastro" class="page">
-<h1>Cadastro de Veículos</h1>
+<h1>Cadastro</h1>
 <div class="card">
 <h3>Novo veículo</h3>
 <label>Código do veículo</label>
-<input id="newCode" class="field" maxlength="40" placeholder="Digite o código (Ex: V-102)">
+<input id="newCode" class="field" maxlength="40" placeholder="Digite o código do veículo (Ex: V-102)">
 <label style="margin-top:10px">Roteiro / Linha (Opcional)</label>
-<input id="newRoute" class="field" maxlength="60" placeholder="Digite a linha atual (Ex: Linha 01)">
+<input id="newRoute" class="field" maxlength="60" placeholder="Digite a linha/roteiro atual (Ex: Linha 01 - Centro)">
 <button class="btn" style="margin-top:14px" onclick="addVehicle()">＋ Cadastrar veículo</button>
 </div>
 <input id="searchCad" class="search" placeholder="🔎 Buscar por código ou roteiro..." oninput="renderCad()">
@@ -201,14 +179,15 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
 <div class="card">
   <h3>⚙️ Gerenciamento e Limpeza</h3>
+  <p class="muted">Opções avançadas para reiniciar o histórico de atividades.</p>
   <label style="margin-top:15px">Resetar histórico de um veículo específico</label>
   <div style="display:flex;gap:10px;flex-wrap:wrap">
     <select id="resetSingleVeic" class="field" style="flex:1;min-width:200px"></select>
-    <button class="btn danger small" style="width:auto" onclick="resetSingleVehicleHistory()">Resetar veículo</button>
+    <button class="btn danger small" style="width:auto" onclick="resetSingleVehicleHistory()">Resetar este veículo</button>
   </div>
   <hr style="border:0;border-top:1px solid var(--bd);margin:20px 0">
   <label>Resetar histórico geral de TUDO</label>
-  <button class="btn danger" onclick="resetAllHistory()">🗑️ Resetar Histórico Geral</button>
+  <button class="btn danger" onclick="resetAllHistory()">🗑️ Resetar Histórico de Todos os Veículos</button>
 </div>
 </section>
 </main>
@@ -216,9 +195,8 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <nav class="nav">
 <button id="nav-painel" class="active" onclick="show('painel')"><span class="ico">⌂</span>Painel</button>
 <button id="nav-linhas" onclick="show('linhas')"><span class="ico">🚌</span>Linhas</button>
-<button id="nav-motoristas" onclick="show('motoristas')"><span class="ico">👨‍✈️</span>Equipe</button>
 <button id="nav-pernoite" onclick="show('pernoite')"><span class="ico">🏠</span>Pernoite</button>
-<button id="nav-cadastro" onclick="show('cadastro')"><span class="ico">🚗</span>Veículos</button>
+<button id="nav-cadastro" onclick="show('cadastro')"><span class="ico">🚗</span>Cadastro</button>
 <button id="nav-exportacao" onclick="show('exportacao')"><span class="ico">▣</span>Export</button>
 </nav>
 </div>
@@ -271,7 +249,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 </div>
 
 <script>
-const KEY='atlantico_controle_veiculos_v6';
+const KEY='atlantico_controle_veiculos_v5';
 const PERIODS={'Checagem Diária Validador':'SHIFT_8AM','Checagem de Cartão SD':259200000,'Checagem de Câmera':604800000};
 const ACTS=Object.keys(PERIODS);
 
@@ -279,19 +257,18 @@ function loadDB(){
   try{
     let data = JSON.parse(localStorage.getItem(KEY));
     if(!data) {
-      let old = JSON.parse(localStorage.getItem('atlantico_controle_veiculos_v5')) || JSON.parse(localStorage.getItem('att-controle-frota-v2'));
+      let old = JSON.parse(localStorage.getItem('att-controle-frota-v2'));
       if(old) data = old;
     }
     if(!data || typeof data !== 'object') data = {};
     if(!Array.isArray(data.veiculos)) data.veiculos = [];
-    if(!Array.isArray(data.motoristas)) data.motoristas = [];
     if(!Array.isArray(data.historico)) data.historico = [];
     if(!data.escalas || typeof data.escalas !== 'object') data.escalas = {};
     if(!data.linhasCustom || typeof data.linhasCustom !== 'object') data.linhasCustom = {};
     if(!data.pernoite || typeof data.pernoite !== 'object') data.pernoite = {};
     return data;
   }catch(e){
-    return {veiculos:[], motoristas:[], historico:[], escalas:{}, linhasCustom:{}, pernoite:{}};
+    return {veiculos:[], historico:[], escalas:{}, linhasCustom:{}, pernoite:{}};
   }
 }
 
@@ -326,7 +303,6 @@ function show(p, id){
 
   if(p==='painel') renderPanel();
   if(p==='linhas') renderLinhas();
-  if(p==='motoristas') renderMotoristas();
   if(p==='pernoite') renderPernoite();
   if(p==='cadastro') renderCad();
   if(p==='exportacao') renderFilters();
@@ -400,42 +376,9 @@ function getLineSchedule(code){
   return def ? def.sched[t] : { ida: "06:00", volta: "18:00" };
 }
 
-function renderMotoristas(){
-  let driverList = document.getElementById('driverList');
-  if(driverList){
-    driverList.innerHTML = db.motoristas.length ? db.motoristas.map(d => `
-      <div class="vehicle">
-        <div class="main">
-          <div class="code">👨‍✈️ ${esc(d.name)}</div>
-        </div>
-        <button class="btn danger small" onclick="removeDriver('${d.id}')">🗑️ Excluir</button>
-      </div>
-    `).join('') : '<div class="empty">Nenhum motorista cadastrado.</div>';
-  }
-}
-
-function addDriver(){
-  let name = document.getElementById('newDriverName').value.trim();
-  if(!name) return alert('Digite o nome do motorista.');
-  db.motoristas.push({ id: crypto.randomUUID(), name: name });
-  save();
-  document.getElementById('newDriverName').value = '';
-  renderMotoristas();
-  toast('Motorista cadastrado!');
-}
-
-function removeDriver(id){
-  if(confirm('Excluir motorista?')){
-    db.motoristas = db.motoristas.filter(d => d.id !== id);
-    save();
-    renderMotoristas();
-    toast('Motorista excluído.');
-  }
-}
-
 function renderLinhas(){
   document.querySelectorAll('.day-btn').forEach(b => {
-    if(b.getAttribute('onclick') && b.getAttribute('onclick'].includes(`'${currentDay}'`)) b.classList.add('active');
+    if(b.getAttribute('onclick') && b.getAttribute('onclick').includes(`'${currentDay}'`)) b.classList.add('active');
     else b.classList.remove('active');
   });
 
@@ -451,8 +394,6 @@ function renderLinhas(){
   if(!db.escalas) db.escalas = {};
   if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
 
-  checkLiveAlerts();
-
   let grid = document.getElementById('linesGrid');
   if(grid){
     let horaAtual = now().getHours() * 60 + now().getMinutes();
@@ -462,16 +403,14 @@ function renderLinhas(){
       let dayEscala = db.escalas[currentDay][l.code];
 
       if(l.cruzado){
-        if(!dayEscala || typeof dayEscala !== 'object' || Array.isArray(dayEscala)) {
-          dayEscala = { ida: { id: null, manha: '', tarde: '' }, volta: { id: null, manha: '', tarde: '' } };
-        }
+        if(Array.isArray(dayEscala)) dayEscala = { ida: dayEscala[0] || null, volta: dayEscala[1] || null };
         
         let idaList = (sched.ida || '').split(',').map(s=>s.trim()).filter(Boolean);
-        let busA = dayEscala.ida || { id: null, manha: '', tarde: '' };
-        let busB = dayEscala.volta || { id: null, manha: '', tarde: '' };
+        let idaId = dayEscala && typeof dayEscala === 'object' ? dayEscala.ida : null;
+        let voltaId = dayEscala && typeof dayEscala === 'object' ? dayEscala.volta : null;
 
-        let vA = db.veiculos.find(x => x.id === busA.id);
-        let vB = db.veiculos.find(x => x.id === busB.id);
+        let vA = db.veiculos.find(x => x.id === idaId);
+        let vB = db.veiculos.find(x => x.id === voltaId);
 
         let codeA = vA ? vA.codigo : 'Carro A (Pendente)';
         let codeB = vB ? vB.codigo : 'Carro B (Pendente)';
@@ -479,6 +418,7 @@ function renderLinhas(){
         let rowsHtml = idaList.map((hIda, idx) => {
           let [h, m] = hIda.split(':').map(Number);
           let tripMins = (h || 0) * 60 + (m || 0);
+          
           let nextTripMins = 9999;
           if(idaList[idx + 1]) {
             let [nh, nm] = idaList[idx + 1].split(':').map(Number);
@@ -498,85 +438,35 @@ function renderLinhas(){
           </div>`;
         }).join('');
 
-        let driverOpts = '<option value="">-- Selecione Motorista --</option>' + db.motoristas.map(d => `<option value="${esc(d.name)}">${esc(d.name)}</option>`).join('');
-
         return `<div class="line-card">
           <div class="line-header">
             <span>📍 ${l.nome}</span>
             <button class="btn secondary small" style="padding:3px 7px;font-size:11px" onclick="openEditSchedModal('${l.code}','${esc(l.nome)}')">⚙️ Editar</button>
           </div>
-          <div class="line-code">Código: ${l.code} (${currentDay.toUpperCase()}) • Cruzada</div>
+          <div class="line-code">Código: ${l.code} (${currentDay.toUpperCase()}) • <span style="color:var(--p)">Cruzamento Automático</span></div>
           
           <div style="margin:8px 0">${rowsHtml}</div>
 
-          <div class="sub-alloc-title">1. Carro A (Inicial Sede):</div>
+          <div class="sub-alloc-title">1. Carro A (Inicia na Sede):</div>
           <div class="assigned-chip">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <span>🚌 ${vA ? esc(vA.codigo) : 'Nenhum'}</span>
-              ${vA ? `<button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeCruzadoBus('${l.code}','ida')">✕</button>` : ''}
-            </div>
-            ${vA ? `
-              <div style="margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
-                <select class="field" style="padding:6px;font-size:11px" onchange="updateDriver('${l.code}','ida','manha',this.value)">
-                  <option value="">🌅 Manhã: [Selecione]</option>
-                  ${db.motoristas.map(d=>`<option value="${esc(d.name)}" ${busA.manha===d.name?'selected':''}>${esc(d.name)}</option>`).join('')}
-                </select>
-                <select class="field" style="padding:6px;font-size:11px" onchange="updateDriver('${l.code}','ida','tarde',this.value)">
-                  <option value="">🌇 Tarde: [Selecione]</option>
-                  ${db.motoristas.map(d=>`<option value="${esc(d.name)}" ${busA.tarde===d.name?'selected':''}>${esc(d.name)}</option>`).join('')}
-                </select>
-              </div>
-            ` : ''}
+            <span>🚌 ${vA ? esc(vA.codigo) : 'Nenhum'}</span>
+            ${vA ? `<button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeCruzadoBus('${l.code}','ida')">✕</button>` : ''}
           </div>
-          <button class="btn secondary small" style="width:100%;margin-top:4px;font-size:11px" onclick="allocCruzadoBus('${l.code}','ida')">+ Alocar Carro A</button>
+          <button class="btn secondary small" style="width:100%;margin-top:4px;font-size:11px" onclick="allocCruzadoBus('${l.code}','ida')">+ Alocar p/ Carro A (Inicial Sede)</button>
 
-          <div class="sub-alloc-title" style="margin-top:8px">2. Carro B (Inicial Destino):</div>
+          <div class="sub-alloc-title" style="margin-top:8px">2. Carro B (Inicia no Destino):</div>
           <div class="assigned-chip">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <span>🚌 ${vB ? esc(vB.codigo) : 'Nenhum'}</span>
-              ${vB ? `<button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeCruzadoBus('${l.code}','volta')">✕</button>` : ''}
-            </div>
-            ${vB ? `
-              <div style="margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
-                <select class="field" style="padding:6px;font-size:11px" onchange="updateDriver('${l.code}','volta','manha',this.value)">
-                  <option value="">🌅 Manhã: [Selecione]</option>
-                  ${db.motoristas.map(d=>`<option value="${esc(d.name)}" ${busB.manha===d.name?'selected':''}>${esc(d.name)}</option>`).join('')}
-                </select>
-                <select class="field" style="padding:6px;font-size:11px" onchange="updateDriver('${l.code}','volta','tarde',this.value)">
-                  <option value="">🌇 Tarde: [Selecione]</option>
-                  ${db.motoristas.map(d=>`<option value="${esc(d.name)}" ${busB.tarde===d.name?'selected':''}>${esc(d.name)}</option>`).join('')}
-                </select>
-              </div>
-            ` : ''}
+            <span>🚌 ${vB ? esc(vB.codigo) : 'Nenhum'}</span>
+            ${vB ? `<button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeCruzadoBus('${l.code}','volta')">✕</button>` : ''}
           </div>
-          <button class="btn secondary small" style="width:100%;margin-top:4px;font-size:11px" onclick="allocCruzadoBus('${l.code}','volta')">+ Alocar Carro B</button>
+          <button class="btn secondary small" style="width:100%;margin-top:4px;font-size:11px" onclick="allocCruzadoBus('${l.code}','volta')">+ Alocar p/ Carro B (Inicial Destino)</button>
         </div>`;
       } else {
-        if(!Array.isArray(dayEscala)) dayEscala = [];
-        
-        let chipsHtml = dayEscala.map(item => {
-          let vObj = db.veiculos.find(x => x.id === (item.id || item));
+        let allocatedIds = Array.isArray(dayEscala) ? dayEscala : [];
+        let chipsHtml = allocatedIds.map(id => {
+          let vObj = db.veiculos.find(x => x.id === id);
           let vCode = vObj ? vObj.codigo : 'Desconhecido';
-          let manha = item.manha || '';
-          let tarde = item.tarde || '';
-          let busId = item.id || item;
-
-          return `<div class="assigned-chip">
-            <div style="display:flex;justify-content:space-between;align-items:center;font-weight:bold">
-              <span>🚌 ${esc(vCode)}</span>
-              <button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeBusFromLine('${l.code}','${busId}')">✕</button>
-            </div>
-            <div style="margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
-              <select class="field" style="padding:6px;font-size:11px" onchange="updateSimpleDriver('${l.code}','${busId}','manha',this.value)">
-                <option value="">🌅 Manhã: [Selecione]</option>
-                ${db.motoristas.map(d=>`<option value="${esc(d.name)}" ${manha===d.name?'selected':''}>${esc(d.name)}</option>`).join('')}
-              </select>
-              <select class="field" style="padding:6px;font-size:11px" onchange="updateSimpleDriver('${l.code}','${busId}','tarde',this.value)">
-                <option value="">🌇 Tarde: [Selecione]</option>
-                ${db.motoristas.map(d=>`<option value="${esc(d.name)}" ${tarde===d.name?'selected':''}>${esc(d.name)}</option>`).join('')}
-              </select>
-            </div>
-          </div>`;
+          return `<div class="assigned-chip"><span>🚌 ${esc(vCode)}</span><button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeBusFromLine('${l.code}','${id}')">✕</button></div>`;
         }).join('');
 
         return `<div class="line-card">
@@ -596,143 +486,6 @@ function renderLinhas(){
         </div>`;
       }
     }).join('');
-  }
-}
-
-function checkLiveAlerts(){
-  let alertBox = document.getElementById('liveAlertBox');
-  let alertText = document.getElementById('liveAlertText');
-  if(!alertBox || !alertText) return;
-
-  let horaAtual = now().getHours() * 60 + now().getMinutes();
-  let nextTrip = null;
-  let minDiff = 99999;
-
-  DEFAULT_LINHAS.forEach(l => {
-    let sched = getLineSchedule(l.code);
-    let idas = (sched.ida || '').split(',').map(s=>s.trim()).filter(Boolean);
-    idas.forEach(h => {
-      let [hh, mm] = h.split(':').map(Number);
-      let mins = hh * 60 + mm;
-      let diff = mins - horaAtual;
-      if(diff >= 0 && diff < minDiff){
-        minDiff = diff;
-        nextTrip = { nome: l.nome, tipo: 'IDA', hora: h, mins: diff };
-      }
-    });
-
-    let voltas = (sched.volta || '').split(',').map(s=>s.trim()).filter(Boolean);
-    voltas.forEach(h => {
-      let [hh, mm] = h.split(':').map(Number);
-      let mins = hh * 60 + mm;
-      let diff = mins - horaAtual;
-      if(diff >= 0 && diff < minDiff){
-        minDiff = diff;
-        nextTrip = { nome: l.nome, tipo: 'VOLTA', hora: h, mins: diff };
-      }
-    });
-  });
-
-  if(nextTrip && minDiff <= 60){
-    alertBox.style.display = 'block';
-    alertText.innerHTML = `Próxima partida: <b>${nextTrip.nome} (${nextTrip.tipo})</b> às <b>${nextTrip.hora}</b> (Faltam ~${nextTrip.mins} min).`;
-    
-    if(minDiff === 10 || minDiff === 5){
-      sendBrowserNotification("Atlântico Alerta de Horário", `A linha ${nextTrip.nome} (${nextTrip.tipo}) sai às ${nextTrip.hora}!`);
-    }
-  } else {
-    alertBox.style.display = 'none';
-  }
-}
-
-function requestNotificationPermission(){
-  if(!('Notification' in window)) return alert('Este navegador não suporta notificações.');
-  Notification.requestPermission().then(p => {
-    if(p === 'granted') toast('Notificações ativadas com sucesso!');
-    else alert('Permissão de notificações negada.');
-  });
-}
-
-function sendBrowserNotification(title, body){
-  if(Notification.permission === 'granted'){
-    new Notification(title, { body: body, icon: 'logo-atlantico.png' });
-  }
-}
-
-function updateSimpleDriver(lineCode, busId, turno, val){
-  if(!db.escalas || !db.escalas[currentDay] || !db.escalas[currentDay][lineCode]) return;
-  let arr = db.escalas[currentDay][lineCode];
-  let item = arr.find(x => (x.id === busId || x === busId));
-  if(item){
-    if(typeof item !== 'object') {
-      let idx = arr.indexOf(item);
-      arr[idx] = { id: busId, manha: '', tarde: '' };
-      item = arr[idx];
-    }
-    item[turno] = val;
-    save();
-    toast('Motorista atualizado!');
-  }
-}
-
-function updateDriver(lineCode, sentido, turno, val){
-  if(!db.escalas || !db.escalas[currentDay] || !db.escalas[currentDay][lineCode]) return;
-  let obj = db.escalas[currentDay][lineCode];
-  if(obj && obj[sentido]){
-    obj[sentido][turno] = val;
-    save();
-    toast('Motorista atualizado!');
-  }
-}
-
-function allocBusToLine(lineCode){
-  let selectBus = document.getElementById('selectBusToAlloc');
-  let busId = selectBus ? selectBus.value : '';
-  if(!busId) return alert('Selecione um veículo na lista do topo primeiro.');
-  if(!db.escalas) db.escalas = {};
-  if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
-
-  if(!Array.isArray(db.escalas[currentDay][lineCode])) db.escalas[currentDay][lineCode] = [];
-  if(!db.escalas[currentDay][lineCode].some(x => (x.id === busId || x === busId))){
-    db.escalas[currentDay][lineCode].push({ id: busId, manha: '', tarde: '' });
-  }
-  save();
-  renderLinhas();
-  toast('Veículo alocado!');
-}
-
-function allocCruzadoBus(lineCode, sentido){
-  let selectBus = document.getElementById('selectBusToAlloc');
-  let busId = selectBus ? selectBus.value : '';
-  if(!busId) return alert('Selecione um veículo na lista do topo primeiro.');
-  if(!db.escalas) db.escalas = {};
-  if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
-
-  if(!db.escalas[currentDay][lineCode] || typeof db.escalas[currentDay][lineCode] !== 'object' || Array.isArray(db.escalas[currentDay][lineCode])){
-    db.escalas[currentDay][lineCode] = { ida: { id: null, manha: '', tarde: '' }, volta: { id: null, manha: '', tarde: '' } };
-  }
-
-  db.escalas[currentDay][lineCode][sentido] = { id: busId, manha: '', tarde: '' };
-  save();
-  renderLinhas();
-  toast('Veículo alocado!');
-}
-
-function removeBusFromLine(lineCode, busId){
-  if(db.escalas && db.escalas[currentDay] && Array.isArray(db.escalas[currentDay][lineCode])){
-    db.escalas[currentDay][lineCode] = db.escalas[currentDay][lineCode].filter(x => (x.id !== busId && x !== busId));
-    save();
-    renderLinhas();
-    toast('Removido.');
-  }
-}
-
-function removeCruzadoBus(lineCode, sentido){
-  if(db.escalas && db.escalas[currentDay] && db.escalas[currentDay][lineCode] && typeof db.escalas[currentDay][lineCode] === 'object'){
-    db.escalas[currentDay][lineCode][sentido] = { id: null, manha: '', tarde: '' };
-    save();
-    renderLinhas();
-    toast('Removido.');
   }
 }
 
@@ -763,10 +516,8 @@ function renderPernoite(){
   if(listDentro){
     listDentro.innerHTML = dentroArr.length ? dentroArr.map(v => `
       <div class="assigned-chip" style="border-color:var(--g)">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span>🚌 <b>${esc(v.codigo)}</b> ${v.roteiro ? '• '+esc(v.roteiro) : ''}</span>
-          <button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="mudarPernoite('${v.id}','fora')">Fora ➔</button>
-        </div>
+        <span>🚌 ${esc(v.codigo)} ${v.roteiro ? '• '+esc(v.roteiro) : ''}</span>
+        <button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="mudarPernoite('${v.id}','fora')">Mudar p/ Fora ➔</button>
       </div>
     `).join('') : '<div class="empty">Nenhum veículo registrado.</div>';
   }
@@ -774,10 +525,8 @@ function renderPernoite(){
   if(listFora){
     listFora.innerHTML = foraArr.length ? foraArr.map(v => `
       <div class="assigned-chip" style="border-color:var(--o)">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span>🚌 <b>${esc(v.codigo)}</b> ${v.roteiro ? '• '+esc(v.roteiro) : ''}</span>
-          <button class="btn secondary small" style="padding:2px 6px;font-size:10px" onclick="mudarPernoite('${v.id}','dentro')">← Garagem</button>
-        </div>
+        <span>🚌 ${esc(v.codigo)} ${v.roteiro ? '• '+esc(v.roteiro) : ''}</span>
+        <button class="btn secondary small" style="padding:2px 6px;font-size:10px" onclick="mudarPernoite('${v.id}','dentro')">← Garagem</button>
       </div>
     `).join('') : '<div class="empty">Nenhum veículo fora.</div>';
   }
@@ -849,6 +598,63 @@ function saveLineSchedUpdate(){
   toast('Horários atualizados!');
 }
 
+function allocBusToLine(lineCode){
+  let selectBus = document.getElementById('selectBusToAlloc');
+  let busId = selectBus ? selectBus.value : '';
+  if(!busId) return alert('Selecione um veículo na lista do topo primeiro.');
+  if(!db.escalas) db.escalas = {};
+  if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
+
+  for(let lCode in db.escalas[currentDay]){
+    if(Array.isArray(db.escalas[currentDay][lCode])){
+      db.escalas[currentDay][lCode] = db.escalas[currentDay][lCode].filter(id => id !== busId);
+    }
+  }
+
+  if(!Array.isArray(db.escalas[currentDay][lineCode])) db.escalas[currentDay][lineCode] = [];
+  if(!db.escalas[currentDay][lineCode].includes(busId)){
+    db.escalas[currentDay][lineCode].push(busId);
+  }
+  save();
+  renderLinhas();
+  toast('Veículo alocado!');
+}
+
+function allocCruzadoBus(lineCode, sentido){
+  let selectBus = document.getElementById('selectBusToAlloc');
+  let busId = selectBus ? selectBus.value : '';
+  if(!busId) return alert('Selecione um veículo na lista do topo primeiro.');
+  if(!db.escalas) db.escalas = {};
+  if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
+
+  if(!db.escalas[currentDay][lineCode] || typeof db.escalas[currentDay][lineCode] !== 'object' || Array.isArray(db.escalas[currentDay][lineCode])){
+    db.escalas[currentDay][lineCode] = { ida: null, volta: null };
+  }
+
+  db.escalas[currentDay][lineCode][sentido] = busId;
+  save();
+  renderLinhas();
+  toast('Veículo alocado!');
+}
+
+function removeBusFromLine(lineCode, busId){
+  if(db.escalas && db.escalas[currentDay] && Array.isArray(db.escalas[currentDay][lineCode])){
+    db.escalas[currentDay][lineCode] = db.escalas[currentDay][lineCode].filter(id => id !== busId);
+    save();
+    renderLinhas();
+    toast('Removido.');
+  }
+}
+
+function removeCruzadoBus(lineCode, sentido){
+  if(db.escalas && db.escalas[currentDay] && db.escalas[currentDay][lineCode] && typeof db.escalas[currentDay][lineCode] === 'object'){
+    db.escalas[currentDay][lineCode][sentido] = null;
+    save();
+    renderLinhas();
+    toast('Removido.');
+  }
+}
+
 function resetEscalaDia(){
   if(confirm('Limpar alocações de ' + currentDay.toUpperCase() + '?')){
     if(db.escalas[currentDay]){ db.escalas[currentDay] = {}; save(); renderLinhas(); toast('Resetado.'); }
@@ -863,29 +669,13 @@ function exportWhatsAppEscala(){
     let dayEscala = db.escalas && db.escalas[currentDay] && db.escalas[currentDay][l.code];
     
     if(l.cruzado && dayEscala && typeof dayEscala === 'object'){
-      let busA = dayEscala.ida || { id: null, manha: '', tarde: '' };
-      let busB = dayEscala.volta || { id: null, manha: '', tarde: '' };
-      let vA = db.veiculos.find(x => x.id === busA.id);
-      let vB = db.veiculos.find(x => x.id === busB.id);
-
-      texto += `📍 *${l.nome}* (Cruzada)\n`;
-      texto += `   • *Carro A:* ${vA ? vA.codigo : 'Nenhum'} (Manhã: ${busA.manha||'-'} / Tarde: ${busA.tarde||'-'})\n`;
-      texto += `   • *Carro B:* ${vB ? vB.codigo : 'Nenhum'} (Manhã: ${busB.manha||'-'} / Tarde: ${busB.tarde||'-'})\n`;
-      texto += `   • *Horários:* ${sched.ida}\n\n`;
+      let vA = db.veiculos.find(x => x.id === dayEscala.ida);
+      let vB = db.veiculos.find(x => x.id === dayEscala.volta);
+      texto += `📍 *${l.nome}* (Cruzada)\n   *Carro A (Inicial Sede):* ${vA ? vA.codigo : 'Nenhum'}\n   *Carro B (Inicial Destino):* ${vB ? vB.codigo : 'Nenhum'}\n   *Horários:* ${sched.ida}\n\n`;
     } else {
-      let arr = Array.isArray(dayEscala) ? dayEscala : [];
-      texto += `📍 *${l.nome}*\n`;
-      if(arr.length){
-        arr.forEach(item => {
-          let v = db.veiculos.find(x => x.id === (item.id || item));
-          if(v){
-            texto += `   • *Veículo:* ${v.codigo} | 🌅 Manhã: ${item.manha||'-'} | 🌇 Tarde: ${item.tarde||'-'}\n`;
-          }
-        });
-      } else {
-        texto += `   • *Frota:* Nenhum alocado\n`;
-      }
-      texto += `   • *IDA:* ${sched.ida}\n   • *VOLTA:* ${sched.volta}\n\n`;
+      let ids = Array.isArray(dayEscala) ? dayEscala : [];
+      let codigos = ids.map(id => { let v = db.veiculos.find(x => x.id === id); return v ? v.codigo : ''; }).filter(Boolean);
+      texto += `📍 *${l.nome}*\n   *Frota:* ${codigos.length ? codigos.join(', ') : 'Nenhum'}\n   *IDA:* ${sched.ida} | *VOLTA:* ${sched.volta}\n\n`;
     }
   });
   navigator.clipboard.writeText(texto).then(() => toast('Escala copiada para o WhatsApp!'));
@@ -1038,21 +828,10 @@ setInterval(()=>{
 window.onload = function(){
   renderPanel();
   renderLinhas();
-  renderMotoristas();
   renderPernoite();
   renderCad();
   renderFilters();
 };
-</script>
-
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('data:text/javascript;charset=utf-8,' + encodeURIComponent(`
-      self.addEventListener('fetch', (e) => {});
-    `)).catch(() => {});
-  });
-}
 </script>
 </body>
 </html>
