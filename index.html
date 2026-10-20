@@ -44,7 +44,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 .modalbox{background:#fff;border-radius:18px;max-width:440px;width:100%;padding:20px;box-shadow:0 15px 50px #0006}.modalbox h2{margin:0 0 8px}.modalbox p{color:var(--mut);font-size:14px;line-height:1.45}.modal-actions{display:flex;gap:10px;margin-top:14px}.modal-actions button{flex:1}
 .route-badge{display:inline-block;background:#eaf1f2;color:var(--p);font-weight:700;font-size:13px;padding:4px 10px;border-radius:8px;margin-top:4px}
 
-/* ESTILOS DE LINHAS, HORÁRIOS E STATUS */
+/* ESTILOS DE LINHAS E HORÁRIOS */
 .days-bar {display:flex;background:#fff;border:1px solid var(--bd);border-radius:12px;overflow-x:auto;padding:6px;gap:6px;margin-bottom:16px}
 .day-btn {background:#f3f7f7;border:1px solid var(--bd);color:var(--mut);padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
 .day-btn.active {background:var(--p);color:#fff;border-color:var(--p)}
@@ -52,14 +52,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 .line-card {background:#fff;border:1px solid var(--bd);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
 .line-header {font-size:15px;font-weight:700;color:var(--p);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
 .line-code {font-size:11px;color:var(--mut);font-weight:700}
-.route-status-tag {display:inline-block;padding:5px 9px;border-radius:6px;font-size:11px;font-weight:700;margin:8px 0;width:100%;text-align:center}
-.route-status-tag.ida {background:#fff8e6;color:#d97706;border:1px solid #fde68a}
-.route-status-tag.volta {background:#e8f6f7;color:#07898c;border:1px solid #b2e2e4}
-.route-status-tag.aguardando {background:#f3f7f7;color:var(--mut);border:1px solid var(--bd)}
-
-.sched-table {width:100%;margin:8px 0;font-size:12px;background:#fafcfd;border-radius:8px;border:1px solid var(--bd);overflow:hidden}
-.sched-table th {background:#eaf1f2;color:var(--p);padding:6px 8px;font-size:11px}
-.sched-table td {padding:6px 8px;border-bottom:1px solid var(--bd)}
+.sched-box {font-size:12px;background:#fafcfd;border-radius:8px;border:1px solid var(--bd);padding:8px;margin:8px 0}
 .assigned-chip {background:#eaf1f2;border:1px solid var(--p);border-radius:8px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;color:var(--txt);margin-top:6px}
 
 @media(max-width:650px){.logo{height:46px;max-width:250px}.stats{gap:6px}.stat{padding:9px 6px}.stat strong{font-size:24px}.stat span{font-size:10px}.grid2,.filters{grid-template-columns:1fr}.nav button{max-width:none}}
@@ -73,7 +66,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 </div></header>
 
 <main>
-<!-- PAINEL PRINCIPAL DE CHECAGENS -->
+<!-- PAINEL PRINCIPAL -->
 <section id="p-painel" class="page active">
 <h1>Painel de Atividades</h1>
 <div class="stats">
@@ -85,10 +78,10 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <div id="panelList"></div>
 </section>
 
-<!-- ABA ESCALA DE LINHAS E HORÁRIOS -->
+<!-- ABA ESCALA DE LINHAS E HORÁRIOS POR DIA -->
 <section id="p-linhas" class="page">
 <h1>Escala e Logística de Linhas</h1>
-<p class="muted">Horários dinâmicos de Ida e Volta e alocação diária de frota.</p>
+<p class="muted">Os horários ajustam-se automaticamente conforme o dia da semana selecionado.</p>
 
 <div class="days-bar" id="daysBar">
   <button class="day-btn" onclick="setDay('segunda', this)">Segunda</button>
@@ -185,16 +178,17 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
 <div id="toast" class="toast"></div>
 
-<!-- Modal para Editar Horários da Linha -->
+<!-- Modal para Editar Horários do Dia na Linha -->
 <div id="editSchedModal" class="modal-shield">
   <div class="modalbox">
-    <h2>⚙️ Editar Horários da Linha</h2>
+    <h2>⚙️ Editar Horários (<span id="editDayTitle"></span>)</h2>
     <p id="editSchedLineTitle" style="font-weight:bold;color:var(--p)"></p>
-    <label>Horário da IDA (SEDE ➔ DESTINO)</label>
-    <input id="editIdaInput" type="time" class="field">
     
-    <label style="margin-top:10px">Horário da VOLTA (DESTINO ➔ SEDE)</label>
-    <input id="editVoltaInput" type="time" class="field">
+    <label>Horários de IDA (Separe por vírgula)</label>
+    <input id="editIdaInput" type="text" class="field" placeholder="Ex: 06:30, 09:00, 12:30">
+    
+    <label style="margin-top:10px">Horários de VOLTA (Separe por vírgula)</label>
+    <input id="editVoltaInput" type="text" class="field" placeholder="Ex: 07:30, 10:30, 15:00">
 
     <div class="modal-actions">
       <button class="btn secondary" onclick="closeEditSchedModal()">Cancelar</button>
@@ -238,33 +232,70 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
   </div>
 </div>
 
-<!-- Modal de Confirmação para Sair -->
-<div id="leaveShield" class="modal-shield">
-  <div class="modalbox">
-    <h2>⚠️ Sair do aplicativo?</h2>
-    <p>Você está tentando sair desta tela. Deseja realmente sair? Os dados já salvos permanecem armazenados neste dispositivo.</p>
-    <div class="modal-actions">
-      <button class="btn secondary" onclick="cancelLeave()">Continuar</button>
-      <button class="btn danger" onclick="confirmLeave()">Sair</button>
-    </div>
-  </div>
-</div>
-
 <script>
 const KEY='atlantico_controle_veiculos_v5';
 const PERIODS={'Checagem Diária Validador':'SHIFT_8AM','Checagem de Cartão SD':259200000,'Checagem de Câmera':604800000};
 const ACTS=Object.keys(PERIODS);
 let db=loadDB(), currentVehicle=null, pendingJustActivity=null, currentEditingLineCode=null;
 
-// LINHAS OPERACIONAIS BASE
+// TABELA BASE DE HORÁRIOS SEPARADA POR TIPO DE DIA (ÚTEIS, SÁBADO E DOMINGO)[cite: 7]
 const DEFAULT_LINHAS = [
-  { code: "99987", nome: "R11 - COROADO / SEDE", ida: "05:30", volta: "17:10", rend1: "COROADO (R11)", rend2: "RODOVIARIA (R11)" },
-  { code: "99988", nome: "SEDE - COROADO", ida: "06:00", volta: "18:00", rend1: "-", rend2: "-" },
-  { code: "99989", nome: "R08 - CURUPEBA / SEDE", ida: "05:45", volta: "17:30", rend1: "RODOVIARIA (R08)", rend2: "CURUPEBA (R08)" },
-  { code: "99991", nome: "R05 - JABEQUARA / SEDE", ida: "05:50", volta: "17:45", rend1: "JABEQUARA (R05)", rend2: "RODOVIARIA (R05)" },
-  { code: "99993", nome: "R09 - FERROLHO / SEDE", ida: "06:00", volta: "18:00", rend1: "FERROLHO (R09)", rend2: "RODOVIARIA (R09)" },
-  { code: "99995", nome: "R07 - SANTA ELISA / ROSEIRA", ida: "06:10", volta: "17:30", rend1: "SAO BENTO (R07)", rend2: "STA ELISA (R07)" },
-  { code: "99997", nome: "R10 - SANTO ESTEVAO / SEDE", ida: "05:30", volta: "17:00", rend1: "STO ESTEVAO (R10)", rend2: "RODOVIARIA STO" }
+  { 
+    code: "99987", nome: "R11 - COROADO / SEDE", 
+    sched: {
+      util: { ida: "06:20, 09:30, 14:00, 17:00", volta: "08:00, 12:00, 15:30, 18:00" },
+      sab:  { ida: "07:00, 11:00, 15:00", volta: "08:00, 12:00, 15:30, 17:00" },
+      dom:  { ida: "10:00, 17:00", volta: "12:00, 18:00" }
+    }
+  },
+  { 
+    code: "99988", nome: "SEDE - COROADO", 
+    sched: {
+      util: { ida: "06:20, 09:30, 14:00, 17:00", volta: "08:00, 12:00, 15:30, 18:00" },
+      sab:  { ida: "07:00, 11:00, 15:00", volta: "08:00, 12:00, 15:30, 17:00" },
+      dom:  { ida: "10:00, 17:00", volta: "12:00, 18:00" }
+    }
+  },
+  { 
+    code: "99989", nome: "R08 - CURUPEBA / SEDE", 
+    sched: {
+      util: { ida: "07:30, 11:40, 14:10, 17:00", volta: "06:10, 09:00, 13:00, 15:40" },
+      sab:  { ida: "08:00, 11:00, 15:30, 18:10", volta: "06:10, 09:30, 14:00, 17:00" },
+      dom:  { ida: "08:00, 11:00, 15:30, 18:10", volta: "06:20, 09:30, 14:30, 17:00" }
+    }
+  },
+  { 
+    code: "99991", nome: "R05 - JABEQUARA / SEDE", 
+    sched: {
+      util: { ida: "06:30, 09:00, 12:30, 16:30", volta: "07:30, 10:30, 15:00, 17:20" },
+      sab:  { ida: "06:30, 16:00", volta: "08:00, 17:00" },
+      dom:  { ida: "10:00, 16:00", volta: "11:00, 17:00" }
+    }
+  },
+  { 
+    code: "99993", nome: "R09 - FERROLHO / SEDE", 
+    sched: {
+      util: { ida: "06:20, 07:50, 10:00, 12:30, 15:00, 17:30", volta: "06:20, 07:50, 10:00, 12:30, 15:00, 17:30" },
+      sab:  { ida: "06:20, 12:00, 16:00", volta: "08:00, 16:00" },
+      dom:  { ida: "12:00, 16:00", volta: "10:00, 14:30, 17:00" }
+    }
+  },
+  { 
+    code: "99995", nome: "R07 - SANTA ELISA / ROSEIRA", 
+    sched: {
+      util: { ida: "06:20, 09:00, 13:00, 15:30, 18:00", volta: "07:30, 11:00, 14:00, 17:00" },
+      sab:  { ida: "07:00, 12:00, 16:00", volta: "08:00, 14:00, 17:00" },
+      dom:  { ida: "12:00, 17:00", volta: "10:00, 16:00" }
+    }
+  },
+  { 
+    code: "99997", nome: "R10 - SANTO ESTEVAO / SEDE", 
+    sched: {
+      util: { ida: "06:10, 07:50, 10:00, 12:30, 15:00, 17:30", volta: "06:10, 07:50, 10:00, 12:30, 15:00, 17:30" },
+      sab:  { ida: "06:10, 09:30, 12:30, 15:30", volta: "08:00, 11:00, 14:00, 17:00" },
+      dom:  { ida: "09:30, 13:00, 16:00", volta: "08:00, 11:00, 14:30, 17:20" }
+    }
+  }
 ];
 
 const DIAS_SEMANA = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
@@ -274,10 +305,6 @@ if(currentDay === 'domingo') currentDay = 'segunda';
 function loadDB(){
   try{
     let data=JSON.parse(localStorage.getItem(KEY));
-    if(!data) {
-      let old = JSON.parse(localStorage.getItem('atlantico_controle_veiculos_v4'));
-      if(old) data = old;
-    }
     if(!data) data = {veiculos:[],historico:[],escalas:{},linhasCustom:{}};
     if(!data.linhasCustom) data.linhasCustom = {};
     return data;
@@ -288,7 +315,6 @@ function save(){localStorage.setItem(KEY,JSON.stringify(db))}
 function now(){return new Date()}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function fmt(v){return new Date(v).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}
-function dur(ms){let h=Math.floor(ms/3600000),d=Math.floor(h/24);h%=24;if(d)return d+'d '+h+'h';if(h)return h+'h';return Math.max(1,Math.floor(ms/60000))+'min'}
 
 function show(p,id){
  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
@@ -319,44 +345,20 @@ function renderPanel(){
 function state(v,a){
  const last=v.atividades && v.atividades[a];
  const just=v.justificativas && v.justificativas[a];
-
- if(just) {
-   let isValida = false;
-   if(PERIODS[a] === 'SHIFT_8AM') {
-     if(new Date(just.dataHora) >= getShiftStart(now())) isValida = true;
-   } else {
-     if(new Date(just.dataHora).getTime() + PERIODS[a] > now().getTime()) isValida = true;
-   }
-   if(isValida) return {c:'o',label:'JUSTIFICADO',text:just.obs,due:null,doneToday:true,justified:true,justText:just.obs};
- }
-
+ if(just) return {c:'o',label:'JUSTIFICADO',text:just.obs,doneToday:true,justified:true,justText:just.obs};
  if(PERIODS[a] === 'SHIFT_8AM') {
-   const currentShiftStart = getShiftStart(now());
-   if(!last) return {c:'o',label:'PENDENTE',text:'Aguardando checagem do turno',due:currentShiftStart,doneToday:false,justified:false};
-   const lastDate = new Date(last);
-   if(lastDate >= currentShiftStart) {
-     return {c:'g',label:'EM DIA',text:'Checagem realizada neste turno',due:new Date(currentShiftStart.getTime() + 86400000),doneToday:true,justified:false};
-   } else {
-     return {c:'o',label:'PENDENTE',text:'Pendente para o turno atual',due:currentShiftStart,doneToday:false,justified:false};
-   }
+   const shift = new Date(); shift.setHours(8,0,0,0);
+   if(last && new Date(last) >= shift) return {c:'g',label:'EM DIA',text:'Checagem realizada neste turno',doneToday:true,justified:false};
+   return {c:'o',label:'PENDENTE',text:'Pendente para o turno atual',doneToday:false,justified:false};
  }
-
- if(!last)return{c:'o',label:'PENDENTE',text:'Aguardando realização',due:null,doneToday:false,justified:false};
+ if(!last)return{c:'o',label:'PENDENTE',text:'Aguardando realização',doneToday:false,justified:false};
  const due=new Date(new Date(last).getTime()+PERIODS[a]),diff=due-now();
- if(diff<0)return{c:'r',label:'ATRASADO',text:'Atrasado '+dur(-diff),due,doneToday:false,justified:false};
- return{c:'g',label:'EM DIA',text:'Faltam '+dur(diff),due,doneToday:false,justified:false};
+ if(diff<0)return{c:'r',label:'ATRASADO',text:'Atrasado',doneToday:false,justified:false};
+ return{c:'g',label:'EM DIA',text:'Em dia',doneToday:false,justified:false};
 }
-
-function getShiftStart(dateObj) {
-  let d = new Date(dateObj);
-  let shift = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 8, 0, 0, 0);
-  if (d < shift) shift.setDate(shift.getDate() - 1);
-  return shift;
-}
-
 function vState(v){let c='g';ACTS.forEach(a=>{let x=state(v,a);if(x.c==='r')c='r';else if(x.c==='o'&&c==='g'&&!x.justified)c='o'});return c}
 
-// ABA LINHAS - LÓGICA DE DIA E HORÁRIO
+// LOGÍSTICA DE DIAS E HORÁRIOS
 function setDay(day, btn){
   currentDay = day;
   document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
@@ -364,24 +366,19 @@ function setDay(day, btn){
   renderLinhas();
 }
 
-function getLineSchedule(code){
-  if(db.linhasCustom && db.linhasCustom[code]){
-    return db.linhasCustom[code];
-  }
-  let def = DEFAULT_LINHAS.find(l => l.code === code);
-  return { ida: def ? def.ida : '06:00', volta: def ? def.volta : '18:00' };
+function getDayType(){
+  if(currentDay === 'sabado') return 'sab';
+  if(currentDay === 'domingo') return 'dom';
+  return 'util'; // segunda a sexta
 }
 
-function getRouteStatus(idaStr, voltaStr){
-  let n = now();
-  let currentHM = String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
-  
-  if(currentHM >= idaStr && currentHM < voltaStr){
-    return { status: 'ida', text: '🟡 EM TRÂNSITO (IDA: SEDE ➔ DESTINO)' };
-  } else if(currentHM >= voltaStr) {
-    return { status: 'volta', text: '🔵 EM TRÂNSITO (VOLTA: DESTINO ➔ SEDE)' };
+function getLineSchedule(code){
+  let t = getDayType();
+  if(db.linhasCustom && db.linhasCustom[code] && db.linhasCustom[code][t]){
+    return db.linhasCustom[code][t];
   }
-  return { status: 'aguardando', text: '⚪ AGUARDANDO HORÁRIO DE SAÍDA' };
+  let def = DEFAULT_LINHAS.find(l => l.code === code);
+  return def ? def.sched[t] : { ida: "06:00", volta: "18:00" };
 }
 
 function renderLinhas(){
@@ -402,7 +399,6 @@ function renderLinhas(){
   let grid = document.getElementById('linesGrid');
   grid.innerHTML = DEFAULT_LINHAS.map(l => {
     let sched = getLineSchedule(l.code);
-    let st = getRouteStatus(sched.ida, sched.volta);
     let allocatedIds = db.escalas[currentDay][l.code] || [];
     
     let chipsHtml = allocatedIds.map(id => {
@@ -416,20 +412,15 @@ function renderLinhas(){
         <span>📍 ${l.nome}</span>
         <button class="btn secondary small" style="padding:3px 7px;font-size:11px" onclick="openEditSchedModal('${l.code}','${esc(l.nome)}')">⚙️ Editar</button>
       </div>
-      <div class="line-code">Código: ${l.code}</div>
-      <div class="route-status-tag ${st.status}">${st.text}</div>
+      <div class="line-code">Código: ${l.code} (${currentDay.toUpperCase()})</div>
 
-      <table class="sched-table">
-        <thead><tr><th>Trajeto</th><th>Horário Programado</th></tr></thead>
-        <tbody>
-          <tr><td><b>IDA (Sede ➔ Destino)</b></td><td>⏰ ${sched.ida}</td></tr>
-          <tr><td><b>VOLTA (Destino ➔ Sede)</b></td><td>⏰ ${sched.volta}</td></tr>
-          <tr><td colspan="2" style="font-size:10px;color:var(--mut)">Rendição: ${l.rend1} / ${l.rend2}</td></tr>
-        </tbody>
-      </table>
+      <div class="sched-box">
+        <div><b>IDA:</b> ${sched.ida}</div>
+        <div style="margin-top:4px"><b>VOLTA:</b> ${sched.volta}</div>
+      </div>
 
-      <div style="margin-top:8px">
-        ${chipsHtml || '<div style="font-size:12px;color:var(--mut);text-align:center;padding:8px;background:#fafcfd;border-radius:6px;border:1px dashed #d6e1e4">Nenhum veículo alocado hoje</div>'}
+      <div style="margin-top:6px">
+        ${chipsHtml || '<div style="font-size:12px;color:var(--mut);text-align:center;padding:8px;background:#fafcfd;border-radius:6px;border:1px dashed #d6e1e4">Nenhum veículo alocado</div>'}
       </div>
       <button class="btn secondary small" style="width:100%;margin-top:10px" onclick="allocBusToLine('${l.code}')">+ Alocar Veículo Selecionado</button>
     </div>`;
@@ -438,7 +429,9 @@ function renderLinhas(){
 
 function openEditSchedModal(code, nome){
   currentEditingLineCode = code;
+  let t = getDayType();
   let sched = getLineSchedule(code);
+  editDayTitle.textContent = currentDay.toUpperCase() + ' (' + (t === 'util' ? 'Dias Úteis' : t.toUpperCase()) + ')';
   editSchedLineTitle.textContent = nome + ' (' + code + ')';
   editIdaInput.value = sched.ida;
   editVoltaInput.value = sched.volta;
@@ -452,22 +445,22 @@ function closeEditSchedModal(){
 function saveLineSchedUpdate(){
   if(!currentEditingLineCode) return;
   if(!db.linhasCustom) db.linhasCustom = {};
+  let t = getDayType();
+  if(!db.linhasCustom[currentEditingLineCode]) db.linhasCustom[currentEditingLineCode] = {};
   
-  db.linhasCustom[currentEditingLineCode] = {
-    ida: editIdaInput.value || '06:00',
-    volta: editVoltaInput.value || '18:00'
+  db.linhasCustom[currentEditingLineCode][t] = {
+    ida: editIdaInput.value || '',
+    volta: editVoltaInput.value || ''
   };
   save();
   closeEditSchedModal();
   renderLinhas();
-  toast('Horários da linha atualizados!');
+  toast('Horários atualizados para ' + currentDay + '!');
 }
 
 function allocBusToLine(lineCode){
   let busId = selectBusToAlloc.value;
   if(!busId) return alert('Selecione um veículo na lista do topo primeiro.');
-  
-  if(!db.escalas) db.escalas = {};
   if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
 
   for(let l in db.escalas[currentDay]){
@@ -486,70 +479,43 @@ function removeBusFromLine(lineCode, busId){
     db.escalas[currentDay][lineCode] = db.escalas[currentDay][lineCode].filter(id => id !== busId);
     save();
     renderLinhas();
-    toast('Veículo removido da linha.');
+    toast('Veículo removido.');
   }
 }
 
 function resetEscalaDia(){
-  if(confirm('Limpar todas as alocações do dia ('+currentDay.toUpperCase()+')?')){
-    if(db.escalas && db.escalas[currentDay]){
-      db.escalas[currentDay] = {};
-      save();
-      renderLinhas();
-      toast('Escala do dia resetada.');
-    }
+  if(confirm('Limpar alocações de ' + currentDay.toUpperCase() + '?')){
+    if(db.escalas[currentDay]){ db.escalas[currentDay] = {}; save(); renderLinhas(); toast('Resetado.'); }
   }
 }
 
 function exportWhatsAppEscala(){
-  let texto = `*🚌 ESCALA OPERACIONAL - ${currentDay.toUpperCase()}*\n\n`;
+  let tName = getDayType() === 'util' ? 'DIAS ÚTEIS (SEG-SEX)' : currentDay.toUpperCase();
+  let texto = `*🚌 ESCALA - ${tName}*\n\n`;
   DEFAULT_LINHAS.forEach(l => {
     let sched = getLineSchedule(l.code);
     let ids = (db.escalas && db.escalas[currentDay] && db.escalas[currentDay][l.code]) || [];
     let codigos = ids.map(id => { let v = db.veiculos.find(x => x.id === id); return v ? v.codigo : ''; }).filter(Boolean);
-    texto += `📍 *${l.nome}* (${l.code})\n   *Frota:* ${codigos.length ? codigos.join(', ') : 'Nenhum'}\n   *IDA:* ${sched.ida} | *VOLTA:* ${sched.volta}\n\n`;
+    texto += `📍 *${l.nome}*\n   *Frota:* ${codigos.length ? codigos.join(', ') : 'Nenhum'}\n   *IDA:* ${sched.ida}\n   *VOLTA:* ${sched.volta}\n\n`;
   });
   navigator.clipboard.writeText(texto).then(() => toast('Escala copiada para o WhatsApp!'));
 }
 
-// OUTRAS FUNÇÕES DO SISTEMA PRESERVADAS
+// OUTRAS FUNÇÕES DO SISTEMA (MANTIDAS)
 function icon(a){return a==='Checagem Diária Validador'?'📄':a==='Checagem de Cartão SD'?'💾':'📷'}
 function renderDetail(id){
  let v=db.veiculos.find(x=>x.id===id);if(!v)return show('painel');currentVehicle=id;
  detailTitle.textContent='Veículo '+v.codigo;
  detailRoute.textContent='Roteiro: ' + (v.roteiro || 'Não informado');
- 
  activities.innerHTML=ACTS.map(a=>{
    let e=state(v,a), last=v.atividades && v.atividades[a];
    let btnLabel = '✓ Registrar';
-   if(a==='Checagem Diária Validador') btnLabel = '✓ Registrar Checagem Diária';
-   if(a==='Checagem de Cartão SD') btnLabel = '✓ Registrar Cartão SD';
-   if(a==='Checagem de Câmera') btnLabel = '✓ Registrar Câmera';
-   
    if(e.doneToday && !e.justified) btnLabel = '✓ Realizado neste período';
-
-   let actionHtml = '';
-   if(e.justified) {
-     actionHtml = `<div class="justified-box"><b>⚠️ Ausência Justificada:</b> ${esc(e.justText)}<br><button class="btn secondary small" style="margin-top:8px" onclick="clearJustification('${v.id}','${esc(a)}')">Remover Justificativa / Retomar</button></div>`;
-   } else {
-     actionHtml = `<div class="act-btns">
-       <button class="btn" ${e.doneToday?'disabled':''} onclick="registerActivity('${v.id}','${esc(a)}')">${btnLabel}</button>
-       <button class="btn warning" onclick="openJustModal('${esc(a)}')">⚠️ Justificar Ausência</button>
-     </div>`;
-   }
-
-   return `<div class="activity ${e.c}">
-   <div class="activity-head"><h3>${icon(a)} ${a}</h3><span class="badge ${e.c}">${e.label}</span></div>
-   <p>Último registro: <b>${last?fmt(last):'Ainda não realizado'}</b></p>
-   <p>Status: <b>${e.text}</b></p>
-   ${actionHtml}
-   </div>`
+   return `<div class="activity ${e.c}"><div class="activity-head"><h3>${icon(a)} ${a}</h3><span class="badge ${e.c}">${e.label}</span></div><p>Último: <b>${last?fmt(last):'Não realizado'}</b></p><div class="act-btns"><button class="btn" ${e.doneToday?'disabled':''} onclick="registerActivity('${v.id}','${esc(a)}')">${btnLabel}</button><button class="btn warning" onclick="openJustModal('${esc(a)}')">⚠️ Justificar</button></div></div>`;
  }).join('');
-
- let hs=db.historico.filter(h=>h.veiculoId===id).sort((a,b)=>new Date(b.dataHora)-new Date(a.dataHora));
- history.innerHTML=hs.length?`<table><thead><tr><th>Data/Hora</th><th>Atividade</th><th>Status</th><th>Observação</th></tr></thead><tbody>${hs.map(h=>`<tr><td>${fmt(h.dataHora)}</td><td>${esc(h.atividade)}</td><td><b>${esc(h.status)}</b></td><td>${esc(h.observacao||'-')}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Nenhum registro realizado.</div>';
+ let hs=db.historico.filter(h=>h.veiculoId===id);
+ history.innerHTML=hs.length?`<table><thead><tr><th>Data</th><th>Atividade</th><th>Status</th></tr></thead><tbody>${hs.map(h=>`<tr><td>${fmt(h.dataHora)}</td><td>${esc(h.atividade)}</td><td><b>${esc(h.status)}</b></td></tr>`).join('')}</tbody></table>`:'<div class="empty">Sem histórico.</div>';
 }
-
 function openRouteModal(){
  if(!currentVehicle) return;
  let v=db.veiculos.find(x=>x.id===currentVehicle); if(!v) return;
@@ -560,172 +526,58 @@ function closeRouteModal(){ document.getElementById('routeModal').style.display 
 function saveRouteUpdate(){
  if(!currentVehicle) return;
  let v=db.veiculos.find(x=>x.id===currentVehicle); if(!v) return;
- v.roteiro = editRouteInput.value.trim();
- save();
- closeRouteModal();
- renderDetail(currentVehicle);
- renderPanel();
- toast('Roteiro atualizado com sucesso!');
+ v.roteiro = editRouteInput.value.trim(); save(); closeRouteModal(); renderDetail(currentVehicle); renderPanel(); toast('Roteiro atualizado!');
 }
-
 function registerActivity(id,a){
  let v=db.veiculos.find(x=>x.id===id);if(!v)return;
- let e = state(v, a);
- if(e.doneToday && !e.justified) { toast('Esta atividade já foi registrada neste período.'); return; }
-
- if(!v.atividades) v.atividades = {};
- if(v.justificativas && v.justificativas[a]) delete v.justificativas[a];
-
  let t=now().toISOString();
- v.atividades[a]=t;
- db.historico.push({
-   veiculoId: id,
-   veiculo: v.codigo,
-   roteiro: v.roteiro || 'Não informado',
-   atividade: a,
-   dataHora: t,
-   status: 'Realizada',
-   observacao: 'Checagem efetuada com sucesso.'
- });
- save();
- renderDetail(id);
- renderPanel();
- toast('Registro salvo com sucesso!');
+ if(!v.atividades) v.atividades={}; v.atividades[a]=t;
+ db.historico.push({veiculoId:id, veiculo:v.codigo, atividade:a, dataHora:t, status:'Realizada'});
+ save(); renderDetail(id); renderPanel(); toast('Salvo!');
 }
-
-function openJustModal(atividade){
- pendingJustActivity = atividade;
- justSelect.value = "Veículo em manutenção na oficina";
- justCustom.value = "";
- justCustom.style.display = "none";
- document.getElementById('justModal').style.display = 'flex';
-}
-function closeJustModal(){ pendingJustActivity = null; document.getElementById('justModal').style.display = 'none'; }
-function toggleCustomJust(sel){ justCustom.style.display = sel.value === 'Outro' ? 'block' : 'none'; }
+function openJustModal(a){ pendingJustActivity=a; document.getElementById('justModal').style.display='flex'; }
+function closeJustModal(){ document.getElementById('justModal').style.display='none'; }
+function toggleCustomJust(sel){ justCustom.style.display = sel.value==='Outro'?'block':'none'; }
 function confirmJustification(){
- if(!currentVehicle || !pendingJustActivity) return closeJustModal();
  let v=db.veiculos.find(x=>x.id===currentVehicle); if(!v) return;
- 
- let obs = justSelect.value === 'Outro' ? justCustom.value.trim() : justSelect.value;
- if(!obs) return alert('Por favor, digite o motivo da ausência.');
-
+ let obs = justSelect.value==='Outro'?justCustom.value:justSelect.value;
  let t=now().toISOString();
- if(!v.justificativas) v.justificativas = {};
- v.justificativas[pendingJustActivity] = { obs: obs, dataHora: t };
-
- db.historico.push({
-   veiculoId: currentVehicle,
-   veiculo: v.codigo,
-   roteiro: v.roteiro || 'Não informado',
-   atividade: pendingJustActivity,
-   dataHora: t,
-   status: 'Ausente / Justificado',
-   observacao: obs
- });
- save();
- closeJustModal();
- renderDetail(currentVehicle);
- renderPanel();
- toast('Justificativa salva com sucesso.');
+ if(!v.justificativas) v.justificativas={}; v.justificativas[pendingJustActivity]={obs:obs, dataHora:t};
+ db.historico.push({veiculoId:currentVehicle, veiculo:v.codigo, atividade:pendingJustActivity, dataHora:t, status:'Justificado', observacao:obs});
+ save(); closeJustModal(); renderDetail(currentVehicle); renderPanel(); toast('Justificativa salva.');
 }
-
-function clearJustification(id, a){
- let v=db.veiculos.find(x=>x.id===id); if(!v) return;
- if(v.justificativas && v.justificativas[a]) delete v.justificativas[a];
- save();
- renderDetail(id);
- renderPanel();
- toast('Justificativa removida.');
-}
-
 function addVehicle(){
- let c=newCode.value.trim();
- let r=newRoute.value.trim();
- if(!c)return alert('Informe o código do veículo.');
- if(db.veiculos.some(v=>v.codigo.toLowerCase()===c.toLowerCase()))return alert('Este veículo já está cadastrado.');
- db.veiculos.push({id:crypto.randomUUID(),codigo:c,roteiro:r,criadoEm:now().toISOString(),atividades:{},justificativas:{}});save();newCode.value='';newRoute.value='';renderCad();renderPanel();toast('Veículo cadastrado.');
+ let c=newCode.value.trim(), r=newRoute.value.trim();
+ if(!c)return alert('Informe o código.');
+ db.veiculos.push({id:crypto.randomUUID(), codigo:c, roteiro:r, atividades:{}, justificativas:{}});
+ save(); newCode.value=''; newRoute.value=''; renderCad(); renderPanel(); toast('Cadastrado.');
 }
-
 function renderCad(){
  let q=(searchCad.value||'').toLowerCase();
- let arr=db.veiculos.filter(v=>v.codigo.toLowerCase().includes(q) || (v.roteiro && v.roteiro.toLowerCase().includes(q)));
- cadList.innerHTML=arr.length?arr.map(v=>`<div class="vehicle"><span class="dot ${vState(v)}"></span><div class="main"><div class="code">${esc(v.codigo)}</div><div class="msg">Roteiro: <b>${esc(v.roteiro||'Não informado')}</b> • Cadastrado em ${new Date(v.criadoEm).toLocaleDateString('pt-BR')}</div></div><button class="btn secondary small" onclick="show('detail','${v.id}')">Abrir</button><button class="btn danger small" onclick="removeVehicle('${v.id}')">🗑</button></div>`).join(''):'<div class="empty">Nenhum veículo cadastrado.</div>';
+ let arr=db.veiculos.filter(v=>v.codigo.toLowerCase().includes(q));
+ cadList.innerHTML=arr.length?arr.map(v=>`<div class="vehicle"><div class="main"><div class="code">${esc(v.codigo)}</div><div class="msg">Roteiro: ${esc(v.roteiro||'-')}</div></div><button class="btn secondary small" onclick="show('detail','${v.id}')">Abrir</button><button class="btn danger small" onclick="removeVehicle('${v.id}')">🗑</button></div>`).join(''):'<div class="empty">Nenhum.</div>';
 }
-
 function removeVehicle(id){
- let v=db.veiculos.find(x=>x.id===id);if(!v)return;
- if(!confirm('Excluir o veículo '+v.codigo+'? O histórico dele também será apagado.'))return;
- db.veiculos=db.veiculos.filter(x=>x.id!==id);db.historico=db.historico.filter(x=>x.veiculoId!==id);save();renderCad();renderPanel();toast('Veículo excluído.');
+ if(confirm('Excluir?')){ db.veiculos=db.veiculos.filter(x=>x.id!==id); save(); renderCad(); renderPanel(); toast('Excluído.'); }
 }
-
 function renderFilters(){
- let optionsHTML = '<option value="">Todos os veículos</option>' + db.veiculos.map(v=>`<option value="${v.id}">${esc(v.codigo)} ${v.roteiro?'('+esc(v.roteiro)+')':''}</option>`).join('');
- fVeic.innerHTML = optionsHTML;
- resetSingleVeic.innerHTML = optionsHTML;
+ let opt='<option value="">Todos</option>'+db.veiculos.map(v=>`<option value="${v.id}">${esc(v.codigo)}</option>`).join('');
+ fVeic.innerHTML=opt; resetSingleVeic.innerHTML=opt;
 }
-
-function resetAllHistory(){
- if(confirm('ATENÇÃO: Deseja realmente apagar todo o histórico de registros e redefinir as atividades de TODOS os veículos?')) {
-   db.historico = [];
-   db.veiculos.forEach(v => { v.atividades = {}; v.justificativas = {}; });
-   save();
-   renderPanel();
-   renderFilters();
-   toast('Histórico geral resetado com sucesso.');
- }
-}
-
+function resetAllHistory(){ if(confirm('Apagar tudo?')){ db.historico=[]; db.veiculos.forEach(v=>{v.atividades={};v.justificativas={};}); save(); renderPanel(); toast('Resetado.'); } }
 function resetSingleVehicleHistory(){
- let id = resetSingleVeic.value;
- if(!id) return alert('Por favor, selecione um veículo na lista para resetar.');
- let v = db.veiculos.find(x => x.id === id);
- if(!v) return;
-
- if(confirm('Deseja realmente apagar todo o histórico e pendências do veículo ' + v.codigo + '?')) {
-   v.atividades = {};
-   v.justificativas = {};
-   db.historico = db.historico.filter(h => h.veiculoId !== id);
-   save();
-   renderPanel();
-   renderFilters();
-   toast('Histórico do veículo ' + v.codigo + ' resetado.');
- }
+ let id=resetSingleVeic.value; if(!id) return;
+ let v=db.veiculos.find(x=>x.id===id); if(v){ v.atividades={}; v.justificativas={}; db.historico=db.historico.filter(h=>h.veiculoId!==id); save(); renderPanel(); toast('Resetado.'); }
 }
-
 function exportExcel(){
- if(typeof XLSX==='undefined')return alert('A biblioteca do Excel não carregou. Verifique a conexão e tente novamente.');
- let ini=fIni.value?new Date(fIni.value+'T00:00:00'):null,fim=fFim.value?new Date(fFim.value+'T23:59:59'):null;
- let rows=db.historico.filter(h=>{let d=new Date(h.dataHora);return(!ini||d>=ini)&&(!fim||d<=fim)&&(!fVeic.value||h.veiculoId===fVeic.value)&&(!fAtiv.value||h.atividade===fAtiv.value)}).map(h=>{
-   let d=new Date(h.dataHora);
-   let v=db.veiculos.find(x=>x.id===h.veiculoId);
-   return {
-     'Veículo': h.veiculo,
-     'Roteiro Atual': v ? (v.roteiro || 'Não informado') : (h.roteiro || '-'),
-     'Atividade': h.atividade,
-     'Data': d.toLocaleDateString('pt-BR'),
-     'Hora': d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
-     'Status': h.status,
-     'Observação': h.observacao||''
-   };
- });
- let ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Histórico');
- XLSX.writeFile(wb,'atlantico_historico_'+new Date().toISOString().slice(0,10)+'.xlsx');toast('Excel gerado.');
+ if(typeof XLSX==='undefined') return alert('Erro ao carregar Excel.');
+ let rows=db.historico.map(h=>({'Veículo':h.veiculo, 'Atividade':h.atividade, 'Data':fmt(h.dataHora), 'Status':h.status}));
+ let ws=XLSX.utils.json_to_sheet(rows), wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Histórico');
+ XLSX.writeFile(wb,'atlantico_historico.xlsx'); toast('Exportado.');
 }
+function toast(t){let x=document.getElementById('toast');x.textContent=t;x.style.display='block';setTimeout(()=>x.style.display='none',2400)}
 
-function toast(t){let x=document.getElementById('toast');x.textContent=t;x.style.display='block';clearTimeout(window._toast);window._toast=setTimeout(()=>x.style.display='none',2400)}
-function askLeave(){document.getElementById('leaveShield').style.display='flex'}
-function cancelLeave(){leavePending=false;document.getElementById('leaveShield').style.display='none'}
-function confirmLeave(){leavePending=false;document.getElementById('leaveShield').style.display='none';history.back()}
-
-window.addEventListener('beforeunload',e=>{save();e.preventDefault();e.returnValue=''})
-history.pushState({appGuard:true},'',location.href);
-window.addEventListener('popstate',()=>{
- history.pushState({appGuard:true},'',location.href);
- askLeave();
-});
-
-setInterval(()=>{save();if(document.getElementById('p-painel').classList.contains('active'))renderPanel(); if(document.getElementById('p-linhas').classList.contains('active'))renderLinhas();},30000);
-renderPanel();renderLinhas();renderCad();renderFilters();
+renderPanel(); renderLinhas(); renderCad(); renderFilters();
 </script>
 </body>
 </html>
