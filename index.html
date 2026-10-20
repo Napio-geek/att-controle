@@ -836,5 +836,14 @@ window.onload = function(){
   renderFilters();
 };
 </script>
+  <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('data:text/javascript;charset=utf-8,' + encodeURIComponent(`
+      self.addEventListener('fetch', (e) => {});
+    `)).catch(() => {});
+  });
+}
+</script>
 </body>
 </html>
