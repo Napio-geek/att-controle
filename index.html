@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Atlântico Atividades">
 <link rel="manifest" href="manifest.json">
-<title>Atlântico — Controle de Atividades</title>
+<title>Atlântico — Controle de Atividades e Frota</title>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
 :root{--p:#07898c;--pd:#066f72;--bg:#f3f7f7;--txt:#173247;--mut:#6b7c84;--g:#16a765;--o:#f59e0b;--r:#e53935;--card:#fff;--bd:#e1eaec;--shadow:0 5px 18px #123b4518;--rad:16px}
@@ -43,6 +43,18 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 .modal-shield{position:fixed;inset:0;background:#0007;z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
 .modalbox{background:#fff;border-radius:18px;max-width:440px;width:100%;padding:20px;box-shadow:0 15px 50px #0006}.modalbox h2{margin:0 0 8px}.modalbox p{color:var(--mut);font-size:14px;line-height:1.45}.modal-actions{display:flex;gap:10px;margin-top:14px}.modal-actions button{flex:1}
 .route-badge{display:inline-block;background:#eaf1f2;color:var(--p);font-weight:700;font-size:13px;padding:4px 10px;border-radius:8px;margin-top:4px}
+
+/* ESTILOS NOVOS PARA O CONTROLE DE LINHAS E DIAS */
+.days-bar {display:flex;background:#fff;border:1px solid var(--bd);border-radius:12px;overflow-x:auto;padding:6px;gap:6px;margin-bottom:16px}
+.day-btn {background:#f3f7f7;border:1px solid var(--bd);color:var(--mut);padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.day-btn.active {background:var(--p);color:#fff;border-color:var(--p)}
+.lines-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:12px}
+.line-card {background:#fff;border:1px solid var(--bd);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
+.line-header {font-size:15px;font-weight:700;color:var(--p);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.line-sched {font-size:12px;color:var(--mut);background:#f4f8f9;padding:6px 8px;border-radius:8px;margin-bottom:10px}
+.line-drop {background:#fafcfd;border:2px dashed #d6e1e4;border-radius:10px;padding:8px;min-height:55px;display:flex;flex-direction:column;gap:6px}
+.assigned-chip {background:#eaf1f2;border:1px solid var(--p);border-radius:8px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;color:var(--txt)}
+
 @media(max-width:650px){.logo{height:46px;max-width:250px}.stats{gap:6px}.stat{padding:9px 6px}.stat strong{font-size:24px}.stat span{font-size:10px}.grid2,.filters{grid-template-columns:1fr}.nav button{max-width:none}}
 </style>
 </head>
@@ -50,12 +62,13 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <div class="app">
 <header class="header"><div class="header-inner">
   <img src="logo-atlantico.png" class="logo" alt="Atlântico">
-  <div class="header-sub">Controle de Atividades</div>
+  <div class="header-sub">Controle de Atividades e Frota</div>
 </div></header>
 
 <main>
+<!-- PAINEL PRINCIPAL (ANTIGO) -->
 <section id="p-painel" class="page active">
-<h1>Painel</h1>
+<h1>Painel de Atividades</h1>
 <div class="stats">
 <div class="stat r"><span>Atrasados</span><strong id="nR">0</strong></div>
 <div class="stat o"><span>Próximos / Pendentes</span><strong id="nO">0</strong></div>
@@ -65,6 +78,38 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <div id="panelList"></div>
 </section>
 
+<!-- NOVA ABA: ESCALA DE LINHAS E HORÁRIOS -->
+<section id="p-linhas" class="page">
+<h1>Escala de Linhas e Horários</h1>
+<p class="muted">Selecione o dia da semana e aloque os veículos cadastrados nas 8 linhas operacionais.</p>
+
+<div class="days-bar" id="daysBar">
+  <button class="day-btn" onclick="setDay('segunda', this)">Segunda</button>
+  <button class="day-btn" onclick="setDay('terca', this)">Terça</button>
+  <button class="day-btn" onclick="setDay('quarta', this)">Quarta</button>
+  <button class="day-btn" onclick="setDay('quinta', this)">Quinta</button>
+  <button class="day-btn" onclick="setDay('sexta', this)">Sexta</button>
+  <button class="day-btn" onclick="setDay('sabado', this)">Sábado</button>
+  <button class="day-btn" onclick="setDay('domingo', this)">Domingo</button>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h3>🚌 Selecionar Veículo para Alocar</h3>
+  <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+    <select id="selectBusToAlloc" class="field" style="flex:1;min-width:200px"></select>
+    <div style="font-size:12px;color:var(--mut);display:flex;align-items:center">Selecione o carro e clique em "Alocar" na linha desejada abaixo.</div>
+  </div>
+</div>
+
+<div class="actions" style="margin-bottom:14px">
+  <button class="btn secondary" onclick="exportWhatsAppEscala()">📱 Copiar Escala p/ WhatsApp</button>
+  <button class="btn danger small" onclick="resetEscalaDia()">🔄 Resetar Dia</button>
+</div>
+
+<div class="lines-grid" id="linesGrid"></div>
+</section>
+
+<!-- DETALHE DO VEÍCULO -->
 <section id="p-detail" class="page">
 <div class="actions" style="justify-content:space-between;align-items:center;margin-bottom:12px">
   <button class="btn secondary small" onclick="show('painel')">← Voltar</button>
@@ -76,6 +121,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <div class="card"><h3>Histórico</h3><div id="history"></div></div>
 </section>
 
+<!-- CADASTRO -->
 <section id="p-cadastro" class="page">
 <h1>Cadastro</h1>
 <div class="card">
@@ -90,6 +136,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <div id="cadList"></div>
 </section>
 
+<!-- EXPORTAÇÃO E CONFIGURAÇÕES -->
 <section id="p-exportacao" class="page">
 <h1>Exportação e Configurações</h1>
 <div class="card"><h3>📤 Exportar dados</h3><p class="muted">Gere um arquivo Excel com os registros realizados.</p>
@@ -124,6 +171,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
 <nav class="nav">
 <button id="nav-painel" class="active" onclick="show('painel')"><span class="ico">⌂</span>Painel</button>
+<button id="nav-linhas" onclick="show('linhas')"><span class="ico">🚌</span>Linhas</button>
 <button id="nav-cadastro" onclick="show('cadastro')"><span class="ico">🚗</span>Cadastro</button>
 <button id="nav-exportacao" onclick="show('exportacao')"><span class="ico">▣</span>Exportação</button>
 </nav>
@@ -184,17 +232,31 @@ const PERIODS={'Checagem Diária Validador':'SHIFT_8AM','Checagem de Cartão SD'
 const ACTS=Object.keys(PERIODS);
 let db=loadDB(), currentVehicle=null, pendingJustActivity=null;
 
+// CONFIGURAÇÃO DAS 8 LINHAS E HORÁRIOS
+const LINHAS_OPERACIONAIS = [
+  { nome: "Coroado", horarios: "⏰ Saídas: 05:30 | 11:40 | 17:10" },
+  { nome: "Ferrolho", horarios: "⏰ Saídas: 06:00 | 12:00 | 18:00" },
+  { nome: "Jabequara", horarios: "⏰ Saídas: 05:45 | 12:15 | 17:45" },
+  { nome: "Curubeba", horarios: "⏰ Saídas: 06:15 | 12:30 | 18:15" },
+  { nome: "Roseira", horarios: "⏰ Saídas: 05:50 | 11:50 | 17:30" },
+  { nome: "Santa Elisa", horarios: "⏰ Saídas: 06:10 | 12:10 | 18:00" },
+  { nome: "Santo Estêvão", horarios: "⏰ Saídas: 05:30 | 12:00 | 17:00" },
+  { nome: "Linha de Apoio / Reserva", horarios: "⏰ Prontidão / Turno Integral" }
+];
+
+const DIAS_SEMANA = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+let currentDay = DIAS_SEMANA[new Date().getDay()];
+if(currentDay === 'domingo') currentDay = 'segunda';
+
 function loadDB(){
   try{
     let data=JSON.parse(localStorage.getItem(KEY));
     if(!data) {
       let old = JSON.parse(localStorage.getItem('atlantico_controle_veiculos_v4')) || JSON.parse(localStorage.getItem('atlantico_controle_veiculos_v3'));
-      if(old) {
-        data = old;
-      }
+      if(old) { data = old; }
     }
-    return data || {veiculos:[],historico:[]};
-  }catch(e){return{veiculos:[],historico:[]}}
+    return data || {veiculos:[],historico:[],escalas:{}};
+  }catch(e){return{veiculos:[],historico:[],escalas:{}}}
 }
 
 function save(){localStorage.setItem(KEY,JSON.stringify(db))}
@@ -206,9 +268,7 @@ function dur(ms){let h=Math.floor(ms/3600000),d=Math.floor(h/24);h%=24;if(d)retu
 function getShiftStart(dateObj) {
   let d = new Date(dateObj);
   let shift = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 8, 0, 0, 0);
-  if (d < shift) {
-    shift.setDate(shift.getDate() - 1);
-  }
+  if (d < shift) { shift.setDate(shift.getDate() - 1); }
   return shift;
 }
 
@@ -254,7 +314,11 @@ function show(p,id){
  document.getElementById('p-'+p).classList.add('active');
  document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
  let n=document.getElementById('nav-'+p);if(n)n.classList.add('active');
- if(p==='painel')renderPanel();if(p==='cadastro')renderCad();if(p==='exportacao')renderFilters();if(p==='detail')renderDetail(id);
+ if(p==='painel')renderPanel();
+ if(p==='linhas')renderLinhas();
+ if(p==='cadastro')renderCad();
+ if(p==='exportacao')renderFilters();
+ if(p==='detail')renderDetail(id);
  window.scrollTo(0,0);
 }
 
@@ -285,9 +349,7 @@ function renderDetail(id){
    if(a==='Checagem de Cartão SD') btnLabel = '✓ Registrar Cartão SD';
    if(a==='Checagem de Câmera') btnLabel = '✓ Registrar Câmera';
    
-   if(e.doneToday && !e.justified) {
-     btnLabel = '✓ Realizado neste período';
-   }
+   if(e.doneToday && !e.justified) { btnLabel = '✓ Realizado neste período'; }
 
    let actionHtml = '';
    if(e.justified) {
@@ -311,15 +373,108 @@ function renderDetail(id){
  history.innerHTML=hs.length?`<table><thead><tr><th>Data/Hora</th><th>Atividade</th><th>Status</th><th>Observação</th></tr></thead><tbody>${hs.map(h=>`<tr><td>${fmt(h.dataHora)}</td><td>${esc(h.atividade)}</td><td><b>${esc(h.status)}</b></td><td>${esc(h.observacao||'-')}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Nenhum registro realizado.</div>';
 }
 
+// FUNÇÕES DA ABA DE LINHAS E HORÁRIOS
+function setDay(day, btn){
+  currentDay = day;
+  document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderLinhas();
+}
+
+function renderLinhas(){
+  document.querySelectorAll('.day-btn').forEach(b => {
+    if(b.getAttribute('onclick').includes(`'${currentDay}'`)) b.classList.add('active');
+    else b.classList.remove('active');
+  });
+
+  // Atualizar select de carros disponíveis
+  let options = '<option value="">-- Selecione um veículo --</option>';
+  db.veiculos.forEach(v => {
+    options += `<option value="${v.id}">${esc(v.codigo)} ${v.roteiro ? '('+esc(v.roteiro)+')' : ''}</option>`;
+  });
+  selectBusToAlloc.innerHTML = options;
+
+  if(!db.escalas) db.escalas = {};
+  if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
+
+  let grid = document.getElementById('linesGrid');
+  grid.innerHTML = LINHAS_OPERACIONAIS.map(l => {
+    let allocatedIds = db.escalas[currentDay][l.nome] || [];
+    let chipsHtml = allocatedIds.map(id => {
+      let vObj = db.veiculos.find(x => x.id === id);
+      let vCode = vObj ? vObj.codigo : 'Desconhecido';
+      return `<div class="assigned-chip"><span>🚌 ${esc(vCode)}</span><button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeBusFromLine('${l.nome}','${id}')">✕</button></div>`;
+    }).join('');
+
+    return `<div class="line-card">
+      <div class="line-header"><span>📍 ${l.nome}</span></div>
+      <div class="line-sched">${l.horarios}</div>
+      <div class="line-drop">
+        ${chipsHtml || '<div style="font-size:12px;color:var(--mut);text-align:center;padding:10px">Nenhum veículo alocado</div>'}
+      </div>
+      <button class="btn secondary small" style="width:100%;margin-top:10px" onclick="allocBusToLine('${l.nome}')">+ Alocar Veículo Selecionado</button>
+    </div>`;
+  }).join('');
+}
+
+function allocBusToLine(lineName){
+  let busId = selectBusToAlloc.value;
+  if(!busId) return alert('Selecione um veículo no campo acima primeiro.');
+  
+  if(!db.escalas) db.escalas = {};
+  if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
+
+  // Remover de outras linhas no mesmo dia para evitar duplicidade
+  for(let l in db.escalas[currentDay]){
+    db.escalas[currentDay][l] = db.escalas[currentDay][l].filter(id => id !== busId);
+  }
+
+  if(!db.escalas[currentDay][lineName]) db.escalas[currentDay][lineName] = [];
+  db.escalas[currentDay][lineName].push(busId);
+  save();
+  renderLinhas();
+  toast('Veículo alocado com sucesso!');
+}
+
+function removeBusFromLine(lineName, busId){
+  if(db.escalas && db.escalas[currentDay] && db.escalas[currentDay][lineName]){
+    db.escalas[currentDay][lineName] = db.escalas[currentDay][lineName].filter(id => id !== busId);
+    save();
+    renderLinhas();
+    toast('Veículo removido da linha.');
+  }
+}
+
+function resetEscalaDia(){
+  if(confirm('Deseja limpar todas as alocações deste dia ('+currentDay.toUpperCase()+')?')){
+    if(db.escalas && db.escalas[currentDay]){
+      db.escalas[currentDay] = {};
+      save();
+      renderLinhas();
+      toast('Escala do dia resetada.');
+    }
+  }
+}
+
+function exportWhatsAppEscala(){
+  let texto = `*🚌 ESCALA OPERACIONAL - ${currentDay.toUpperCase()}*\n\n`;
+  LINHAS_OPERACIONAIS.forEach(l => {
+    let ids = (db.escalas && db.escalas[currentDay] && db.escalas[currentDay][l.nome]) || [];
+    let codigos = ids.map(id => { let v = db.veiculos.find(x => x.id === id); return v ? v.codigo : ''; }).filter(Boolean);
+    texto += `📍 *${l.nome}:* ${codigos.length ? codigos.join(', ') : 'Nenhum veículo'}\n   _${l.horarios}_\n\n`;
+  });
+  navigator.clipboard.writeText(texto).then(() => {
+    toast('Escala copiada para a área de transferência!');
+  });
+}
+
 function openRouteModal(){
  if(!currentVehicle) return;
  let v=db.veiculos.find(x=>x.id===currentVehicle); if(!v) return;
  editRouteInput.value = v.roteiro || '';
  document.getElementById('routeModal').style.display = 'flex';
 }
-function closeRouteModal(){
- document.getElementById('routeModal').style.display = 'none';
-}
+function closeRouteModal(){ document.getElementById('routeModal').style.display = 'none'; }
 function saveRouteUpdate(){
  if(!currentVehicle) return;
  let v=db.veiculos.find(x=>x.id===currentVehicle); if(!v) return;
@@ -334,10 +489,7 @@ function saveRouteUpdate(){
 function registerActivity(id,a){
  let v=db.veiculos.find(x=>x.id===id);if(!v)return;
  let e = state(v, a);
- if(e.doneToday && !e.justified) {
-   toast('Esta atividade já foi registrada neste período.');
-   return;
- }
+ if(e.doneToday && !e.justified) { toast('Esta atividade já foi registrada neste período.'); return; }
 
  if(!v.atividades) v.atividades = {};
  if(v.justificativas && v.justificativas[a]) delete v.justificativas[a];
@@ -366,13 +518,8 @@ function openJustModal(atividade){
  justCustom.style.display = "none";
  document.getElementById('justModal').style.display = 'flex';
 }
-function closeJustModal(){
- pendingJustActivity = null;
- document.getElementById('justModal').style.display = 'none';
-}
-function toggleCustomJust(sel){
- justCustom.style.display = sel.value === 'Outro' ? 'block' : 'none';
-}
+function closeJustModal(){ pendingJustActivity = null; document.getElementById('justModal').style.display = 'none'; }
+function toggleCustomJust(sel){ justCustom.style.display = sel.value === 'Outro' ? 'block' : 'none'; }
 function confirmJustification(){
  if(!currentVehicle || !pendingJustActivity) return closeJustModal();
  let v=db.veiculos.find(x=>x.id===currentVehicle); if(!v) return;
@@ -438,10 +585,7 @@ function renderFilters(){
 function resetAllHistory(){
  if(confirm('ATENÇÃO: Deseja realmente apagar todo o histórico de registros e redefinir as atividades de TODOS os veículos?')) {
    db.historico = [];
-   db.veiculos.forEach(v => {
-     v.atividades = {};
-     v.justificativas = {};
-   });
+   db.veiculos.forEach(v => { v.atividades = {}; v.justificativas = {}; });
    save();
    renderPanel();
    renderFilters();
@@ -482,7 +626,6 @@ function exportExcel(){
      'Observação': h.observacao||''
    };
  });
- if(!rows.length)return alert('Não há dados para exportar com os filtros selecionados.');
  let ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Histórico');
  XLSX.writeFile(wb,'atlantico_historico_'+new Date().toISOString().slice(0,10)+'.xlsx');toast('Excel gerado.');
 }
@@ -509,7 +652,7 @@ document.addEventListener('touchmove',e=>{
 },{passive:false});
 
 setInterval(()=>{save();if(document.getElementById('p-painel').classList.contains('active'))renderPanel()},60000);
-renderPanel();renderCad();renderFilters();
+renderPanel();renderLinhas();renderCad();renderFilters();
 </script>
 </body>
 </html>
