@@ -44,16 +44,23 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 .modalbox{background:#fff;border-radius:18px;max-width:440px;width:100%;padding:20px;box-shadow:0 15px 50px #0006}.modalbox h2{margin:0 0 8px}.modalbox p{color:var(--mut);font-size:14px;line-height:1.45}.modal-actions{display:flex;gap:10px;margin-top:14px}.modal-actions button{flex:1}
 .route-badge{display:inline-block;background:#eaf1f2;color:var(--p);font-weight:700;font-size:13px;padding:4px 10px;border-radius:8px;margin-top:4px}
 
-/* ESTILOS NOVOS PARA O CONTROLE DE LINHAS E DIAS */
+/* ESTILOS DE LINHAS, HORÁRIOS E STATUS */
 .days-bar {display:flex;background:#fff;border:1px solid var(--bd);border-radius:12px;overflow-x:auto;padding:6px;gap:6px;margin-bottom:16px}
 .day-btn {background:#f3f7f7;border:1px solid var(--bd);color:var(--mut);padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
 .day-btn.active {background:var(--p);color:#fff;border-color:var(--p)}
-.lines-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:12px}
+.lines-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:12px}
 .line-card {background:#fff;border:1px solid var(--bd);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
-.line-header {font-size:15px;font-weight:700;color:var(--p);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
-.line-sched {font-size:12px;color:var(--mut);background:#f4f8f9;padding:6px 8px;border-radius:8px;margin-bottom:10px}
-.line-drop {background:#fafcfd;border:2px dashed #d6e1e4;border-radius:10px;padding:8px;min-height:55px;display:flex;flex-direction:column;gap:6px}
-.assigned-chip {background:#eaf1f2;border:1px solid var(--p);border-radius:8px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;color:var(--txt)}
+.line-header {font-size:15px;font-weight:700;color:var(--p);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+.line-code {font-size:11px;color:var(--mut);font-weight:700}
+.route-status-tag {display:inline-block;padding:5px 9px;border-radius:6px;font-size:11px;font-weight:700;margin:8px 0;width:100%;text-align:center}
+.route-status-tag.ida {background:#fff8e6;color:#d97706;border:1px solid #fde68a}
+.route-status-tag.volta {background:#e8f6f7;color:#07898c;border:1px solid #b2e2e4}
+.route-status-tag.aguardando {background:#f3f7f7;color:var(--mut);border:1px solid var(--bd)}
+
+.sched-table {width:100%;margin:8px 0;font-size:12px;background:#fafcfd;border-radius:8px;border:1px solid var(--bd);overflow:hidden}
+.sched-table th {background:#eaf1f2;color:var(--p);padding:6px 8px;font-size:11px}
+.sched-table td {padding:6px 8px;border-bottom:1px solid var(--bd)}
+.assigned-chip {background:#eaf1f2;border:1px solid var(--p);border-radius:8px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;color:var(--txt);margin-top:6px}
 
 @media(max-width:650px){.logo{height:46px;max-width:250px}.stats{gap:6px}.stat{padding:9px 6px}.stat strong{font-size:24px}.stat span{font-size:10px}.grid2,.filters{grid-template-columns:1fr}.nav button{max-width:none}}
 </style>
@@ -66,7 +73,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 </div></header>
 
 <main>
-<!-- PAINEL PRINCIPAL (ANTIGO) -->
+<!-- PAINEL PRINCIPAL DE CHECAGENS -->
 <section id="p-painel" class="page active">
 <h1>Painel de Atividades</h1>
 <div class="stats">
@@ -78,10 +85,10 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <div id="panelList"></div>
 </section>
 
-<!-- NOVA ABA: ESCALA DE LINHAS E HORÁRIOS -->
+<!-- ABA ESCALA DE LINHAS E HORÁRIOS -->
 <section id="p-linhas" class="page">
-<h1>Escala de Linhas e Horários</h1>
-<p class="muted">Selecione o dia da semana e aloque os veículos cadastrados nas 8 linhas operacionais.</p>
+<h1>Escala e Logística de Linhas</h1>
+<p class="muted">Horários dinâmicos de Ida e Volta e alocação diária de frota.</p>
 
 <div class="days-bar" id="daysBar">
   <button class="day-btn" onclick="setDay('segunda', this)">Segunda</button>
@@ -93,11 +100,10 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
   <button class="day-btn" onclick="setDay('domingo', this)">Domingo</button>
 </div>
 
-<div class="card" style="margin-bottom:16px">
-  <h3>🚌 Selecionar Veículo para Alocar</h3>
-  <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+<div class="card" style="margin-bottom:14px">
+  <h3>🚌 Alocar Veículo na Linha</h3>
+  <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
     <select id="selectBusToAlloc" class="field" style="flex:1;min-width:200px"></select>
-    <div style="font-size:12px;color:var(--mut);display:flex;align-items:center">Selecione o carro e clique em "Alocar" na linha desejada abaixo.</div>
   </div>
 </div>
 
@@ -179,6 +185,24 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
 <div id="toast" class="toast"></div>
 
+<!-- Modal para Editar Horários da Linha -->
+<div id="editSchedModal" class="modal-shield">
+  <div class="modalbox">
+    <h2>⚙️ Editar Horários da Linha</h2>
+    <p id="editSchedLineTitle" style="font-weight:bold;color:var(--p)"></p>
+    <label>Horário da IDA (SEDE ➔ DESTINO)</label>
+    <input id="editIdaInput" type="time" class="field">
+    
+    <label style="margin-top:10px">Horário da VOLTA (DESTINO ➔ SEDE)</label>
+    <input id="editVoltaInput" type="time" class="field">
+
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeEditSchedModal()">Cancelar</button>
+      <button class="btn" onclick="saveLineSchedUpdate()">Salvar Horários</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal para Alterar Roteiro -->
 <div id="routeModal" class="modal-shield">
   <div class="modalbox">
@@ -230,18 +254,17 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 const KEY='atlantico_controle_veiculos_v5';
 const PERIODS={'Checagem Diária Validador':'SHIFT_8AM','Checagem de Cartão SD':259200000,'Checagem de Câmera':604800000};
 const ACTS=Object.keys(PERIODS);
-let db=loadDB(), currentVehicle=null, pendingJustActivity=null;
+let db=loadDB(), currentVehicle=null, pendingJustActivity=null, currentEditingLineCode=null;
 
-// CONFIGURAÇÃO DAS 8 LINHAS E HORÁRIOS
-const LINHAS_OPERACIONAIS = [
-  { nome: "Coroado", horarios: "⏰ Saídas: 05:30 | 11:40 | 17:10" },
-  { nome: "Ferrolho", horarios: "⏰ Saídas: 06:00 | 12:00 | 18:00" },
-  { nome: "Jabequara", horarios: "⏰ Saídas: 05:45 | 12:15 | 17:45" },
-  { nome: "Curubeba", horarios: "⏰ Saídas: 06:15 | 12:30 | 18:15" },
-  { nome: "Roseira", horarios: "⏰ Saídas: 05:50 | 11:50 | 17:30" },
-  { nome: "Santa Elisa", horarios: "⏰ Saídas: 06:10 | 12:10 | 18:00" },
-  { nome: "Santo Estêvão", horarios: "⏰ Saídas: 05:30 | 12:00 | 17:00" },
-  { nome: "Linha de Apoio / Reserva", horarios: "⏰ Prontidão / Turno Integral" }
+// LINHAS OPERACIONAIS BASE
+const DEFAULT_LINHAS = [
+  { code: "99987", nome: "R11 - COROADO / SEDE", ida: "05:30", volta: "17:10", rend1: "COROADO (R11)", rend2: "RODOVIARIA (R11)" },
+  { code: "99988", nome: "SEDE - COROADO", ida: "06:00", volta: "18:00", rend1: "-", rend2: "-" },
+  { code: "99989", nome: "R08 - CURUPEBA / SEDE", ida: "05:45", volta: "17:30", rend1: "RODOVIARIA (R08)", rend2: "CURUPEBA (R08)" },
+  { code: "99991", nome: "R05 - JABEQUARA / SEDE", ida: "05:50", volta: "17:45", rend1: "JABEQUARA (R05)", rend2: "RODOVIARIA (R05)" },
+  { code: "99993", nome: "R09 - FERROLHO / SEDE", ida: "06:00", volta: "18:00", rend1: "FERROLHO (R09)", rend2: "RODOVIARIA (R09)" },
+  { code: "99995", nome: "R07 - SANTA ELISA / ROSEIRA", ida: "06:10", volta: "17:30", rend1: "SAO BENTO (R07)", rend2: "STA ELISA (R07)" },
+  { code: "99997", nome: "R10 - SANTO ESTEVAO / SEDE", ida: "05:30", volta: "17:00", rend1: "STO ESTEVAO (R10)", rend2: "RODOVIARIA STO" }
 ];
 
 const DIAS_SEMANA = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
@@ -252,11 +275,13 @@ function loadDB(){
   try{
     let data=JSON.parse(localStorage.getItem(KEY));
     if(!data) {
-      let old = JSON.parse(localStorage.getItem('atlantico_controle_veiculos_v4')) || JSON.parse(localStorage.getItem('atlantico_controle_veiculos_v3'));
-      if(old) { data = old; }
+      let old = JSON.parse(localStorage.getItem('atlantico_controle_veiculos_v4'));
+      if(old) data = old;
     }
-    return data || {veiculos:[],historico:[],escalas:{}};
-  }catch(e){return{veiculos:[],historico:[],escalas:{}}}
+    if(!data) data = {veiculos:[],historico:[],escalas:{},linhasCustom:{}};
+    if(!data.linhasCustom) data.linhasCustom = {};
+    return data;
+  }catch(e){return{veiculos:[],historico:[],escalas:{},linhasCustom:{}}}
 }
 
 function save(){localStorage.setItem(KEY,JSON.stringify(db))}
@@ -264,50 +289,6 @@ function now(){return new Date()}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function fmt(v){return new Date(v).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}
 function dur(ms){let h=Math.floor(ms/3600000),d=Math.floor(h/24);h%=24;if(d)return d+'d '+h+'h';if(h)return h+'h';return Math.max(1,Math.floor(ms/60000))+'min'}
-
-function getShiftStart(dateObj) {
-  let d = new Date(dateObj);
-  let shift = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 8, 0, 0, 0);
-  if (d < shift) { shift.setDate(shift.getDate() - 1); }
-  return shift;
-}
-
-function state(v,a){
- const last=v.atividades && v.atividades[a];
- const just=v.justificativas && v.justificativas[a];
-
- if(just) {
-   let isValida = false;
-   if(PERIODS[a] === 'SHIFT_8AM') {
-     if(new Date(just.dataHora) >= getShiftStart(now())) isValida = true;
-   } else {
-     if(new Date(just.dataHora).getTime() + PERIODS[a] > now().getTime()) isValida = true;
-   }
-   if(isValida) {
-     return {c:'o',label:'JUSTIFICADO',text:just.obs,due:null,doneToday:true,justified:true,justText:just.obs};
-   }
- }
-
- if(PERIODS[a] === 'SHIFT_8AM') {
-   const currentShiftStart = getShiftStart(now());
-   if(!last) return {c:'o',label:'PENDENTE',text:'Aguardando checagem do turno',due:currentShiftStart,doneToday:false,justified:false};
-   
-   const lastDate = new Date(last);
-   if(lastDate >= currentShiftStart) {
-     return {c:'g',label:'EM DIA',text:'Checagem realizada neste turno',due:new Date(currentShiftStart.getTime() + 86400000),doneToday:true,justified:false};
-   } else {
-     return {c:'o',label:'PENDENTE',text:'Pendente para o turno atual (iniciado às 08:00)',due:currentShiftStart,doneToday:false,justified:false};
-   }
- }
-
- if(!last)return{c:'o',label:'PENDENTE',text:'Aguardando primeira realização',due:null,doneToday:false,justified:false};
- const due=new Date(new Date(last).getTime()+PERIODS[a]),diff=due-now();
- if(diff<0)return{c:'r',label:'ATRASADO',text:'Atrasado '+dur(-diff),due,doneToday:false,justified:false};
- if(diff<=PERIODS[a]*.25)return{c:'o',label:'ATENÇÃO',text:'Faltam '+dur(diff),due,doneToday:false,justified:false};
- return{c:'g',label:'EM DIA',text:'Faltam '+dur(diff),due,doneToday:false,justified:false};
-}
-
-function vState(v){let c='g';ACTS.forEach(a=>{let x=state(v,a);if(x.c==='r')c='r';else if(x.c==='o'&&c==='g'&&!x.justified)c='o'});return c}
 
 function show(p,id){
  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
@@ -335,8 +316,204 @@ function renderPanel(){
  }).join(''):'<div class="empty">Nenhum veículo encontrado.</div>';
 }
 
-function icon(a){return a==='Checagem Diária Validador'?'📄':a==='Checagem de Cartão SD'?'💾':'📷'}
+function state(v,a){
+ const last=v.atividades && v.atividades[a];
+ const just=v.justificativas && v.justificativas[a];
 
+ if(just) {
+   let isValida = false;
+   if(PERIODS[a] === 'SHIFT_8AM') {
+     if(new Date(just.dataHora) >= getShiftStart(now())) isValida = true;
+   } else {
+     if(new Date(just.dataHora).getTime() + PERIODS[a] > now().getTime()) isValida = true;
+   }
+   if(isValida) return {c:'o',label:'JUSTIFICADO',text:just.obs,due:null,doneToday:true,justified:true,justText:just.obs};
+ }
+
+ if(PERIODS[a] === 'SHIFT_8AM') {
+   const currentShiftStart = getShiftStart(now());
+   if(!last) return {c:'o',label:'PENDENTE',text:'Aguardando checagem do turno',due:currentShiftStart,doneToday:false,justified:false};
+   const lastDate = new Date(last);
+   if(lastDate >= currentShiftStart) {
+     return {c:'g',label:'EM DIA',text:'Checagem realizada neste turno',due:new Date(currentShiftStart.getTime() + 86400000),doneToday:true,justified:false};
+   } else {
+     return {c:'o',label:'PENDENTE',text:'Pendente para o turno atual',due:currentShiftStart,doneToday:false,justified:false};
+   }
+ }
+
+ if(!last)return{c:'o',label:'PENDENTE',text:'Aguardando realização',due:null,doneToday:false,justified:false};
+ const due=new Date(new Date(last).getTime()+PERIODS[a]),diff=due-now();
+ if(diff<0)return{c:'r',label:'ATRASADO',text:'Atrasado '+dur(-diff),due,doneToday:false,justified:false};
+ return{c:'g',label:'EM DIA',text:'Faltam '+dur(diff),due,doneToday:false,justified:false};
+}
+
+function getShiftStart(dateObj) {
+  let d = new Date(dateObj);
+  let shift = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 8, 0, 0, 0);
+  if (d < shift) shift.setDate(shift.getDate() - 1);
+  return shift;
+}
+
+function vState(v){let c='g';ACTS.forEach(a=>{let x=state(v,a);if(x.c==='r')c='r';else if(x.c==='o'&&c==='g'&&!x.justified)c='o'});return c}
+
+// ABA LINHAS - LÓGICA DE DIA E HORÁRIO
+function setDay(day, btn){
+  currentDay = day;
+  document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderLinhas();
+}
+
+function getLineSchedule(code){
+  if(db.linhasCustom && db.linhasCustom[code]){
+    return db.linhasCustom[code];
+  }
+  let def = DEFAULT_LINHAS.find(l => l.code === code);
+  return { ida: def ? def.ida : '06:00', volta: def ? def.volta : '18:00' };
+}
+
+function getRouteStatus(idaStr, voltaStr){
+  let n = now();
+  let currentHM = String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+  
+  if(currentHM >= idaStr && currentHM < voltaStr){
+    return { status: 'ida', text: '🟡 EM TRÂNSITO (IDA: SEDE ➔ DESTINO)' };
+  } else if(currentHM >= voltaStr) {
+    return { status: 'volta', text: '🔵 EM TRÂNSITO (VOLTA: DESTINO ➔ SEDE)' };
+  }
+  return { status: 'aguardando', text: '⚪ AGUARDANDO HORÁRIO DE SAÍDA' };
+}
+
+function renderLinhas(){
+  document.querySelectorAll('.day-btn').forEach(b => {
+    if(b.getAttribute('onclick').includes(`'${currentDay}'`)) b.classList.add('active');
+    else b.classList.remove('active');
+  });
+
+  let options = '<option value="">-- Selecione um veículo --</option>';
+  db.veiculos.forEach(v => {
+    options += `<option value="${v.id}">${esc(v.codigo)} ${v.roteiro ? '('+esc(v.roteiro)+')' : ''}</option>`;
+  });
+  selectBusToAlloc.innerHTML = options;
+
+  if(!db.escalas) db.escalas = {};
+  if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
+
+  let grid = document.getElementById('linesGrid');
+  grid.innerHTML = DEFAULT_LINHAS.map(l => {
+    let sched = getLineSchedule(l.code);
+    let st = getRouteStatus(sched.ida, sched.volta);
+    let allocatedIds = db.escalas[currentDay][l.code] || [];
+    
+    let chipsHtml = allocatedIds.map(id => {
+      let vObj = db.veiculos.find(x => x.id === id);
+      let vCode = vObj ? vObj.codigo : 'Desconhecido';
+      return `<div class="assigned-chip"><span>🚌 ${esc(vCode)}</span><button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeBusFromLine('${l.code}','${id}')">✕</button></div>`;
+    }).join('');
+
+    return `<div class="line-card">
+      <div class="line-header">
+        <span>📍 ${l.nome}</span>
+        <button class="btn secondary small" style="padding:3px 7px;font-size:11px" onclick="openEditSchedModal('${l.code}','${esc(l.nome)}')">⚙️ Editar</button>
+      </div>
+      <div class="line-code">Código: ${l.code}</div>
+      <div class="route-status-tag ${st.status}">${st.text}</div>
+
+      <table class="sched-table">
+        <thead><tr><th>Trajeto</th><th>Horário Programado</th></tr></thead>
+        <tbody>
+          <tr><td><b>IDA (Sede ➔ Destino)</b></td><td>⏰ ${sched.ida}</td></tr>
+          <tr><td><b>VOLTA (Destino ➔ Sede)</b></td><td>⏰ ${sched.volta}</td></tr>
+          <tr><td colspan="2" style="font-size:10px;color:var(--mut)">Rendição: ${l.rend1} / ${l.rend2}</td></tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top:8px">
+        ${chipsHtml || '<div style="font-size:12px;color:var(--mut);text-align:center;padding:8px;background:#fafcfd;border-radius:6px;border:1px dashed #d6e1e4">Nenhum veículo alocado hoje</div>'}
+      </div>
+      <button class="btn secondary small" style="width:100%;margin-top:10px" onclick="allocBusToLine('${l.code}')">+ Alocar Veículo Selecionado</button>
+    </div>`;
+  }).join('');
+}
+
+function openEditSchedModal(code, nome){
+  currentEditingLineCode = code;
+  let sched = getLineSchedule(code);
+  editSchedLineTitle.textContent = nome + ' (' + code + ')';
+  editIdaInput.value = sched.ida;
+  editVoltaInput.value = sched.volta;
+  document.getElementById('editSchedModal').style.display = 'flex';
+}
+
+function closeEditSchedModal(){
+  document.getElementById('editSchedModal').style.display = 'none';
+}
+
+function saveLineSchedUpdate(){
+  if(!currentEditingLineCode) return;
+  if(!db.linhasCustom) db.linhasCustom = {};
+  
+  db.linhasCustom[currentEditingLineCode] = {
+    ida: editIdaInput.value || '06:00',
+    volta: editVoltaInput.value || '18:00'
+  };
+  save();
+  closeEditSchedModal();
+  renderLinhas();
+  toast('Horários da linha atualizados!');
+}
+
+function allocBusToLine(lineCode){
+  let busId = selectBusToAlloc.value;
+  if(!busId) return alert('Selecione um veículo na lista do topo primeiro.');
+  
+  if(!db.escalas) db.escalas = {};
+  if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
+
+  for(let l in db.escalas[currentDay]){
+    db.escalas[currentDay][l] = db.escalas[currentDay][l].filter(id => id !== busId);
+  }
+
+  if(!db.escalas[currentDay][lineCode]) db.escalas[currentDay][lineCode] = [];
+  db.escalas[currentDay][lineCode].push(busId);
+  save();
+  renderLinhas();
+  toast('Veículo alocado na linha!');
+}
+
+function removeBusFromLine(lineCode, busId){
+  if(db.escalas && db.escalas[currentDay] && db.escalas[currentDay][lineCode]){
+    db.escalas[currentDay][lineCode] = db.escalas[currentDay][lineCode].filter(id => id !== busId);
+    save();
+    renderLinhas();
+    toast('Veículo removido da linha.');
+  }
+}
+
+function resetEscalaDia(){
+  if(confirm('Limpar todas as alocações do dia ('+currentDay.toUpperCase()+')?')){
+    if(db.escalas && db.escalas[currentDay]){
+      db.escalas[currentDay] = {};
+      save();
+      renderLinhas();
+      toast('Escala do dia resetada.');
+    }
+  }
+}
+
+function exportWhatsAppEscala(){
+  let texto = `*🚌 ESCALA OPERACIONAL - ${currentDay.toUpperCase()}*\n\n`;
+  DEFAULT_LINHAS.forEach(l => {
+    let sched = getLineSchedule(l.code);
+    let ids = (db.escalas && db.escalas[currentDay] && db.escalas[currentDay][l.code]) || [];
+    let codigos = ids.map(id => { let v = db.veiculos.find(x => x.id === id); return v ? v.codigo : ''; }).filter(Boolean);
+    texto += `📍 *${l.nome}* (${l.code})\n   *Frota:* ${codigos.length ? codigos.join(', ') : 'Nenhum'}\n   *IDA:* ${sched.ida} | *VOLTA:* ${sched.volta}\n\n`;
+  });
+  navigator.clipboard.writeText(texto).then(() => toast('Escala copiada para o WhatsApp!'));
+}
+
+// OUTRAS FUNÇÕES DO SISTEMA PRESERVADAS
+function icon(a){return a==='Checagem Diária Validador'?'📄':a==='Checagem de Cartão SD'?'💾':'📷'}
 function renderDetail(id){
  let v=db.veiculos.find(x=>x.id===id);if(!v)return show('painel');currentVehicle=id;
  detailTitle.textContent='Veículo '+v.codigo;
@@ -349,7 +526,7 @@ function renderDetail(id){
    if(a==='Checagem de Cartão SD') btnLabel = '✓ Registrar Cartão SD';
    if(a==='Checagem de Câmera') btnLabel = '✓ Registrar Câmera';
    
-   if(e.doneToday && !e.justified) { btnLabel = '✓ Realizado neste período'; }
+   if(e.doneToday && !e.justified) btnLabel = '✓ Realizado neste período';
 
    let actionHtml = '';
    if(e.justified) {
@@ -371,101 +548,6 @@ function renderDetail(id){
 
  let hs=db.historico.filter(h=>h.veiculoId===id).sort((a,b)=>new Date(b.dataHora)-new Date(a.dataHora));
  history.innerHTML=hs.length?`<table><thead><tr><th>Data/Hora</th><th>Atividade</th><th>Status</th><th>Observação</th></tr></thead><tbody>${hs.map(h=>`<tr><td>${fmt(h.dataHora)}</td><td>${esc(h.atividade)}</td><td><b>${esc(h.status)}</b></td><td>${esc(h.observacao||'-')}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Nenhum registro realizado.</div>';
-}
-
-// FUNÇÕES DA ABA DE LINHAS E HORÁRIOS
-function setDay(day, btn){
-  currentDay = day;
-  document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  renderLinhas();
-}
-
-function renderLinhas(){
-  document.querySelectorAll('.day-btn').forEach(b => {
-    if(b.getAttribute('onclick').includes(`'${currentDay}'`)) b.classList.add('active');
-    else b.classList.remove('active');
-  });
-
-  // Atualizar select de carros disponíveis
-  let options = '<option value="">-- Selecione um veículo --</option>';
-  db.veiculos.forEach(v => {
-    options += `<option value="${v.id}">${esc(v.codigo)} ${v.roteiro ? '('+esc(v.roteiro)+')' : ''}</option>`;
-  });
-  selectBusToAlloc.innerHTML = options;
-
-  if(!db.escalas) db.escalas = {};
-  if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
-
-  let grid = document.getElementById('linesGrid');
-  grid.innerHTML = LINHAS_OPERACIONAIS.map(l => {
-    let allocatedIds = db.escalas[currentDay][l.nome] || [];
-    let chipsHtml = allocatedIds.map(id => {
-      let vObj = db.veiculos.find(x => x.id === id);
-      let vCode = vObj ? vObj.codigo : 'Desconhecido';
-      return `<div class="assigned-chip"><span>🚌 ${esc(vCode)}</span><button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeBusFromLine('${l.nome}','${id}')">✕</button></div>`;
-    }).join('');
-
-    return `<div class="line-card">
-      <div class="line-header"><span>📍 ${l.nome}</span></div>
-      <div class="line-sched">${l.horarios}</div>
-      <div class="line-drop">
-        ${chipsHtml || '<div style="font-size:12px;color:var(--mut);text-align:center;padding:10px">Nenhum veículo alocado</div>'}
-      </div>
-      <button class="btn secondary small" style="width:100%;margin-top:10px" onclick="allocBusToLine('${l.nome}')">+ Alocar Veículo Selecionado</button>
-    </div>`;
-  }).join('');
-}
-
-function allocBusToLine(lineName){
-  let busId = selectBusToAlloc.value;
-  if(!busId) return alert('Selecione um veículo no campo acima primeiro.');
-  
-  if(!db.escalas) db.escalas = {};
-  if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
-
-  // Remover de outras linhas no mesmo dia para evitar duplicidade
-  for(let l in db.escalas[currentDay]){
-    db.escalas[currentDay][l] = db.escalas[currentDay][l].filter(id => id !== busId);
-  }
-
-  if(!db.escalas[currentDay][lineName]) db.escalas[currentDay][lineName] = [];
-  db.escalas[currentDay][lineName].push(busId);
-  save();
-  renderLinhas();
-  toast('Veículo alocado com sucesso!');
-}
-
-function removeBusFromLine(lineName, busId){
-  if(db.escalas && db.escalas[currentDay] && db.escalas[currentDay][lineName]){
-    db.escalas[currentDay][lineName] = db.escalas[currentDay][lineName].filter(id => id !== busId);
-    save();
-    renderLinhas();
-    toast('Veículo removido da linha.');
-  }
-}
-
-function resetEscalaDia(){
-  if(confirm('Deseja limpar todas as alocações deste dia ('+currentDay.toUpperCase()+')?')){
-    if(db.escalas && db.escalas[currentDay]){
-      db.escalas[currentDay] = {};
-      save();
-      renderLinhas();
-      toast('Escala do dia resetada.');
-    }
-  }
-}
-
-function exportWhatsAppEscala(){
-  let texto = `*🚌 ESCALA OPERACIONAL - ${currentDay.toUpperCase()}*\n\n`;
-  LINHAS_OPERACIONAIS.forEach(l => {
-    let ids = (db.escalas && db.escalas[currentDay] && db.escalas[currentDay][l.nome]) || [];
-    let codigos = ids.map(id => { let v = db.veiculos.find(x => x.id === id); return v ? v.codigo : ''; }).filter(Boolean);
-    texto += `📍 *${l.nome}:* ${codigos.length ? codigos.join(', ') : 'Nenhum veículo'}\n   _${l.horarios}_\n\n`;
-  });
-  navigator.clipboard.writeText(texto).then(() => {
-    toast('Escala copiada para a área de transferência!');
-  });
 }
 
 function openRouteModal(){
@@ -642,16 +724,7 @@ window.addEventListener('popstate',()=>{
  askLeave();
 });
 
-let touchStartY=0,touchStartX=0;
-document.addEventListener('touchstart',e=>{if(e.touches.length===1){touchStartY=e.touches[0].clientY;touchStartX=e.touches[0].clientX}}, {passive:true});
-document.addEventListener('touchmove',e=>{
- if(window.scrollY<=0&&e.touches.length===1){
-   let dy=e.touches[0].clientY-touchStartY,dx=Math.abs(e.touches[0].clientX-touchStartX);
-   if(dy>35&&dy>dx) e.preventDefault();
- }
-},{passive:false});
-
-setInterval(()=>{save();if(document.getElementById('p-painel').classList.contains('active'))renderPanel()},60000);
+setInterval(()=>{save();if(document.getElementById('p-painel').classList.contains('active'))renderPanel(); if(document.getElementById('p-linhas').classList.contains('active'))renderLinhas();},30000);
 renderPanel();renderLinhas();renderCad();renderFilters();
 </script>
 </body>
