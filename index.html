@@ -110,7 +110,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
 <section id="p-motoristas" class="page">
 <h1>Equipe de Motoristas</h1>
-<p class="muted">Cadastre os motoristas para alocá-los nos turnos de Manhã e Tarde.</p>
+<p class="muted">Cadastre os motoristas em ordem alfabética para alocá-los nos turnos.</p>
 <div class="card">
   <h3>Novo Motorista</h3>
   <label>Nome Completo</label>
@@ -393,6 +393,9 @@ function getLineSchedule(code){
 function renderMotoristas(){
   let driverList = document.getElementById('driverList');
   if(driverList){
+    // Ordena alfabeticamente antes de renderizar
+    db.motoristas.sort((a, b) => a.name.localeCompare(b.name, 'pt', { sensitivity: 'accent' }));
+    
     driverList.innerHTML = db.motoristas.length ? db.motoristas.map(d => `
       <div class="vehicle">
         <div class="main">
@@ -405,11 +408,18 @@ function renderMotoristas(){
 }
 
 function addDriver(){
-  let name = document.getElementById('newDriverName').value.trim();
+  let nameInput = document.getElementById('newDriverName');
+  let name = nameInput.value.trim();
   if(!name) return alert('Digite o nome do motorista.');
+  
+  // Verifica duplicidade (ignorando maiúsculas/minúsculas e espaços extras)
+  let nomeLimpo = name.toLowerCase().replace(/\s+/g, ' ');
+  let existe = db.motoristas.some(d => d.name.toLowerCase().replace(/\s+/g, ' ') === nomeLimpo);
+  if(existe) return alert('Já existe um motorista cadastrado com este nome!');
+
   db.motoristas.push({ id: crypto.randomUUID(), name: name });
   save();
-  document.getElementById('newDriverName').value = '';
+  nameInput.value = '';
   renderMotoristas();
   toast('Motorista cadastrado!');
 }
@@ -440,6 +450,10 @@ function renderLinhas(){
 
   if(!db.escalas) db.escalas = {};
   if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
+
+  // Garante motoristas ordenados para os selects
+  db.motoristas.sort((a, b) => a.name.localeCompare(b.name, 'pt', { sensitivity: 'accent' }));
+  let driverOptionsHtml = db.motoristas.map(d => `<option value="${esc(d.name)}">${esc(d.name)}</option>`).join('');
 
   let grid = document.getElementById('linesGrid');
   if(grid){
