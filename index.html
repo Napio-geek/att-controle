@@ -59,7 +59,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <body>
 <div class="app">
 <header class="header"><div class="header-inner">
-  <img src="logo-atlantico.png" class="logo" alt="Atlântico">
+  <img src="logo-atlantico.png" class="logo" alt="Atlântico" onerror="this.style.display='none'">
   <div class="header-sub">Controle de Atividades e Frota</div>
 </div></header>
 
@@ -156,7 +156,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
   <label>Resetar histórico geral de TUDO</label>
   <button class="btn danger" onclick="resetAllHistory()">🗑️ Resetar Histórico de Todos os Veículos</button>
 </div>
-</div>
 </section>
 </main>
 
@@ -220,22 +219,25 @@ const KEY='atlantico_controle_veiculos_v5';
 const PERIODS={'Checagem Diária Validador':'SHIFT_8AM','Checagem de Cartão SD':259200000,'Checagem de Câmera':604800000};
 const ACTS=Object.keys(PERIODS);
 
-// RESCATE AUTOMÁTICO DE DADOS SE ESTIVEREM NA CHAVE ANTIGA
 function loadDB(){
   try{
-    let data=JSON.parse(localStorage.getItem(KEY));
+    let data = JSON.parse(localStorage.getItem(KEY));
     if(!data) {
       let old = JSON.parse(localStorage.getItem('att-controle-frota-v2'));
       if(old) data = old;
     }
-    if(!data) data = {veiculos:[],historico:[],escalas:{},linhasCustom:{}};
-    if(!data.linhasCustom) data.linhasCustom = {};
-    if(!data.escalas) data.escalas = {};
+    if(!data || typeof data !== 'object') data = {};
+    if(!Array.isArray(data.veiculos)) data.veiculos = [];
+    if(!Array.isArray(data.historico)) data.historico = [];
+    if(!data.escalas || typeof data.escalas !== 'object') data.escalas = {};
+    if(!data.linhasCustom || typeof data.linhasCustom !== 'object') data.linhasCustom = {};
     return data;
-  }catch(e){return{veiculos:[],historico:[],escalas:{},linhasCustom:{}}}
+  }catch(e){
+    return {veiculos:[], historico:[], escalas:{}, linhasCustom:{}};
+  }
 }
 
-let db=loadDB(), currentVehicle=null, pendingJustActivity=null, currentEditingLineCode=null;
+let db = loadDB(), currentVehicle = null, pendingJustActivity = null, currentEditingLineCode = null;
 
 const DEFAULT_LINHAS = [
   { code: "99991", nome: "R05 - JABEQUARA / SEDE", sched: { util: { ida: "06:30, 09:00, 12:30, 16:30", volta: "07:30, 10:30, 15:00, 17:20" }, sab: { ida: "06:30, 16:00", volta: "08:00, 17:00" }, dom: { ida: "10:00, 16:00", volta: "11:00, 17:00" } } },
@@ -526,4 +528,86 @@ function confirmJustification(){
   let obs = sel.value==='Outro' ? document.getElementById('justCustom').value : sel.value;
   let t = now().toISOString();
   if(!v.justificativas) v.justificativas = {};
-  v.justificativas
+  v.justificativas[pendingJustActivity] = {obs:obs, dataHora:t};
+  db.historico.push({veiculoId:currentVehicle, veiculo:v.codigo, atividade:pendingJustActivity, dataHora:t, status:'Justificado', observacao:obs});
+  save(); closeJustModal(); renderDetail(currentVehicle); renderPanel(); toast('Justificativa salva.');
+}
+
+function addVehicle(){
+  let c = document.getElementById('newCode').value.trim();
+  let r = document.getElementById('newRoute').value.trim();
+  if(!c) return alert('Informe o código do veículo.');
+  if(db.veiculos.some(v=>v.codigo.toLowerCase()===c.toLowerCase())) return alert('Veículo já cadastrado.');
+  db.veiculos.push({id:crypto.randomUUID(), codigo:c, roteiro:r, atividades:{}, justificativas:{}});
+  save(); document.getElementById('newCode').value=''; document.getElementById('newRoute').value=''; renderCad(); renderPanel(); toast('Veículo cadastrado!');
+}
+
+function renderCad(){
+  let searchCad = document.getElementById('searchCad');
+  let q = searchCad ? searchCad.value.toLowerCase() : '';
+  let arr = db.veiculos.filter(v=>v.codigo.toLowerCase().includes(q));
+  let cadList = document.getElementById('cadList');
+  if(cadList){
+    cadList.innerHTML = arr.length ? arr.map(v=>`<div class="vehicle"><div class="main"><div class="code">${esc(v.codigo)}</div><div class="msg">Roteiro: ${esc(v.roteiro||'-')}</div></div><button class="btn secondary small" onclick="show('detail','${v.id}')">Abrir</button><button class="btn danger small" onclick="removeVehicle('${v.id}')">🗑</button></div>`).join('') : '<div class="empty">Nenhum veículo cadastrado.</div>';
+  }
+}
+
+function removeVehicle(id){
+  if(confirm('Excluir veículo? O histórico também será removido.')){
+    db.veiculos = db.veiculos.filter(x=>x.id!==id);
+    db.historico = db.historico.filter(x=>x.veiculoId!==id);
+    save(); renderCad(); renderPanel(); toast('Veículo excluído.');
+  }
+}
+
+function renderFilters(){
+  let opt = '<option value="">Todos</option>' + db.veiculos.map(v=>`<option value="${v.id}">${esc(v.codigo)}</option>`).join('');
+  let fVeic = document.getElementById('fVeic'), resetSingle = document.getElementById('resetSingleVeic');
+  if(fVeic) fVeic.innerHTML = opt;
+  if(resetSingle) resetSingle.innerHTML = opt;
+}
+
+function resetAllHistory(){
+  if(confirm('Apagar todo o histórico de todos os veículos?')){
+    db.historico = [];
+    db.veiculos.forEach(v=>{ v.atividades={}; v.justificativas={}; });
+    save(); renderPanel(); toast('Histórico resetado.');
+  }
+}
+
+function resetSingleVehicleHistory(){
+  let id = document.getElementById('resetSingleVeic').value;
+  if(!id) return alert('Selecione um veículo.');
+  let v = db.veiculos.find(x=>x.id===id);
+  if(v && confirm('Resetar histórico de ' + v.codigo + '?')){
+    v.atividades = {}; v.justificativas = {};
+    db.historico = db.historico.filter(h=>h.veiculoId!==id);
+    save(); renderPanel(); toast('Resetado.');
+  }
+}
+
+function exportExcel(){
+  if(typeof XLSX==='undefined') return alert('Biblioteca do Excel indisponível.');
+  let rows = db.historico.map(h=>({'Veículo':h.veiculo, 'Atividade':h.atividade, 'Data':fmt(h.dataHora), 'Status':h.status}));
+  let ws = XLSX.utils.json_to_sheet(rows), wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Histórico');
+  XLSX.writeFile(wb, 'atlantico_historico.xlsx');
+  toast('Excel gerado.');
+}
+
+function toast(t){
+  let x = document.getElementById('toast');
+  if(!x) return;
+  x.textContent = t; x.style.display = 'block';
+  setTimeout(()=>x.style.display='none', 2400);
+}
+
+window.onload = function(){
+  renderPanel();
+  renderLinhas();
+  renderCad();
+  renderFilters();
+};
+</script>
+</body>
+</html>
