@@ -57,6 +57,9 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 .cross-row.active {background:#e8f6f7;border-color:var(--p);font-weight:bold}
 .cross-badge {background:var(--p);color:#fff;font-size:9px;padding:2px 6px;border-radius:4px;float:right}
 
+.alloc-inline-box {display:flex;gap:6px;margin-top:8px;margin-bottom:6px}
+.alloc-inline-box select {flex:1;padding:8px;font-size:12px}
+
 @media(max-width:650px){.logo{height:46px;max-width:250px}.stats{gap:6px}.stat{padding:9px 6px}.stat strong{font-size:24px}.stat span{font-size:10px}.grid2,.filters{grid-template-columns:1fr}.nav button{max-width:none}}
 </style>
 </head>
@@ -91,13 +94,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
   <button class="day-btn" onclick="setDay('sexta', this)">Sexta</button>
   <button class="day-btn" onclick="setDay('sabado', this)">Sábado</button>
   <button class="day-btn" onclick="setDay('domingo', this)">Domingo</button>
-</div>
-
-<div class="card" style="margin-bottom:14px">
-  <h3>🚌 Alocar Veículo na Linha</h3>
-  <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
-    <select id="selectBusToAlloc" class="field" style="flex:1;min-width:200px"></select>
-  </div>
 </div>
 
 <div class="actions" style="margin-bottom:14px">
@@ -393,7 +389,6 @@ function getLineSchedule(code){
 function renderMotoristas(){
   let driverList = document.getElementById('driverList');
   if(driverList){
-    // Ordena alfabeticamente antes de renderizar
     db.motoristas.sort((a, b) => a.name.localeCompare(b.name, 'pt', { sensitivity: 'accent' }));
     
     driverList.innerHTML = db.motoristas.length ? db.motoristas.map(d => `
@@ -412,7 +407,6 @@ function addDriver(){
   let name = nameInput.value.trim();
   if(!name) return alert('Digite o nome do motorista.');
   
-  // Verifica duplicidade (ignorando maiúsculas/minúsculas e espaços extras)
   let nomeLimpo = name.toLowerCase().replace(/\s+/g, ' ');
   let existe = db.motoristas.some(d => d.name.toLowerCase().replace(/\s+/g, ' ') === nomeLimpo);
   if(existe) return alert('Já existe um motorista cadastrado com este nome!');
@@ -439,21 +433,12 @@ function renderLinhas(){
     else b.classList.remove('active');
   });
 
-  let selectBus = document.getElementById('selectBusToAlloc');
-  if(selectBus){
-    let options = '<option value="">-- Selecione um veículo --</option>';
-    db.veiculos.forEach(v => {
-      options += `<option value="${v.id}">${esc(v.codigo)} ${v.roteiro ? '('+esc(v.roteiro)+')' : ''}</option>`;
-    });
-    selectBus.innerHTML = options;
-  }
-
   if(!db.escalas) db.escalas = {};
   if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
 
-  // Garante motoristas ordenados para os selects
   db.motoristas.sort((a, b) => a.name.localeCompare(b.name, 'pt', { sensitivity: 'accent' }));
-  let driverOptionsHtml = db.motoristas.map(d => `<option value="${esc(d.name)}">${esc(d.name)}</option>`).join('');
+
+  let vehicleOptionsHtml = '<option value="">-- Selecione o Veículo --</option>' + db.veiculos.map(v => `<option value="${v.id}">${esc(v.codigo)} ${v.roteiro ? '('+esc(v.roteiro)+')' : ''}</option>`).join('');
 
   let grid = document.getElementById('linesGrid');
   if(grid){
@@ -513,6 +498,12 @@ function renderLinhas(){
           <div style="margin:8px 0">${rowsHtml}</div>
 
           <div class="sub-alloc-title">1. Carro A (Inicia na Sede):</div>
+          ${!vA ? `
+            <div class="alloc-inline-box">
+              <select id="selBus_${l.code}_ida" class="field">${vehicleOptionsHtml}</select>
+              <button class="btn small" onclick="allocCruzadoDirect('${l.code}','ida')">＋ Alocar</button>
+            </div>
+          ` : ''}
           <div class="assigned-chip">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <span>🚌 ${vA ? esc(vA.codigo) : 'Nenhum'}</span>
@@ -531,9 +522,14 @@ function renderLinhas(){
               </div>
             ` : ''}
           </div>
-          <button class="btn secondary small" style="width:100%;margin-top:4px;font-size:11px" onclick="allocCruzadoBus('${l.code}','ida')">+ Alocar p/ Carro A</button>
 
-          <div class="sub-alloc-title" style="margin-top:8px">2. Carro B (Inicia no Destino):</div>
+          <div class="sub-alloc-title" style="margin-top:10px">2. Carro B (Inicia no Destino):</div>
+          ${!vB ? `
+            <div class="alloc-inline-box">
+              <select id="selBus_${l.code}_volta" class="field">${vehicleOptionsHtml}</select>
+              <button class="btn small" onclick="allocCruzadoDirect('${l.code}','volta')">＋ Alocar</button>
+            </div>
+          ` : ''}
           <div class="assigned-chip">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <span>🚌 ${vB ? esc(vB.codigo) : 'Nenhum'}</span>
@@ -552,7 +548,6 @@ function renderLinhas(){
               </div>
             ` : ''}
           </div>
-          <button class="btn secondary small" style="width:100%;margin-top:4px;font-size:11px" onclick="allocCruzadoBus('${l.code}','volta')">+ Alocar p/ Carro B</button>
         </div>`;
       } else {
         let allocatedItems = Array.isArray(dayEscala) ? dayEscala : [];
@@ -592,14 +587,58 @@ function renderLinhas(){
             <div><b>IDA:</b> ${sched.ida}</div>
             <div style="margin-top:4px"><b>VOLTA:</b> ${sched.volta}</div>
           </div>
+          
+          <div class="alloc-inline-box">
+            <select id="selBus_${l.code}" class="field">${vehicleOptionsHtml}</select>
+            <button class="btn small" onclick="allocBusDirect('${l.code}')">＋ Alocar</button>
+          </div>
+
           <div style="margin-top:6px">
             ${chipsHtml || '<div style="font-size:12px;color:var(--mut);text-align:center;padding:8px;background:#fafcfd;border-radius:6px;border:1px dashed #d6e1e4">Nenhum veículo alocado</div>'}
           </div>
-          <button class="btn secondary small" style="width:100%;margin-top:10px" onclick="allocBusToLine('${l.code}')">+ Alocar Veículo Selecionado</button>
         </div>`;
       }
     }).join('');
   }
+}
+
+function allocBusDirect(lineCode){
+  let selectEl = document.getElementById('selBus_' + lineCode);
+  let busId = selectEl ? selectEl.value : '';
+  if(!busId) return alert('Selecione um veículo.');
+
+  if(!db.escalas) db.escalas = {};
+  if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
+
+  if(!Array.isArray(db.escalas[currentDay][lineCode])) db.escalas[currentDay][lineCode] = [];
+  if(!db.escalas[currentDay][lineCode].some(x => (typeof x === 'object' ? x.id === busId : x === busId))){
+    db.escalas[currentDay][lineCode].push({ id: busId, manha: '', tarde: '' });
+  }
+  save();
+  renderLinhas();
+  toast('Veículo alocado!');
+}
+
+function allocCruzadoDirect(lineCode, sentido){
+  let selectEl = document.getElementById('selBus_' + lineCode + '_' + sentido);
+  let busId = selectEl ? selectEl.value : '';
+  if(!busId) return alert('Selecione um veículo.');
+
+  if(!db.escalas) db.escalas = {};
+  if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
+
+  if(!db.escalas[currentDay][lineCode] || typeof db.escalas[currentDay][lineCode] !== 'object' || Array.isArray(db.escalas[currentDay][lineCode])){
+    db.escalas[currentDay][lineCode] = { ida: { id: null, manha: '', tarde: '' }, volta: { id: null, manha: '', tarde: '' } };
+  }
+
+  let actualObj = db.escalas[currentDay][lineCode][sentido];
+  let currentManha = typeof actualObj === 'object' ? (actualObj.manha || '') : '';
+  let currentTarde = typeof actualObj === 'object' ? (actualObj.tarde || '') : '';
+
+  db.escalas[currentDay][lineCode][sentido] = { id: busId, manha: currentManha, tarde: currentTarde };
+  save();
+  renderLinhas();
+  toast('Veículo alocado!');
 }
 
 function updateSimpleDriver(lineCode, busId, turno, val){
@@ -736,39 +775,6 @@ function saveLineSchedUpdate(){
   closeEditSchedModal();
   renderLinhas();
   toast('Horários atualizados!');
-}
-
-function allocBusToLine(lineCode){
-  let selectBus = document.getElementById('selectBusToAlloc');
-  let busId = selectBus ? selectBus.value : '';
-  if(!busId) return alert('Selecione um veículo na lista do topo primeiro.');
-  if(!db.escalas) db.escalas = {};
-  if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
-
-  if(!Array.isArray(db.escalas[currentDay][lineCode])) db.escalas[currentDay][lineCode] = [];
-  if(!db.escalas[currentDay][lineCode].some(x => (typeof x === 'object' ? x.id === busId : x === busId))){
-    db.escalas[currentDay][lineCode].push({ id: busId, manha: '', tarde: '' });
-  }
-  save();
-  renderLinhas();
-  toast('Veículo alocado!');
-}
-
-function allocCruzadoBus(lineCode, sentido){
-  let selectBus = document.getElementById('selectBusToAlloc');
-  let busId = selectBus ? selectBus.value : '';
-  if(!busId) return alert('Selecione um veículo na lista do topo primeiro.');
-  if(!db.escalas) db.escalas = {};
-  if(!db.escalas[currentDay]) db.escalas[currentDay] = {};
-
-  if(!db.escalas[currentDay][lineCode] || typeof db.escalas[currentDay][lineCode] !== 'object' || Array.isArray(db.escalas[currentDay][lineCode])){
-    db.escalas[currentDay][lineCode] = { ida: { id: null, manha: '', tarde: '' }, volta: { id: null, manha: '', tarde: '' } };
-  }
-
-  db.escalas[currentDay][lineCode][sentido] = { id: busId, manha: '', tarde: '' };
-  save();
-  renderLinhas();
-  toast('Veículo alocado!');
 }
 
 function removeBusFromLine(lineCode, busId){
