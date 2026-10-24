@@ -386,6 +386,31 @@ function getLineSchedule(code){
   return def ? def.sched[t] : { ida: "06:00", volta: "18:00" };
 }
 
+function getAllocatedBusIdsForDay(){
+  let allocated = new Set();
+  let dayEscala = (db.escalas && db.escalas[currentDay]) || {};
+  
+  for(let lCode in dayEscala){
+    let item = dayEscala[lCode];
+    if(Array.isArray(item)){
+      item.forEach(x => {
+        let id = typeof x === 'object' ? x.id : x;
+        if(id) allocated.add(id);
+      });
+    } else if(item && typeof item === 'object'){
+      if(item.ida) {
+        let idA = typeof item.ida === 'object' ? item.ida.id : item.ida;
+        if(idA) allocated.add(idA);
+      }
+      if(item.volta) {
+        let idB = typeof item.volta === 'object' ? item.volta.id : item.volta;
+        if(idB) allocated.add(idB);
+      }
+    }
+  }
+  return allocated;
+}
+
 function renderMotoristas(){
   let driverList = document.getElementById('driverList');
   if(driverList){
@@ -438,7 +463,10 @@ function renderLinhas(){
 
   db.motoristas.sort((a, b) => a.name.localeCompare(b.name, 'pt', { sensitivity: 'accent' }));
 
-  let vehicleOptionsHtml = '<option value="">-- Selecione o Veículo --</option>' + db.veiculos.map(v => `<option value="${v.id}">${esc(v.codigo)} ${v.roteiro ? '('+esc(v.roteiro)+')' : ''}</option>`).join('');
+  let allocatedSet = getAllocatedBusIdsForDay();
+  let availableBuses = db.veiculos.filter(v => !allocatedSet.has(v.id));
+
+  let vehicleOptionsHtml = '<option value="">-- Selecione o Veículo --</option>' + availableBuses.map(v => `<option value="${v.id}">${esc(v.codigo)} ${v.roteiro ? '('+esc(v.roteiro)+')' : ''}</option>`).join('');
 
   let grid = document.getElementById('linesGrid');
   if(grid){
