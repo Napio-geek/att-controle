@@ -165,17 +165,19 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <h3>Novo veículo</h3>
 <label>Código do veículo</label>
 <input id="newCode" class="field" maxlength="40" placeholder="Digite o código (Ex: V-102)">
+<label style="margin-top:10px">N° Ordem (Padrão SFC)</label>
+<input id="newOrdem" class="field" maxlength="40" placeholder="Digite o número de ordem (Ex: 8824147)">
 <label style="margin-top:10px">Roteiro / Linha (Opcional)</label>
 <input id="newRoute" class="field" maxlength="60" placeholder="Digite a linha atual (Ex: Linha 01)">
 <button class="btn" style="margin-top:14px" onclick="addVehicle()">＋ Cadastrar veículo</button>
 </div>
-<input id="searchCad" class="search" placeholder="🔎 Buscar por código ou roteiro..." oninput="renderCad()">
+<input id="searchCad" class="search" placeholder="🔎 Buscar por código, ordem ou roteiro..." oninput="renderCad()">
 <div id="cadList"></div>
 </section>
 
 <section id="p-exportacao" class="page">
 <h1>Exportação e Configurações</h1>
-<div class="card"><h3>📤 Exportar dados</h3><p class="muted">Gere um arquivo Excel com os registros realizados.</p>
+<div class="card"><h3>📤 Exportar dados de Atividades</h3><p class="muted">Gere um arquivo Excel com os registros realizados.</p>
 <div class="filters">
 <div><label>Data inicial</label><input id="fIni" type="date" class="field"></div>
 <div><label>Data final</label><input id="fFim" type="date" class="field"></div>
@@ -183,6 +185,12 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <div><label>Atividade</label><select id="fAtiv" class="field"><option value="">Todas</option><option>Checagem Diária Validador</option><option>Checagem de Cartão SD</option><option>Checagem de Câmera</option></select></div>
 </div>
 <button class="btn" style="margin-top:15px" onclick="exportExcel()">⬇ Exportar dados (Excel)</button>
+</div>
+
+<div class="card" style="border-color:var(--p)">
+  <h3>📷 Relatório de Câmeras (Modelo SFC)</h3>
+  <p class="muted">Gera a listagem oficial de pendências de câmeras e monitoramento da Unidade São Francisco do Conde.</p>
+  <button class="btn" style="margin-top:12px" onclick="exportCameraSFC()">📄 Baixar Relatório de Câmeras (SFC)</button>
 </div>
 
 <div class="card">
@@ -256,6 +264,36 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
   </div>
 </div>
 
+<div id="cameraModal" class="modal-shield">
+  <div class="modalbox">
+    <h2>📷 Checagem de Câmeras & DVR</h2>
+    <p id="cameraModalSub" style="font-size:12px;color:var(--mut);margin-bottom:10px"></p>
+    
+    <label>Status do DVR</label>
+    <select id="camDvr" class="field"><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select>
+
+    <label style="margin-top:8px">Câmera 1 (Rua)</label>
+    <select id="cam1" class="field"><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select>
+
+    <label style="margin-top:8px">Câmera 2 (Interna / Motorista)</label>
+    <select id="cam2" class="field"><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select>
+
+    <label style="margin-top:8px">Câmera 3</label>
+    <select id="cam3" class="field"><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select>
+
+    <label style="margin-top:8px">Câmera 4</label>
+    <select id="cam4" class="field"><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select>
+
+    <label style="margin-top:8px">Observação / Resolução do Problema</label>
+    <textarea id="camObs" class="field" style="height:65px" placeholder="Ex: Câmera da rua oscilando, ajuste feito no conector."></textarea>
+
+    <div class="modal-actions" style="margin-top:14px">
+      <button class="btn secondary" onclick="closeCameraModal()">Cancelar</button>
+      <button class="btn" onclick="saveCameraCheck()">✓ Salvar Checagem</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const KEY='atlantico_controle_veiculos_v5';
 const PERIODS={'Checagem Diária Validador':'SHIFT_8AM','Checagem de Cartão SD':259200000,'Checagem de Câmera':604800000};
@@ -275,9 +313,10 @@ function loadDB(){
     if(!data.escalas || typeof data.escalas !== 'object') data.escalas = {};
     if(!data.linhasCustom || typeof data.linhasCustom !== 'object') data.linhasCustom = {};
     if(!data.pernoite || typeof data.pernoite !== 'object') data.pernoite = {};
+    if(!data.cameraChecks || typeof data.cameraChecks !== 'object') data.cameraChecks = {};
     return data;
   }catch(e){
-    return {veiculos:[], motoristas:[], historico:[], escalas:{}, linhasCustom:{}, pernoite:{}};
+    return {veiculos:[], motoristas:[], historico:[], escalas:{}, linhasCustom:{}, pernoite:{}, cameraChecks:{}};
   }
 }
 
@@ -330,7 +369,7 @@ function renderPanel(){
 
   let searchInput = document.getElementById('searchPanel');
   let q = searchInput ? searchInput.value.toLowerCase() : '';
-  let arr = db.veiculos.filter(v => v.codigo.toLowerCase().includes(q) || (v.roteiro && v.roteiro.toLowerCase().includes(q)));
+  let arr = db.veiculos.filter(v => v.codigo.toLowerCase().includes(q) || (v.roteiro && v.roteiro.toLowerCase().includes(q)) || (v.ordem && v.ordem.toLowerCase().includes(q)));
   
   let panelList = document.getElementById('panelList');
   if(panelList){
@@ -338,7 +377,8 @@ function renderPanel(){
       let s = vState(v), priority = ACTS.find(a=>state(v,a).c===s)||ACTS[0], e = state(v,priority);
       let msg = s==='g' ? 'Todas as atividades em dia' : priority+' — '+e.text;
       let rotTxt = v.roteiro ? `<span style="font-size:12px;color:var(--p);font-weight:bold;"> 📍 ${esc(v.roteiro)}</span>` : '';
-      return `<div class="vehicle" onclick="show('detail','${v.id}')"><span class="dot ${s}"></span><div class="main"><div class="code">${esc(v.codigo)}${rotTxt}</div><div class="msg">${esc(msg)}</div></div><b>›</b></div>`;
+      let ordemTxt = v.ordem ? `<span style="font-size:11px;color:var(--mut);"> (Ordem: ${esc(v.ordem)})</span>` : '';
+      return `<div class="vehicle" onclick="show('detail','${v.id}')"><span class="dot ${s}"></span><div class="main"><div class="code">${esc(v.codigo)}${ordemTxt}${rotTxt}</div><div class="msg">${esc(msg)}</div></div><b>›</b></div>`;
     }).join('') : '<div class="empty">Nenhum veículo encontrado.</div>';
   }
 }
@@ -875,7 +915,7 @@ function renderDetail(id){
   if(!v) return show('painel');
   currentVehicle = id;
   
-  document.getElementById('detailTitle').textContent = 'Veículo '+v.codigo;
+  document.getElementById('detailTitle').textContent = 'Veículo '+v.codigo + (v.ordem ? ' (Ordem: '+v.ordem+')' : '');
   document.getElementById('detailRoute').textContent = 'Roteiro: ' + (v.roteiro || 'Não informado');
   
   let actsEl = document.getElementById('activities');
@@ -884,11 +924,15 @@ function renderDetail(id){
       let e = state(v,a), last = v.atividades && v.atividades[a];
       let btnLabel = '✓ Registrar';
       if(e.doneToday && !e.justified) btnLabel = '✓ Realizado neste período';
+      
+      let clickAction = `registerActivity('${v.id}','${esc(a)}')`;
+      if(a === 'Checagem de Câmera') clickAction = `openCameraModal('${v.id}')`;
+
       return `<div class="activity ${e.c}">
         <div class="activity-head"><h3>${icon(a)} ${a}</h3><span class="badge ${e.c}">${e.label}</span></div>
         <p>Último: <b>${last?fmt(last):'Não realizado'}</b></p>
         <div class="act-btns">
-          <button class="btn" ${e.doneToday?'disabled':''} onclick="registerActivity('${v.id}','${esc(a)}')">${btnLabel}</button>
+          <button class="btn" ${e.doneToday&&a!=='Checagem de Câmera'?'disabled':''} onclick="${clickAction}">${btnLabel}</button>
           <button class="btn warning" onclick="openJustModal('${esc(a)}')">⚠️ Justificar</button>
         </div>
       </div>`;
@@ -900,6 +944,85 @@ function renderDetail(id){
   if(histEl){
     histEl.innerHTML = hs.length ? `<table><thead><tr><th>Data</th><th>Atividade</th><th>Status</th></tr></thead><tbody>${hs.map(h=>`<tr><td>${fmt(h.dataHora)}</td><td>${esc(h.atividade)}</td><td><b>${esc(h.status)}</b></td></tr>`).join('')}</tbody></table>` : '<div class="empty">Sem histórico.</div>';
   }
+}
+
+function openCameraModal(id){
+  currentVehicle = id;
+  let v = db.veiculos.find(x => x.id === id);
+  if(!v) return;
+  document.getElementById('cameraModalSub').textContent = 'Veículo: ' + v.codigo + (v.ordem ? ' (Ordem: '+v.ordem+')' : '');
+  
+  let lastCheck = db.cameraChecks && db.cameraChecks[id];
+  document.getElementById('camDvr').value = lastCheck ? lastCheck.dvr : 'SIM';
+  document.getElementById('cam1').value = lastCheck ? lastCheck.cam1 : 'SIM';
+  document.getElementById('cam2').value = lastCheck ? lastCheck.cam2 : 'SIM';
+  document.getElementById('cam3').value = lastCheck ? lastCheck.cam3 : 'SIM';
+  document.getElementById('cam4').value = lastCheck ? lastCheck.cam4 : 'SIM';
+  document.getElementById('camObs').value = lastCheck ? lastCheck.obs : '';
+
+  document.getElementById('cameraModal').style.display = 'flex';
+}
+
+function closeCameraModal(){ document.getElementById('cameraModal').style.display = 'none'; }
+
+function saveCameraCheck(){
+  let id = currentVehicle;
+  let v = db.veiculos.find(x => x.id === id);
+  if(!v) return;
+
+  let checkData = {
+    dvr: document.getElementById('camDvr').value,
+    cam1: document.getElementById('cam1').value,
+    cam2: document.getElementById('cam2').value,
+    cam3: document.getElementById('cam3').value,
+    cam4: document.getElementById('cam4').value,
+    obs: document.getElementById('camObs').value.trim()
+  };
+
+  if(!db.cameraChecks) db.cameraChecks = {};
+  db.cameraChecks[id] = checkData;
+
+  let t = now().toISOString();
+  if(!v.atividades) v.atividades = {};
+  v.atividades['Checagem de Câmera'] = t;
+  db.historico.push({veiculoId:id, veiculo:v.codigo, atividade:'Checagem de Câmera', dataHora:t, status:'Realizada', observacao: checkData.obs});
+
+  save();
+  closeCameraModal();
+  renderDetail(id);
+  renderPanel();
+  toast('Checagem de câmeras salva!');
+}
+
+function exportCameraSFC(){
+  if(typeof XLSX==='undefined') return alert('Biblioteca do Excel indisponível.');
+  
+  let rows = db.veiculos.map(v => {
+    let cc = (db.cameraChecks && db.cameraChecks[v.id]) || { dvr:'SIM', cam1:'SIM', cam2:'SIM', cam3:'SIM', cam4:'SIM', obs:'' };
+    return {
+      'N° ORDEM': v.ordem || '',
+      'VEICULO': v.codigo || '',
+      'DVR': cc.dvr,
+      'CAM 1': cc.cam1,
+      'CAM 2': cc.cam2,
+      'CAM 3': cc.cam3,
+      'CAM 4': cc.cam4,
+      'OBSERVAÇÃO': cc.obs
+    };
+  });
+
+  let ws = XLSX.utils.json_to_sheet([
+    { 'N° ORDEM': 'CONTROLE DE PENDÊNCIAS DE CÂMERAS - MONITORAMENTO' },
+    { 'N° ORDEM': 'UNIDADE SÃO FRANCISCO DO CONDE' },
+    {}
+  ], {header: ['N° ORDEM', 'VEICULO', 'DVR', 'CAM 1', 'CAM 2', 'CAM 3', 'CAM 4', 'OBSERVAÇÃO']});
+  
+  XLSX.utils.sheet_add_json(ws, rows, {origin: 4, skipHeader: false});
+  
+  let wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Controle Cameras SFC');
+  XLSX.writeFile(wb, 'Controle_Cameras_Sao_Francisco_do_Conde.xlsx');
+  toast('Relatório SFC gerado com sucesso!');
 }
 
 function openRouteModal(){
@@ -941,20 +1064,27 @@ function confirmJustification(){
 
 function addVehicle(){
   let c = document.getElementById('newCode').value.trim();
+  let o = document.getElementById('newOrdem').value.trim();
   let r = document.getElementById('newRoute').value.trim();
   if(!c) return alert('Informe o código do veículo.');
   if(db.veiculos.some(v=>v.codigo.toLowerCase()===c.toLowerCase())) return alert('Veículo já cadastrado.');
-  db.veiculos.push({id:crypto.randomUUID(), codigo:c, roteiro:r, atividades:{}, justificativas:{}});
-  save(); document.getElementById('newCode').value=''; document.getElementById('newRoute').value=''; renderCad(); renderPanel(); toast('Veículo cadastrado!');
+  db.veiculos.push({id:crypto.randomUUID(), codigo:c, ordem:o, roteiro:r, atividades:{}, justificativas:{}});
+  save(); 
+  document.getElementById('newCode').value=''; 
+  document.getElementById('newOrdem').value=''; 
+  document.getElementById('newRoute').value=''; 
+  renderCad(); 
+  renderPanel(); 
+  toast('Veículo cadastrado!');
 }
 
 function renderCad(){
   let searchCad = document.getElementById('searchCad');
   let q = searchCad ? searchCad.value.toLowerCase() : '';
-  let arr = db.veiculos.filter(v=>v.codigo.toLowerCase().includes(q));
+  let arr = db.veiculos.filter(v=>v.codigo.toLowerCase().includes(q) || (v.ordem && v.ordem.toLowerCase().includes(q)) || (v.roteiro && v.roteiro.toLowerCase().includes(q)));
   let cadList = document.getElementById('cadList');
   if(cadList){
-    cadList.innerHTML = arr.length ? arr.map(v=>`<div class="vehicle"><div class="main"><div class="code">${esc(v.codigo)}</div><div class="msg">Roteiro: ${esc(v.roteiro||'-')}</div></div><button class="btn secondary small" onclick="show('detail','${v.id}')">Abrir</button><button class="btn danger small" onclick="removeVehicle('${v.id}')">🗑</button></div>`).join('') : '<div class="empty">Nenhum veículo cadastrado.</div>';
+    cadList.innerHTML = arr.length ? arr.map(v=>`<div class="vehicle"><div class="main"><div class="code">${esc(v.codigo)} ${v.ordem ? '(Ordem: '+esc(v.ordem)+')' : ''}</div><div class="msg">Roteiro: ${esc(v.roteiro||'-')}</div></div><button class="btn secondary small" onclick="show('detail','${v.id}')">Abrir</button><button class="btn danger small" onclick="removeVehicle('${v.id}')">🗑</button></div>`).join('') : '<div class="empty">Nenhum veículo cadastrado.</div>';
   }
 }
 
@@ -962,6 +1092,7 @@ function removeVehicle(id){
   if(confirm('Excluir veículo? O histórico também será removido.')){
     db.veiculos = db.veiculos.filter(x=>x.id!==id);
     db.historico = db.historico.filter(x=>x.veiculoId!==id);
+    if(db.cameraChecks && db.cameraChecks[id]) delete db.cameraChecks[id];
     save(); renderCad(); renderPanel(); toast('Veículo excluído.');
   }
 }
@@ -976,6 +1107,7 @@ function renderFilters(){
 function resetAllHistory(){
   if(confirm('Apagar todo o histórico de todos os veículos?')){
     db.historico = [];
+    db.cameraChecks = {};
     db.veiculos.forEach(v=>{ v.atividades={}; v.justificativas={}; });
     save(); renderPanel(); toast('Histórico resetado.');
   }
@@ -987,6 +1119,7 @@ function resetSingleVehicleHistory(){
   let v = db.veiculos.find(x=>x.id===id);
   if(v && confirm('Resetar histórico de ' + v.codigo + '?')){
     v.atividades = {}; v.justificativas = {};
+    if(db.cameraChecks && db.cameraChecks[id]) delete db.cameraChecks[id];
     db.historico = db.historico.filter(h=>h.veiculoId!==id);
     save(); renderPanel(); toast('Resetado.');
   }
@@ -994,7 +1127,7 @@ function resetSingleVehicleHistory(){
 
 function exportExcel(){
   if(typeof XLSX==='undefined') return alert('Biblioteca do Excel indisponível.');
-  let rows = db.historico.map(h=>({'Veículo':h.veiculo, 'Atividade':h.atividade, 'Data':fmt(h.dataHora), 'Status':h.status}));
+  let rows = db.historico.map(h=>({'Veículo':h.veiculo, 'Atividade':h.atividade, 'Data':fmt(h.dataHora), 'Status':h.status, 'Observação':h.observacao||''}));
   let ws = XLSX.utils.json_to_sheet(rows), wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Histórico');
   XLSX.writeFile(wb, 'atlantico_historico.xlsx');
