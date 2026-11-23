@@ -37,7 +37,7 @@ h1{font-size:26px;margin:3px 0 18px}.muted{color:var(--mut);font-size:13px}
 .act-btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .act-btns button{flex:1;min-width:140px}
 label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}.grid2,.filters{display:grid;grid-template-columns:1fr 1fr;gap:12px}.notice{background:#e8f6f7;color:#155e61;border-radius:13px;padding:13px;font-size:13px}.empty{text-align:center;color:var(--mut);padding:32px}
-.nav{position:fixed;z-index:30;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--bd);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}.nav button{flex:1;max-width:95px;border:0;background:#fff;color:#63767e;padding:10px 2px 8px;font-size:10px}.nav button.active{color:var(--p);font-weight:700}.ico{display:block;font-size:16px;margin-bottom:3px}
+.nav{position:fixed;z-index:30;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--bd);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}.nav button{flex:1;max-width:115px;border:0;background:#fff;color:#63767e;padding:10px 2px 8px;font-size:10px}.nav button.active{color:var(--p);font-weight:700}.ico{display:block;font-size:17px;margin-bottom:3px}
 table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:9px;border-bottom:1px solid var(--bd)}th{background:#f4f8f9}
 .toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);background:#173247;color:#fff;padding:11px 15px;border-radius:10px;z-index:100;display:none;font-size:13px;box-shadow:var(--shadow)}
 .modal-shield{position:fixed;inset:0;background:#0007;z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
@@ -52,7 +52,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 .line-header {font-size:15px;font-weight:700;color:var(--p);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
 .line-code {font-size:11px;color:var(--mut);font-weight:700}
 .sched-box {font-size:12px;background:#fafcfd;border-radius:8px;border:1px solid var(--bd);padding:8px;margin:8px 0}
-.assigned-chip {background:#eaf1f2;border:1px solid var(--p);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--txt);margin-top:6px}
+.assigned-chip {background:#eaf1f2;border:1px solid var(--p);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--txt);margin-top:6px;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .sub-alloc-title {font-size:11px;font-weight:bold;color:var(--mut);margin-top:8px;margin-bottom:2px}
 
 .cross-row {background:#fafcfd;border:1px solid var(--bd);border-radius:8px;padding:6px 10px;margin:4px 0;font-size:11px}
@@ -74,8 +74,12 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 .diario-card.resolvido{border-left-color:var(--g)}
 .diario-meta{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;font-size:12px}
 .diario-tag{background:#eaf1f2;color:var(--txt);padding:4px 8px;border-radius:8px;font-weight:700}
+.pernoite-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.pernoite-box{background:#fafcfd;border:1px solid var(--bd);border-radius:12px;padding:10px}
+.pernoite-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.mini-pill{background:#eaf1f2;color:var(--txt);padding:4px 8px;border-radius:99px;font-size:11px;font-weight:700}
 
-@media(max-width:650px){.logo{height:46px;max-width:250px}.stats{gap:6px}.stat{padding:9px 6px}.stat strong{font-size:24px}.stat span{font-size:10px}.grid2,.filters{grid-template-columns:1fr}.nav button{max-width:none;font-size:9px}.sync-pill{font-size:10px;padding:5px 8px}}
+@media(max-width:650px){.logo{height:46px;max-width:250px}.stats{gap:6px}.stat{padding:9px 6px}.stat strong{font-size:24px}.stat span{font-size:10px}.grid2,.filters,.pernoite-summary-grid{grid-template-columns:1fr}.nav button{max-width:none;font-size:9px}.sync-pill{font-size:10px;padding:5px 8px}}
 </style>
 </head>
 <body>
@@ -96,6 +100,32 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <div class="stat o"><span>Próximos / Pendentes</span><strong id="nO">0</strong></div>
 <div class="stat g"><span>Em dia</span><strong id="nG">0</strong></div>
 </div>
+
+<div class="card" id="painelPernoiteCard">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+    <h3 style="margin:0">🏠 Informativo de Pernoite</h3>
+    <button type="button" class="btn secondary small" onclick="exportWhatsAppPernoite()">📱 Copiar Pernoite</button>
+  </div>
+  <div class="pernoite-summary-grid">
+    <div class="pernoite-box" style="border-color:#bbf7d0">
+      <div style="font-size:12px;font-weight:700;color:var(--g)">🟢 Na Garagem (<span id="countDentro">0</span>)</div>
+      <div id="painelListDentro" class="pernoite-chips"></div>
+    </div>
+    <div class="pernoite-box" style="border-color:#fde68a">
+      <div style="font-size:12px;font-weight:700;color:#d97706">🟠 Fora / Rua (<span id="countFora">0</span>)</div>
+      <div id="painelListFora" class="pernoite-chips"></div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+    <select id="selectBusPernoite" class="field" style="flex:1;min-width:180px;padding:10px;font-size:12px"></select>
+    <select id="selectTipoPernoite" class="field" style="width:165px;padding:10px;font-size:12px">
+      <option value="dentro">Na Garagem</option>
+      <option value="fora">Fora (Rua)</option>
+    </select>
+    <button type="button" class="btn small" style="padding:10px 12px;font-size:12px" onclick="salvarPernoite()">Atualizar</button>
+  </div>
+</div>
+
 <input id="searchPanel" class="search" placeholder="🔎 Buscar por código do veículo ou roteiro..." oninput="renderPanel()">
 <div id="panelList"></div>
 </section>
@@ -120,50 +150,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 </div>
 
 <div class="lines-grid" id="linesGrid"></div>
-</section>
-
-<section id="p-motoristas" class="page">
-<h1>Equipe de Motoristas</h1>
-<p class="muted">Cadastre os motoristas em ordem alfabética para alocá-los nos turnos.</p>
-<div class="card">
-  <h3>Novo Motorista</h3>
-  <label>Nome Completo</label>
-  <input id="newDriverName" class="field" placeholder="Ex: João Silva">
-  <button class="btn" style="margin-top:12px" onclick="addDriver()">＋ Cadastrar Motorista</button>
-</div>
-<div id="driverList"></div>
-</section>
-
-<section id="p-pernoite" class="page">
-<h1>Controle de Pernoite (Garagem)</h1>
-<p class="muted">Defina quais veículos dormem dentro da garagem e quais dormem fora (na rua/ponto base).</p>
-
-<div class="card">
-  <h3>🏠 Garagem (Dentro / Fora)</h3>
-  <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
-    <select id="selectBusPernoite" class="field" style="flex:1;min-width:200px"></select>
-    <select id="selectTipoPernoite" class="field" style="width:180px">
-      <option value="dentro">Dorme na Garagem</option>
-      <option value="fora">Dorme Fora (Rua)</option>
-    </select>
-    <button class="btn small" style="width:auto" onclick="salvarPernoite()">Salvar Pernoite</button>
-  </div>
-</div>
-
-<div class="actions" style="margin-bottom:14px">
-  <button class="btn secondary" onclick="exportWhatsAppPernoite()">📱 Copiar Pernoite p/ WhatsApp</button>
-</div>
-
-<div class="grid2">
-  <div class="card">
-    <h3 style="color:var(--p)">🟢 Dormem na Garagem (Dentro)</h3>
-    <div id="listDentro" style="margin-top:10px"></div>
-  </div>
-  <div class="card">
-    <h3 style="color:var(--o)">🟠 Dormem Fora (Rua / Base)</h3>
-    <div id="listFora" style="margin-top:10px"></div>
-  </div>
-</div>
 </section>
 
 <section id="p-resumo" class="page">
@@ -319,20 +305,40 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <div class="card"><h3>Histórico</h3><div id="history"></div></div>
 </section>
 
-<section id="p-cadastro" class="page">
-<h1>Cadastro de Veículos</h1>
-<div class="card">
-<h3>Novo veículo</h3>
-<label>Código do veículo</label>
-<input id="newCode" class="field" maxlength="40" placeholder="Digite o código (Ex: V-102)">
-<label style="margin-top:10px">N° Ordem (Padrão SFC)</label>
-<input id="newOrdem" class="field" maxlength="40" placeholder="Digite o número de ordem (Ex: 8824147)">
-<label style="margin-top:10px">Roteiro / Linha (Opcional)</label>
-<input id="newRoute" class="field" maxlength="60" placeholder="Digite a linha atual (Ex: Linha 01)">
-<button class="btn" style="margin-top:14px" onclick="addVehicle()">＋ Cadastrar veículo</button>
+<section id="p-cadastros" class="page">
+<h1>Cadastros</h1>
+<p class="muted">Gerencie veículos da frota e equipe de motoristas no mesmo lugar.</p>
+
+<div class="style-toggle" style="margin-bottom:14px">
+  <button type="button" id="tabCadVeiculos" class="style-btn active" onclick="setCadTab('veiculos')">🚗 Veículos</button>
+  <button type="button" id="tabCadEquipe" class="style-btn" onclick="setCadTab('equipe')">👨‍✈️ Equipe (Motoristas)</button>
 </div>
-<input id="searchCad" class="search" placeholder="🔎 Buscar por código, ordem ou roteiro..." oninput="renderCad()">
-<div id="cadList"></div>
+
+<div id="cadBlocoVeiculos">
+  <div class="card">
+    <h3>Novo veículo</h3>
+    <label>Código do veículo</label>
+    <input id="newCode" class="field" maxlength="40" placeholder="Digite o código (Ex: V-102)">
+    <label style="margin-top:10px">N° Ordem (Padrão SFC)</label>
+    <input id="newOrdem" class="field" maxlength="40" placeholder="Digite o número de ordem (Ex: 8824147)">
+    <label style="margin-top:10px">Roteiro / Linha (Opcional)</label>
+    <input id="newRoute" class="field" maxlength="60" placeholder="Digite a linha atual (Ex: Linha 01)">
+    <button class="btn" style="margin-top:14px" onclick="addVehicle()">＋ Cadastrar veículo</button>
+  </div>
+  <input id="searchCad" class="search" placeholder="🔎 Buscar por código, ordem ou roteiro..." oninput="renderCad()">
+  <div id="cadList"></div>
+</div>
+
+<div id="cadBlocoEquipe" style="display:none">
+  <div class="card">
+    <h3>Novo Motorista</h3>
+    <p class="muted">Cadastre os motoristas em ordem alfabética para alocá-los nos turnos.</p>
+    <label>Nome Completo</label>
+    <input id="newDriverName" class="field" placeholder="Ex: João Silva">
+    <button class="btn" style="margin-top:12px" onclick="addDriver()">＋ Cadastrar Motorista</button>
+  </div>
+  <div id="driverList"></div>
+</div>
 </section>
 
 <section id="p-exportacao" class="page">
@@ -381,11 +387,9 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <nav class="nav">
 <button id="nav-painel" class="active" onclick="show('painel')"><span class="ico">⌂</span>Painel</button>
 <button id="nav-linhas" onclick="show('linhas')"><span class="ico">🚌</span>Linhas</button>
-<button id="nav-motoristas" onclick="show('motoristas')"><span class="ico">👨‍✈️</span>Equipe</button>
-<button id="nav-pernoite" onclick="show('pernoite')"><span class="ico">🏠</span>Pernoite</button>
 <button id="nav-resumo" onclick="show('resumo')"><span class="ico">📋</span>Resumo</button>
 <button id="nav-diario" onclick="show('diario')"><span class="ico">📓</span>Diário</button>
-<button id="nav-cadastro" onclick="show('cadastro')"><span class="ico">🚗</span>Veículos</button>
+<button id="nav-cadastros" onclick="show('cadastros')"><span class="ico">🗂️</span>Cadastros</button>
 <button id="nav-exportacao" onclick="show('exportacao')"><span class="ico">▣</span>Export</button>
 </nav>
 </div>
@@ -632,7 +636,6 @@ function renderAllViews(){
   renderPanel();
   renderLinhas();
   renderMotoristas();
-  renderPernoite();
   renderResumoHistory();
   renderDiarioDatalists();
   renderDiarioList();
@@ -689,6 +692,16 @@ function now(){ return new Date(); }
 function esc(s){ return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function fmt(v){ return new Date(v).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}); }
 
+function setCadTab(tab){
+  const isVeic = tab === 'veiculos';
+  document.getElementById('tabCadVeiculos').classList.toggle('active', isVeic);
+  document.getElementById('tabCadEquipe').classList.toggle('active', !isVeic);
+  document.getElementById('cadBlocoVeiculos').style.display = isVeic ? 'block' : 'none';
+  document.getElementById('cadBlocoEquipe').style.display = !isVeic ? 'block' : 'none';
+  if(isVeic) renderCad();
+  else renderMotoristas();
+}
+
 function show(p, id){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   let target = document.getElementById('p-'+p);
@@ -700,14 +713,53 @@ function show(p, id){
 
   if(p==='painel') renderPanel();
   if(p==='linhas') renderLinhas();
-  if(p==='motoristas') renderMotoristas();
-  if(p==='pernoite') renderPernoite();
   if(p==='resumo') { renderResumoOcorrencias(); renderResumoPreview(); renderResumoHistory(); }
   if(p==='diario') { initDiarioDefaults(); renderDiarioDatalists(); renderDiarioList(); }
-  if(p==='cadastro') renderCad();
+  if(p==='cadastros') { renderCad(); renderMotoristas(); }
   if(p==='exportacao') renderFilters();
   if(p==='detail') renderDetail(id);
   window.scrollTo(0,0);
+}
+
+function renderPainelPernoite(){
+  const selectBus = document.getElementById('selectBusPernoite');
+  if(selectBus){
+    const prevVal = selectBus.value;
+    selectBus.innerHTML = '<option value="">-- Selecionar veículo --</option>' + db.veiculos.map(v =>
+      `<option value="${v.id}">${esc(v.codigo)} ${v.roteiro ? '('+esc(v.roteiro)+')' : ''}</option>`
+    ).join('');
+    if(prevVal && db.veiculos.some(v => v.id === prevVal)) selectBus.value = prevVal;
+  }
+
+  if(!db.pernoite) db.pernoite = {};
+  const dentroArr = [];
+  const foraArr = [];
+
+  db.veiculos.forEach(v => {
+    const status = db.pernoite[v.id] || 'dentro';
+    if(status === 'fora') foraArr.push(v);
+    else dentroArr.push(v);
+  });
+
+  const cDentro = document.getElementById('countDentro');
+  const cFora = document.getElementById('countFora');
+  const boxDentro = document.getElementById('painelListDentro');
+  const boxFora = document.getElementById('painelListFora');
+
+  if(cDentro) cDentro.textContent = dentroArr.length;
+  if(cFora) cFora.textContent = foraArr.length;
+
+  if(boxDentro){
+    boxDentro.innerHTML = dentroArr.length
+      ? dentroArr.map(v => `<span class="mini-pill" onclick="mudarPernoite('${v.id}','fora')" title="Toque para mudar para Fora">🚌 ${esc(v.codigo)}</span>`).join('')
+      : '<span class="muted" style="font-size:12px">Nenhum veículo</span>';
+  }
+
+  if(boxFora){
+    boxFora.innerHTML = foraArr.length
+      ? foraArr.map(v => `<span class="mini-pill" style="background:#fef3c7;color:#92400e" onclick="mudarPernoite('${v.id}','dentro')" title="Toque para mudar para Garagem">🚌 ${esc(v.codigo)}</span>`).join('')
+      : '<span class="muted" style="font-size:12px">Nenhum veículo</span>';
+  }
 }
 
 function renderPanel(){
@@ -717,6 +769,8 @@ function renderPanel(){
   if(elR) elR.textContent = r;
   if(elO) elO.textContent = o;
   if(elG) elG.textContent = g;
+
+  renderPainelPernoite();
 
   let searchInput = document.getElementById('searchPanel');
   let q = searchInput ? searchInput.value.toLowerCase() : '';
@@ -816,6 +870,7 @@ function renderMotoristas(){
       </div>
     `).join('') : '<div class="empty">Nenhum motorista cadastrado.</div>';
   }
+  renderDiarioDatalists();
 }
 
 function addDriver(){
@@ -923,7 +978,7 @@ function renderLinhas(){
               <button class="btn small" onclick="allocCruzadoDirect('${l.code}','ida')">＋ Alocar</button>
             </div>
           ` : ''}
-          <div class="assigned-chip">
+          <div class="assigned-chip" style="display:block">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <span>🚌 ${vA ? esc(vA.codigo) : 'Nenhum'}</span>
               ${vA ? `<button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeCruzadoBus('${l.code}','ida')">✕</button>` : ''}
@@ -949,7 +1004,7 @@ function renderLinhas(){
               <button class="btn small" onclick="allocCruzadoDirect('${l.code}','volta')">＋ Alocar</button>
             </div>
           ` : ''}
-          <div class="assigned-chip">
+          <div class="assigned-chip" style="display:block">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <span>🚌 ${vB ? esc(vB.codigo) : 'Nenhum'}</span>
               ${vB ? `<button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeCruzadoBus('${l.code}','volta')">✕</button>` : ''}
@@ -978,7 +1033,7 @@ function renderLinhas(){
           let vObj = db.veiculos.find(x => x.id === busId);
           let vCode = vObj ? vObj.codigo : 'Desconhecido';
 
-          return `<div class="assigned-chip">
+          return `<div class="assigned-chip" style="display:block">
             <div style="display:flex;justify-content:space-between;align-items:center;font-weight:bold">
               <span>🚌 ${esc(vCode)}</span>
               <button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="removeBusFromLine('${l.code}','${busId}')">✕</button>
@@ -1087,49 +1142,6 @@ function updateDriver(lineCode, sentido, turno, val){
   }
 }
 
-function renderPernoite(){
-  let selectBus = document.getElementById('selectBusPernoite');
-  if(selectBus){
-    let options = '<option value="">-- Selecione o veículo --</option>';
-    db.veiculos.forEach(v => {
-      options += `<option value="${v.id}">${esc(v.codigo)} ${v.roteiro ? '('+esc(v.roteiro)+')' : ''}</option>`;
-    });
-    selectBus.innerHTML = options;
-  }
-
-  if(!db.pernoite) db.pernoite = {};
-
-  let dentroArr = [];
-  let foraArr = [];
-
-  db.veiculos.forEach(v => {
-    let status = db.pernoite[v.id] || 'dentro';
-    if(status === 'fora') foraArr.push(v);
-    else dentroArr.push(v);
-  });
-
-  let listDentro = document.getElementById('listDentro');
-  let listFora = document.getElementById('listFora');
-
-  if(listDentro){
-    listDentro.innerHTML = dentroArr.length ? dentroArr.map(v => `
-      <div class="assigned-chip" style="border-color:var(--g)">
-        <span>🚌 ${esc(v.codigo)} ${v.roteiro ? '• '+esc(v.roteiro) : ''}</span>
-        <button class="btn danger small" style="padding:2px 6px;font-size:10px" onclick="mudarPernoite('${v.id}','fora')">Mudar p/ Fora ➔</button>
-      </div>
-    `).join('') : '<div class="empty">Nenhum veículo registrado.</div>';
-  }
-
-  if(listFora){
-    listFora.innerHTML = foraArr.length ? foraArr.map(v => `
-      <div class="assigned-chip" style="border-color:var(--o)">
-        <span>🚌 ${esc(v.codigo)} ${v.roteiro ? '• '+esc(v.roteiro) : ''}</span>
-        <button class="btn secondary small" style="padding:2px 6px;font-size:10px" onclick="mudarPernoite('${v.id}','dentro')">← Garagem</button>
-      </div>
-    `).join('') : '<div class="empty">Nenhum veículo fora.</div>';
-  }
-}
-
 function salvarPernoite(){
   let busId = document.getElementById('selectBusPernoite').value;
   let tipo = document.getElementById('selectTipoPernoite').value;
@@ -1137,7 +1149,7 @@ function salvarPernoite(){
   if(!db.pernoite) db.pernoite = {};
   db.pernoite[busId] = tipo;
   save();
-  renderPernoite();
+  renderPainelPernoite();
   toast('Pernoite atualizado!');
 }
 
@@ -1145,7 +1157,7 @@ function mudarPernoite(busId, novoTipo){
   if(!db.pernoite) db.pernoite = {};
   db.pernoite[busId] = novoTipo;
   save();
-  renderPernoite();
+  renderPainelPernoite();
   toast('Movido com sucesso!');
 }
 
@@ -1777,6 +1789,7 @@ function renderCad(){
   if(cadList){
     cadList.innerHTML = arr.length ? arr.map(v=>`<div class="vehicle"><div class="main"><div class="code">${esc(v.codigo)} ${v.ordem ? '(Ordem: '+esc(v.ordem)+')' : ''}</div><div class="msg">Roteiro: ${esc(v.roteiro||'-')}</div></div><button class="btn secondary small" onclick="show('detail','${v.id}')">Abrir</button><button class="btn danger small" onclick="removeVehicle('${v.id}')">🗑</button></div>`).join('') : '<div class="empty">Nenhum veículo cadastrado.</div>';
   }
+  renderDiarioDatalists();
 }
 
 function removeVehicle(id){
