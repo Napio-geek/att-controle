@@ -37,7 +37,7 @@ h1{font-size:26px;margin:3px 0 18px}.muted{color:var(--mut);font-size:13px}
 .act-btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .act-btns button{flex:1;min-width:140px}
 label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}.grid2,.filters{display:grid;grid-template-columns:1fr 1fr;gap:12px}.notice{background:#e8f6f7;color:#155e61;border-radius:13px;padding:13px;font-size:13px}.empty{text-align:center;color:var(--mut);padding:32px}
-.nav{position:fixed;z-index:30;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--bd);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}.nav button{flex:1;max-width:105px;border:0;background:#fff;color:#63767e;padding:10px 2px 8px;font-size:10px}.nav button.active{color:var(--p);font-weight:700}.ico{display:block;font-size:17px;margin-bottom:3px}
+.nav{position:fixed;z-index:30;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--bd);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}.nav button{flex:1;max-width:95px;border:0;background:#fff;color:#63767e;padding:10px 2px 8px;font-size:10px}.nav button.active{color:var(--p);font-weight:700}.ico{display:block;font-size:16px;margin-bottom:3px}
 table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:9px;border-bottom:1px solid var(--bd)}th{background:#f4f8f9}
 .toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);background:#173247;color:#fff;padding:11px 15px;border-radius:10px;z-index:100;display:none;font-size:13px;box-shadow:var(--shadow)}
 .modal-shield{position:fixed;inset:0;background:#0007;z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
@@ -70,8 +70,12 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 .wa-box{background:#e5ddd5;padding:12px;border-radius:12px;margin:12px 0}
 .wa-bubble{background:#dcf8c6;padding:12px;border-radius:10px;font-size:13px;line-height:1.45;white-space:pre-wrap;color:#111b21;box-shadow:0 1px 2px #0002}
 .resumo-hist-item{border:1px solid var(--bd);border-radius:12px;padding:12px;margin-top:10px;background:#fafcfd}
+.diario-card{background:#fff;border:1px solid var(--bd);border-left:5px solid var(--o);border-radius:14px;padding:14px;margin:10px 0;box-shadow:0 2px 8px #0000000b}
+.diario-card.resolvido{border-left-color:var(--g)}
+.diario-meta{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;font-size:12px}
+.diario-tag{background:#eaf1f2;color:var(--txt);padding:4px 8px;border-radius:8px;font-weight:700}
 
-@media(max-width:650px){.logo{height:46px;max-width:250px}.stats{gap:6px}.stat{padding:9px 6px}.stat strong{font-size:24px}.stat span{font-size:10px}.grid2,.filters{grid-template-columns:1fr}.nav button{max-width:none}.sync-pill{font-size:10px;padding:5px 8px}}
+@media(max-width:650px){.logo{height:46px;max-width:250px}.stats{gap:6px}.stat{padding:9px 6px}.stat strong{font-size:24px}.stat span{font-size:10px}.grid2,.filters{grid-template-columns:1fr}.nav button{max-width:none;font-size:9px}.sync-pill{font-size:10px;padding:5px 8px}}
 </style>
 </head>
 <body>
@@ -215,6 +219,95 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 </div>
 </section>
 
+<section id="p-diario" class="page">
+<h1>Diário de Ocorrências</h1>
+<p class="muted">Registre quebras, recolhimentos, falhas de escala, viagens não cumpridas e adversidades da operação.</p>
+
+<div class="card">
+  <h3>📝 Novo Registro na Agenda</h3>
+  <div class="grid2">
+    <div>
+      <label>Data do Ocorrido</label>
+      <input id="diarioData" type="date" class="field">
+    </div>
+    <div>
+      <label>Hora</label>
+      <input id="diarioHora" type="time" class="field">
+    </div>
+  </div>
+
+  <label>Categoria da Falha / Adversidade (Digite livremente)</label>
+  <input id="diarioCategoria" type="text" class="field" list="sugestoesCategorias" placeholder="Ex: Carro quebrou e voltou para garagem, Escala passada errada...">
+  <datalist id="sugestoesCategorias">
+    <option value="Quebra de veículo / Recolhido à garagem">
+    <option value="Viagem não cumprida">
+    <option value="Escala passada errada">
+    <option value="Atraso operacional">
+    <option value="Falha de motorista / Falta">
+    <option value="Troca de veículo em operação">
+  </datalist>
+
+  <div class="grid2">
+    <div>
+      <label>Veículo (Opcional)</label>
+      <input id="diarioVeiculo" type="text" class="field" list="sugestoesVeiculos" placeholder="Ex: 99995">
+      <datalist id="sugestoesVeiculos"></datalist>
+    </div>
+    <div>
+      <label>Linha / Roteiro (Opcional)</label>
+      <input id="diarioLinha" type="text" class="field" list="sugestoesLinhas" placeholder="Ex: R07 - Santa Elisa">
+      <datalist id="sugestoesLinhas">
+        <option value="SEDE">
+        <option value="R05 - JABEQUARA">
+        <option value="R07 - SANTA ELISA / ROSEIRA (VIA CAMPINAS)">
+        <option value="R08 - CURUPEBA">
+        <option value="R09 - FERROLHO">
+        <option value="R10 - SANTO ESTEVÃO">
+        <option value="R11 - COROADO">
+      </datalist>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <label>Motorista (Opcional)</label>
+      <input id="diarioMotorista" type="text" class="field" list="sugestoesMotoristas" placeholder="Nome do motorista">
+      <datalist id="sugestoesMotoristas"></datalist>
+    </div>
+    <div>
+      <label>Situação</label>
+      <select id="diarioStatus" class="field">
+        <option value="Em aberto">⚠️ Em aberto / Pendente</option>
+        <option value="Resolvido">✅ Resolvido</option>
+      </select>
+    </div>
+  </div>
+
+  <label>Descrição detalhada do que aconteceu</label>
+  <textarea id="diarioDescricao" class="field" style="height:85px" placeholder="Descreva os detalhes, horário da falha, quem informou ou o que foi feito..."></textarea>
+
+  <div class="actions" style="margin-top:14px">
+    <button type="button" class="btn" onclick="addDiarioOcorrencia()">💾 Salvar Registro no Histórico</button>
+  </div>
+</div>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+    <h3 style="margin:0">📚 Histórico de Ocorrências Salvas</h3>
+    <button type="button" class="btn secondary small" onclick="exportDiarioExcel()">⬇ Exportar Diário (Excel)</button>
+  </div>
+  <div class="filters" style="margin-bottom:10px">
+    <input id="searchDiario" class="search" placeholder="🔎 Buscar por categoria, veículo, motorista, linha..." oninput="renderDiarioList()">
+    <select id="filterDiarioStatus" class="field" onchange="renderDiarioList()">
+      <option value="">Todas as situações</option>
+      <option value="Em aberto">Em aberto / Pendente</option>
+      <option value="Resolvido">Resolvido</option>
+    </select>
+  </div>
+  <div id="diarioHistoryList"></div>
+</div>
+</section>
+
 <section id="p-detail" class="page">
 <div class="actions" style="justify-content:space-between;align-items:center;margin-bottom:12px">
   <button class="btn secondary small" onclick="show('painel')">← Voltar</button>
@@ -291,6 +384,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <button id="nav-motoristas" onclick="show('motoristas')"><span class="ico">👨‍✈️</span>Equipe</button>
 <button id="nav-pernoite" onclick="show('pernoite')"><span class="ico">🏠</span>Pernoite</button>
 <button id="nav-resumo" onclick="show('resumo')"><span class="ico">📋</span>Resumo</button>
+<button id="nav-diario" onclick="show('diario')"><span class="ico">📓</span>Diário</button>
 <button id="nav-cadastro" onclick="show('cadastro')"><span class="ico">🚗</span>Veículos</button>
 <button id="nav-exportacao" onclick="show('exportacao')"><span class="ico">▣</span>Export</button>
 </nav>
@@ -395,6 +489,7 @@ function normalizeDB(data){
   if(!Array.isArray(data.motoristas)) data.motoristas = [];
   if(!Array.isArray(data.historico)) data.historico = [];
   if(!Array.isArray(data.resumos)) data.resumos = [];
+  if(!Array.isArray(data.ocorrenciasAgenda)) data.ocorrenciasAgenda = [];
   if(!data.escalas || typeof data.escalas !== 'object') data.escalas = {};
   if(!data.linhasCustom || typeof data.linhasCustom !== 'object') data.linhasCustom = {};
   if(!data.pernoite || typeof data.pernoite !== 'object') data.pernoite = {};
@@ -517,6 +612,14 @@ function mergeDBs(baseA, baseB){
   });
   merged.resumos = Array.from(resMap.values());
 
+  const diarioMap = new Map();
+  [...a.ocorrenciasAgenda, ...b.ocorrenciasAgenda].forEach(item => {
+    if(!item) return;
+    const sig = item.id || `${item.data}|${item.hora}|${item.categoria}|${item.veiculo}|${item.descricao}`;
+    if(!diarioMap.has(sig)) diarioMap.set(sig, item);
+  });
+  merged.ocorrenciasAgenda = Array.from(diarioMap.values()).sort((x,y) => `${y.data} ${y.hora}`.localeCompare(`${x.data} ${x.hora}`));
+
   merged.escalas = Object.assign({}, a.escalas, b.escalas);
   merged.linhasCustom = Object.assign({}, a.linhasCustom, b.linhasCustom);
   merged.pernoite = Object.assign({}, a.pernoite, b.pernoite);
@@ -531,6 +634,8 @@ function renderAllViews(){
   renderMotoristas();
   renderPernoite();
   renderResumoHistory();
+  renderDiarioDatalists();
+  renderDiarioList();
   renderCad();
   renderFilters();
 }
@@ -542,7 +647,7 @@ async function syncFromCloud(manual = false){
     const resp = await fetch(URL_PLANILHA);
     const raw = await resp.json();
     const cloudData = normalizeDB(raw);
-    const hasCloudData = cloudData.veiculos.length > 0 || cloudData.motoristas.length > 0 || cloudData.historico.length > 0 || cloudData.resumos.length > 0;
+    const hasCloudData = cloudData.veiculos.length > 0 || cloudData.motoristas.length > 0 || cloudData.historico.length > 0 || cloudData.resumos.length > 0 || cloudData.ocorrenciasAgenda.length > 0;
 
     if(hasCloudData){
       if(cloudData.updatedAt >= db.updatedAt || manual){
@@ -598,6 +703,7 @@ function show(p, id){
   if(p==='motoristas') renderMotoristas();
   if(p==='pernoite') renderPernoite();
   if(p==='resumo') { renderResumoOcorrencias(); renderResumoPreview(); renderResumoHistory(); }
+  if(p==='diario') { initDiarioDefaults(); renderDiarioDatalists(); renderDiarioList(); }
   if(p==='cadastro') renderCad();
   if(p==='exportacao') renderFilters();
   if(p==='detail') renderDetail(id);
@@ -1061,7 +1167,7 @@ function exportWhatsAppPernoite(){
   navigator.clipboard.writeText(texto).then(() => toast('Relatório de pernoite copiado para o WhatsApp!'));
 }
 
-/* --- RESUMO OPERACIONAL E OCORRÊNCIAS --- */
+/* --- RESUMO OPERACIONAL (WHATSAPP) --- */
 function initResumoDefaults(){
   const elData = document.getElementById('resumoData');
   if(elData && !elData.value){
@@ -1252,6 +1358,153 @@ function renderResumoHistory(){
       <div class="muted" style="margin-top:4px;white-space:pre-line">${esc(r.texto)}</div>
     </div>
   `).join('');
+}
+
+/* --- DIÁRIO DE OCORRÊNCIAS (AGENDA SEPARADA) --- */
+function initDiarioDefaults(){
+  const dEl = document.getElementById('diarioData');
+  const hEl = document.getElementById('diarioHora');
+  const h = now();
+  if(dEl && !dEl.value){
+    const yyyy = h.getFullYear();
+    const mm = String(h.getMonth()+1).padStart(2,'0');
+    const dd = String(h.getDate()).padStart(2,'0');
+    dEl.value = `${yyyy}-${mm}-${dd}`;
+  }
+  if(hEl && !hEl.value){
+    const hh = String(h.getHours()).padStart(2,'0');
+    const mi = String(h.getMinutes()).padStart(2,'0');
+    hEl.value = `${hh}:${mi}`;
+  }
+}
+
+function renderDiarioDatalists(){
+  const vList = document.getElementById('sugestoesVeiculos');
+  if(vList){
+    vList.innerHTML = db.veiculos.map(v => `<option value="${esc(v.codigo)}">`).join('');
+  }
+  const mList = document.getElementById('sugestoesMotoristas');
+  if(mList){
+    mList.innerHTML = db.motoristas.map(m => `<option value="${esc(m.name)}">`).join('');
+  }
+}
+
+function addDiarioOcorrencia(){
+  initDiarioDefaults();
+  const data = document.getElementById('diarioData').value;
+  const hora = document.getElementById('diarioHora').value;
+  const categoria = document.getElementById('diarioCategoria').value.trim();
+  const veiculo = document.getElementById('diarioVeiculo').value.trim();
+  const linha = document.getElementById('diarioLinha').value.trim();
+  const motorista = document.getElementById('diarioMotorista').value.trim();
+  const status = document.getElementById('diarioStatus').value;
+  const descricao = document.getElementById('diarioDescricao').value.trim();
+
+  if(!categoria && !descricao) return alert('Informe a categoria da falha ou descreva o ocorrido.');
+
+  db.ocorrenciasAgenda.unshift({
+    id: crypto.randomUUID(),
+    data: data,
+    dataBR: formatDateBR(data),
+    hora: hora,
+    categoria: categoria || 'Registro Operacional',
+    veiculo: veiculo,
+    linha: linha,
+    motorista: motorista,
+    status: status,
+    descricao: descricao,
+    criadoEm: now().toISOString()
+  });
+
+  save();
+  document.getElementById('diarioCategoria').value = '';
+  document.getElementById('diarioVeiculo').value = '';
+  document.getElementById('diarioLinha').value = '';
+  document.getElementById('diarioMotorista').value = '';
+  document.getElementById('diarioDescricao').value = '';
+  const h = now();
+  document.getElementById('diarioHora').value = `${String(h.getHours()).padStart(2,'0')}:${String(h.getMinutes()).padStart(2,'0')}`;
+
+  renderDiarioList();
+  toast('Ocorrência registrada no diário!');
+}
+
+function toggleDiarioStatus(id){
+  const item = db.ocorrenciasAgenda.find(x => x.id === id);
+  if(!item) return;
+  item.status = item.status === 'Resolvido' ? 'Em aberto' : 'Resolvido';
+  save();
+  renderDiarioList();
+  toast('Situação atualizada!');
+}
+
+function deleteDiarioOcorrencia(id){
+  if(confirm('Excluir este registro do diário?')){
+    db.ocorrenciasAgenda = db.ocorrenciasAgenda.filter(x => x.id !== id);
+    save();
+    renderDiarioList();
+    toast('Registro excluído.');
+  }
+}
+
+function renderDiarioList(){
+  const box = document.getElementById('diarioHistoryList');
+  if(!box) return;
+  const q = (document.getElementById('searchDiario')?.value || '').toLowerCase();
+  const stFilter = document.getElementById('filterDiarioStatus')?.value || '';
+
+  const filtered = (db.ocorrenciasAgenda || []).filter(item => {
+    if(stFilter && item.status !== stFilter) return false;
+    if(!q) return true;
+    const blob = `${item.dataBR||item.data} ${item.hora} ${item.categoria} ${item.veiculo} ${item.linha} ${item.motorista} ${item.descricao}`.toLowerCase();
+    return blob.includes(q);
+  });
+
+  if(!filtered.length){
+    box.innerHTML = '<div class="empty">Nenhum registro encontrado no diário.</div>';
+    return;
+  }
+
+  box.innerHTML = filtered.map(item => {
+    const isRes = item.status === 'Resolvido';
+    return `<div class="diario-card ${isRes ? 'resolvido' : ''}">
+      <div class="activity-head">
+        <h3>${esc(item.categoria)}</h3>
+        <span class="badge ${isRes ? 'g' : 'o'}">${esc(item.status)}</span>
+      </div>
+      <div class="diario-meta">
+        <span class="diario-tag">📅 ${esc(item.dataBR || formatDateBR(item.data))} ${item.hora ? 'às '+esc(item.hora) : ''}</span>
+        ${item.veiculo ? `<span class="diario-tag">🚌 Veículo: ${esc(item.veiculo)}</span>` : ''}
+        ${item.linha ? `<span class="diario-tag">📍 ${esc(item.linha)}</span>` : ''}
+        ${item.motorista ? `<span class="diario-tag">👨‍✈️ ${esc(item.motorista)}</span>` : ''}
+      </div>
+      ${item.descricao ? `<p style="margin:6px 0;font-size:13px;color:var(--txt);white-space:pre-line">${esc(item.descricao)}</p>` : ''}
+      <div class="act-btns">
+        <button type="button" class="btn secondary small" onclick="toggleDiarioStatus('${item.id}')">${isRes ? '↩ Reabrir' : '✅ Marcar Resolvido'}</button>
+        <button type="button" class="btn danger small" onclick="deleteDiarioOcorrencia('${item.id}')">🗑️ Excluir</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function exportDiarioExcel(){
+  if(typeof XLSX==='undefined') return alert('Biblioteca do Excel indisponível.');
+  if(!db.ocorrenciasAgenda || !db.ocorrenciasAgenda.length) return alert('Não há registros no diário para exportar.');
+  const rows = db.ocorrenciasAgenda.map(item => ({
+    'Data': item.dataBR || formatDateBR(item.data),
+    'Hora': item.hora || '',
+    'Categoria / Falha': item.categoria || '',
+    'Veículo': item.veiculo || '',
+    'Linha / Roteiro': item.linha || '',
+    'Motorista': item.motorista || '',
+    'Situação': item.status || '',
+    'Descrição': item.descricao || ''
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Diário de Ocorrências');
+  XLSX.writeFile(wb, 'atlantico_diario_ocorrencias.xlsx');
+  toast('Excel do diário gerado!');
 }
 
 function openEditSchedModal(code, nome){
@@ -1589,6 +1842,7 @@ setInterval(()=>{
 
 window.onload = function(){
   initResumoDefaults();
+  initDiarioDefaults();
   renderAllViews();
   renderResumoOcorrencias();
   renderResumoPreview();
