@@ -18,9 +18,11 @@ button,input,select,textarea{font:inherit}
 button{cursor:pointer}
 .app{min-height:100vh}
 .header{background:var(--p);color:#fff;padding:13px 16px 15px;position:sticky;top:0;z-index:20;box-shadow:0 2px 10px #0002}
-.header-inner{max-width:1080px;margin:auto;display:flex;align-items:center;gap:12px}
+.header-inner{max-width:1080px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.header-brand{display:flex;align-items:center;gap:12px}
 .logo{height:54px;max-width:300px;width:auto;object-fit:contain}
 .header-sub{font-size:12px;opacity:.9}
+.sync-pill{background:#ffffff24;border:1px solid #ffffff45;color:#fff;padding:6px 10px;border-radius:99px;font-size:11px;font-weight:700;white-space:nowrap}
 main{max-width:1080px;margin:auto;padding:18px 14px 92px}
 .page{display:none}.page.active{display:block}
 h1{font-size:26px;margin:3px 0 18px}.muted{color:var(--mut);font-size:13px}
@@ -35,7 +37,7 @@ h1{font-size:26px;margin:3px 0 18px}.muted{color:var(--mut);font-size:13px}
 .act-btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .act-btns button{flex:1;min-width:140px}
 label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}.grid2,.filters{display:grid;grid-template-columns:1fr 1fr;gap:12px}.notice{background:#e8f6f7;color:#155e61;border-radius:13px;padding:13px;font-size:13px}.empty{text-align:center;color:var(--mut);padding:32px}
-.nav{position:fixed;z-index:30;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--bd);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}.nav button{flex:1;max-width:110px;border:0;background:#fff;color:#63767e;padding:10px 2px 8px;font-size:10px}.nav button.active{color:var(--p);font-weight:700}.ico{display:block;font-size:17px;margin-bottom:3px}
+.nav{position:fixed;z-index:30;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--bd);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}.nav button{flex:1;max-width:105px;border:0;background:#fff;color:#63767e;padding:10px 2px 8px;font-size:10px}.nav button.active{color:var(--p);font-weight:700}.ico{display:block;font-size:17px;margin-bottom:3px}
 table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:9px;border-bottom:1px solid var(--bd)}th{background:#f4f8f9}
 .toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);background:#173247;color:#fff;padding:11px 15px;border-radius:10px;z-index:100;display:none;font-size:13px;box-shadow:var(--shadow)}
 .modal-shield{position:fixed;inset:0;background:#0007;z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
@@ -60,14 +62,26 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 .alloc-inline-box {display:flex;gap:6px;margin-top:8px;margin-bottom:6px}
 .alloc-inline-box select {flex:1;padding:8px;font-size:12px}
 
-@media(max-width:650px){.logo{height:46px;max-width:250px}.stats{gap:6px}.stat{padding:9px 6px}.stat strong{font-size:24px}.stat span{font-size:10px}.grid2,.filters{grid-template-columns:1fr}.nav button{max-width:none}}
+.ocorrencia-item{background:#f8fafc;border:1px solid #d6e1e4;border-radius:12px;padding:12px;margin:10px 0}
+.ocorrencia-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px;font-weight:700;color:var(--p)}
+.style-toggle{display:flex;gap:8px;margin:10px 0}
+.style-btn{flex:1;padding:10px;border:1px solid #d6e1e4;background:#f3f7f7;border-radius:10px;font-weight:700;font-size:12px;color:var(--mut)}
+.style-btn.active{background:var(--p);color:#fff;border-color:var(--p)}
+.wa-box{background:#e5ddd5;padding:12px;border-radius:12px;margin:12px 0}
+.wa-bubble{background:#dcf8c6;padding:12px;border-radius:10px;font-size:13px;line-height:1.45;white-space:pre-wrap;color:#111b21;box-shadow:0 1px 2px #0002}
+.resumo-hist-item{border:1px solid var(--bd);border-radius:12px;padding:12px;margin-top:10px;background:#fafcfd}
+
+@media(max-width:650px){.logo{height:46px;max-width:250px}.stats{gap:6px}.stat{padding:9px 6px}.stat strong{font-size:24px}.stat span{font-size:10px}.grid2,.filters{grid-template-columns:1fr}.nav button{max-width:none}.sync-pill{font-size:10px;padding:5px 8px}}
 </style>
 </head>
 <body>
 <div class="app">
 <header class="header"><div class="header-inner">
-  <img src="logo-atlantico.png" class="logo" alt="Atlântico" onerror="this.style.display='none'">
-  <div class="header-sub">Controle de Atividades e Frota</div>
+  <div class="header-brand">
+    <img src="logo-atlantico.png" class="logo" alt="Atlântico" onerror="this.style.display='none'">
+    <div class="header-sub">Controle de Atividades e Frota</div>
+  </div>
+  <div id="syncStatus" class="sync-pill" onclick="syncFromCloud(true)" title="Toque para sincronizar com a nuvem">☁️ Sincronizando...</div>
 </div></header>
 
 <main>
@@ -148,6 +162,59 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 </div>
 </section>
 
+<section id="p-resumo" class="page">
+<h1>Resumo Operacional e Ocorrências</h1>
+<p class="muted">Gere o resumo diário de São Francisco do Conde e registre ocorrências no histórico compartilhado.</p>
+
+<div class="card">
+  <div class="grid2">
+    <div>
+      <label>Data da Operação</label>
+      <input id="resumoData" type="date" class="field" oninput="renderResumoPreview()">
+    </div>
+    <div>
+      <label>Viagens Programadas (Opcional)</label>
+      <input id="resumoProg" type="number" min="0" class="field" placeholder="Ex: 57" oninput="calcResumoPerc()">
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <label>Viagens Cumpridas (%)</label>
+      <input id="resumoPerc" type="text" class="field" value="98,25" oninput="renderResumoPreview()">
+    </div>
+    <div>
+      <label>Total Viagens Não Cumpridas</label>
+      <input id="resumoNaoCump" type="number" min="0" class="field" value="1" oninput="calcResumoPerc()">
+    </div>
+  </div>
+
+  <label>Ocorrências / Viagens Não Cumpridas</label>
+  <div id="resumoOcorrenciasList"></div>
+  <button type="button" class="btn secondary" style="margin-top:8px" onclick="addResumoOcorrencia()">＋ Adicionar Ocorrência</button>
+
+  <label>Formato da Mensagem</label>
+  <div class="style-toggle">
+    <button type="button" id="btnEstiloVisual" class="style-btn active" onclick="setResumoEstilo('visual')">Visual (Com ícones)</button>
+    <button type="button" id="btnEstiloDireto" class="style-btn" onclick="setResumoEstilo('direto')">Direto (Texto limpo)</button>
+  </div>
+
+  <div class="wa-box">
+    <div id="resumoPreview" class="wa-bubble"></div>
+  </div>
+
+  <div class="actions">
+    <button type="button" class="btn" onclick="copyResumoWhatsApp()">📋 Copiar para WhatsApp</button>
+    <button type="button" class="btn secondary" onclick="saveResumoToHistory()">💾 Salvar no Histórico Compartilhado</button>
+  </div>
+</div>
+
+<div class="card">
+  <h3>🗂️ Histórico de Resumos Operacionais</h3>
+  <div id="resumoHistoryList"></div>
+</div>
+</section>
+
 <section id="p-detail" class="page">
 <div class="actions" style="justify-content:space-between;align-items:center;margin-bottom:12px">
   <button class="btn secondary small" onclick="show('painel')">← Voltar</button>
@@ -177,6 +244,17 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
 <section id="p-exportacao" class="page">
 <h1>Exportação e Configurações</h1>
+
+<div class="card" style="border-color:var(--p)">
+  <h3>☁️ Sincronização e Nuvem (Google Sheets)</h3>
+  <p class="muted">Mantém o mesmo histórico entre o computador da empresa e o seu celular.</p>
+  <div class="notice" id="cloudInfoBox" style="margin-bottom:12px">Conectado à planilha via Google Apps Script.</div>
+  <div class="actions">
+    <button class="btn secondary" onclick="syncFromCloud(true)">🔄 Baixar Nuvem Agora</button>
+    <button class="btn" onclick="mergeLocalToCloud()">🔀 Mesclar Dados Deste Aparelho na Nuvem</button>
+  </div>
+</div>
+
 <div class="card"><h3>📤 Exportar dados de Atividades</h3><p class="muted">Gere um arquivo Excel com os registros realizados.</p>
 <div class="filters">
 <div><label>Data inicial</label><input id="fIni" type="date" class="field"></div>
@@ -212,6 +290,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <button id="nav-linhas" onclick="show('linhas')"><span class="ico">🚌</span>Linhas</button>
 <button id="nav-motoristas" onclick="show('motoristas')"><span class="ico">👨‍✈️</span>Equipe</button>
 <button id="nav-pernoite" onclick="show('pernoite')"><span class="ico">🏠</span>Pernoite</button>
+<button id="nav-resumo" onclick="show('resumo')"><span class="ico">📋</span>Resumo</button>
 <button id="nav-cadastro" onclick="show('cadastro')"><span class="ico">🚗</span>Veículos</button>
 <button id="nav-exportacao" onclick="show('exportacao')"><span class="ico">▣</span>Export</button>
 </nav>
@@ -296,8 +375,33 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
 <script>
 const KEY='atlantico_controle_veiculos_v5';
+const URL_PLANILHA='https://script.google.com/macros/s/AKfycbxzQColA5RJ-KhxujDPQNINafx22G1QfxllYz6DVAS-9eOaZvgKJLsaBtNUfrxXj0DeJQ/exec';
 const PERIODS={'Checagem Diária Validador':'SHIFT_8AM','Checagem de Cartão SD':259200000,'Checagem de Câmera':604800000};
 const ACTS=Object.keys(PERIODS);
+
+const LINHAS_RESUMO_SFC = [
+  'SEDE',
+  'R05 - JABEQUARA',
+  'R07 - SANTA ELISA / ROSEIRA (VIA CAMPINAS)',
+  'R08 - CURUPEBA',
+  'R09 - FERROLHO',
+  'R10 - SANTO ESTEVÃO',
+  'R11 - COROADO'
+];
+
+function normalizeDB(data){
+  if(!data || typeof data !== 'object') data = {};
+  if(!Array.isArray(data.veiculos)) data.veiculos = [];
+  if(!Array.isArray(data.motoristas)) data.motoristas = [];
+  if(!Array.isArray(data.historico)) data.historico = [];
+  if(!Array.isArray(data.resumos)) data.resumos = [];
+  if(!data.escalas || typeof data.escalas !== 'object') data.escalas = {};
+  if(!data.linhasCustom || typeof data.linhasCustom !== 'object') data.linhasCustom = {};
+  if(!data.pernoite || typeof data.pernoite !== 'object') data.pernoite = {};
+  if(!data.cameraChecks || typeof data.cameraChecks !== 'object') data.cameraChecks = {};
+  if(typeof data.updatedAt !== 'number') data.updatedAt = 0;
+  return data;
+}
 
 function loadDB(){
   try{
@@ -306,21 +410,17 @@ function loadDB(){
       let old = JSON.parse(localStorage.getItem('att-controle-frota-v2'));
       if(old) data = old;
     }
-    if(!data || typeof data !== 'object') data = {};
-    if(!Array.isArray(data.veiculos)) data.veiculos = [];
-    if(!Array.isArray(data.motoristas)) data.motoristas = [];
-    if(!Array.isArray(data.historico)) data.historico = [];
-    if(!data.escalas || typeof data.escalas !== 'object') data.escalas = {};
-    if(!data.linhasCustom || typeof data.linhasCustom !== 'object') data.linhasCustom = {};
-    if(!data.pernoite || typeof data.pernoite !== 'object') data.pernoite = {};
-    if(!data.cameraChecks || typeof data.cameraChecks !== 'object') data.cameraChecks = {};
-    return data;
+    return normalizeDB(data);
   }catch(e){
-    return {veiculos:[], motoristas:[], historico:[], escalas:{}, linhasCustom:{}, pernoite:{}, cameraChecks:{}};
+    return normalizeDB({});
   }
 }
 
 let db = loadDB(), currentVehicle = null, pendingJustActivity = null, currentEditingLineCode = null;
+let resumoEstilo = 'visual';
+let resumoOcorrencias = [
+  { veiculo: '99995', linha: 'R07 - SANTA ELISA / ROSEIRA (VIA CAMPINAS)', linhaCustom: '', motivo: 'Recolhido para a garagem devido a mau funcionamento.' }
+];
 
 const DEFAULT_LINHAS = [
   { code: "99991", nome: "R05 - JABEQUARA / SEDE", cruzado: false, sched: { util: { ida: "06:30, 09:00, 12:30, 16:30", volta: "07:30, 10:30, 15:00, 17:20" }, sab: { ida: "06:30, 16:00", volta: "08:00, 17:00" }, dom: { ida: "10:00, 16:00", volta: "11:00, 17:00" } } },
@@ -335,7 +435,151 @@ const DIAS_SEMANA = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta',
 let currentDay = DIAS_SEMANA[new Date().getDay()];
 if(currentDay === 'domingo') currentDay = 'segunda';
 
-function save(){ localStorage.setItem(KEY, JSON.stringify(db)); }
+function setSyncBadge(text){
+  const el = document.getElementById('syncStatus');
+  if(el) el.textContent = text;
+  const info = document.getElementById('cloudInfoBox');
+  if(info) info.textContent = text;
+}
+
+function save(pushCloud = true){
+  db = normalizeDB(db);
+  db.updatedAt = Date.now();
+  localStorage.setItem(KEY, JSON.stringify(db));
+  if(pushCloud) pushToCloud(db);
+}
+
+async function pushToCloud(payload){
+  if(!URL_PLANILHA) return;
+  try{
+    setSyncBadge('☁️ Salvando...');
+    await fetch(URL_PLANILHA, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    setSyncBadge('☁️ Sincronizado');
+  }catch(e){
+    setSyncBadge('⚠️ Local (Sem rede)');
+  }
+}
+
+function mergeDBs(baseA, baseB){
+  const a = normalizeDB(baseA);
+  const b = normalizeDB(baseB);
+  const merged = normalizeDB({ updatedAt: Math.max(a.updatedAt, b.updatedAt, Date.now()) });
+
+  const veicMap = new Map();
+  [...a.veiculos, ...b.veiculos].forEach(v => {
+    if(!v || !v.codigo) return;
+    const key = v.codigo.trim().toLowerCase();
+    const prev = veicMap.get(key);
+    if(!prev){
+      veicMap.set(key, {
+        id: v.id || crypto.randomUUID(),
+        codigo: v.codigo,
+        ordem: v.ordem || '',
+        roteiro: v.roteiro || '',
+        atividades: Object.assign({}, v.atividades || {}),
+        justificativas: Object.assign({}, v.justificativas || {})
+      });
+    } else {
+      prev.ordem = v.ordem || prev.ordem;
+      prev.roteiro = v.roteiro || prev.roteiro;
+      Object.entries(v.atividades || {}).forEach(([k, dt]) => {
+        if(!prev.atividades[k] || new Date(dt) > new Date(prev.atividades[k])) prev.atividades[k] = dt;
+      });
+      prev.justificativas = Object.assign({}, prev.justificativas, v.justificativas || {});
+    }
+  });
+  merged.veiculos = Array.from(veicMap.values());
+
+  const drvMap = new Map();
+  [...a.motoristas, ...b.motoristas].forEach(d => {
+    if(!d || !d.name) return;
+    const key = d.name.trim().toLowerCase().replace(/\s+/g, ' ');
+    if(!drvMap.has(key)) drvMap.set(key, { id: d.id || crypto.randomUUID(), name: d.name.trim() });
+  });
+  merged.motoristas = Array.from(drvMap.values()).sort((x,y) => x.name.localeCompare(y.name, 'pt', {sensitivity:'accent'}));
+
+  const histMap = new Map();
+  [...a.historico, ...b.historico].forEach(h => {
+    if(!h) return;
+    const sig = `${h.veiculo}|${h.atividade}|${h.dataHora}|${h.status}|${h.observacao||''}`;
+    if(!histMap.has(sig)) histMap.set(sig, h);
+  });
+  merged.historico = Array.from(histMap.values()).sort((x,y) => new Date(y.dataHora) - new Date(x.dataHora));
+
+  const resMap = new Map();
+  [...a.resumos, ...b.resumos].forEach(r => {
+    if(!r) return;
+    const sig = r.id || `${r.data}|${r.perc}|${r.naoCumpridas}|${r.texto}`;
+    if(!resMap.has(sig)) resMap.set(sig, r);
+  });
+  merged.resumos = Array.from(resMap.values());
+
+  merged.escalas = Object.assign({}, a.escalas, b.escalas);
+  merged.linhasCustom = Object.assign({}, a.linhasCustom, b.linhasCustom);
+  merged.pernoite = Object.assign({}, a.pernoite, b.pernoite);
+  merged.cameraChecks = Object.assign({}, a.cameraChecks, b.cameraChecks);
+
+  return merged;
+}
+
+function renderAllViews(){
+  renderPanel();
+  renderLinhas();
+  renderMotoristas();
+  renderPernoite();
+  renderResumoHistory();
+  renderCad();
+  renderFilters();
+}
+
+async function syncFromCloud(manual = false){
+  if(!URL_PLANILHA) return;
+  try{
+    setSyncBadge('☁️ Atualizando...');
+    const resp = await fetch(URL_PLANILHA);
+    const raw = await resp.json();
+    const cloudData = normalizeDB(raw);
+    const hasCloudData = cloudData.veiculos.length > 0 || cloudData.motoristas.length > 0 || cloudData.historico.length > 0 || cloudData.resumos.length > 0;
+
+    if(hasCloudData){
+      if(cloudData.updatedAt >= db.updatedAt || manual){
+        db = cloudData;
+        localStorage.setItem(KEY, JSON.stringify(db));
+        renderAllViews();
+      }
+      setSyncBadge('☁️ Sincronizado');
+      if(manual) toast('Dados sincronizados da nuvem!');
+    } else {
+      setSyncBadge('☁️ Nuvem pronta');
+      if(manual) toast('Nuvem conectada e pronta.');
+    }
+  }catch(e){
+    setSyncBadge('⚠️ Local (Sem rede)');
+    if(manual) toast('Não foi possível conectar à nuvem agora.');
+  }
+}
+
+async function mergeLocalToCloud(){
+  if(!URL_PLANILHA) return;
+  try{
+    setSyncBadge('☁️ Mesclando...');
+    const resp = await fetch(URL_PLANILHA);
+    const raw = await resp.json();
+    db = mergeDBs(raw, db);
+    save(true);
+    renderAllViews();
+    toast('Histórico mesclado e salvo na nuvem!');
+  }catch(e){
+    db = mergeDBs(db, db);
+    save(true);
+    renderAllViews();
+    toast('Dados locais salvos para envio à nuvem.');
+  }
+}
+
 function now(){ return new Date(); }
 function esc(s){ return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function fmt(v){ return new Date(v).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}); }
@@ -353,6 +597,7 @@ function show(p, id){
   if(p==='linhas') renderLinhas();
   if(p==='motoristas') renderMotoristas();
   if(p==='pernoite') renderPernoite();
+  if(p==='resumo') { renderResumoOcorrencias(); renderResumoPreview(); renderResumoHistory(); }
   if(p==='cadastro') renderCad();
   if(p==='exportacao') renderFilters();
   if(p==='detail') renderDetail(id);
@@ -816,6 +1061,199 @@ function exportWhatsAppPernoite(){
   navigator.clipboard.writeText(texto).then(() => toast('Relatório de pernoite copiado para o WhatsApp!'));
 }
 
+/* --- RESUMO OPERACIONAL E OCORRÊNCIAS --- */
+function initResumoDefaults(){
+  const elData = document.getElementById('resumoData');
+  if(elData && !elData.value){
+    const h = now();
+    const yyyy = h.getFullYear();
+    const mm = String(h.getMonth()+1).padStart(2,'0');
+    const dd = String(h.getDate()).padStart(2,'0');
+    elData.value = `${yyyy}-${mm}-${dd}`;
+  }
+}
+
+function setResumoEstilo(estilo){
+  resumoEstilo = estilo;
+  document.getElementById('btnEstiloVisual').classList.toggle('active', estilo === 'visual');
+  document.getElementById('btnEstiloDireto').classList.toggle('active', estilo === 'direto');
+  renderResumoPreview();
+}
+
+function calcResumoPerc(){
+  const prog = parseFloat(document.getElementById('resumoProg').value);
+  const naoCump = parseInt(document.getElementById('resumoNaoCump').value) || 0;
+  if(prog > 0 && naoCump >= 0 && naoCump <= prog){
+    const pct = (((prog - naoCump) / prog) * 100).toFixed(2).replace('.', ',');
+    document.getElementById('resumoPerc').value = pct;
+  }
+  renderResumoPreview();
+}
+
+function addResumoOcorrencia(){
+  resumoOcorrencias.push({
+    veiculo: '',
+    linha: 'R07 - SANTA ELISA / ROSEIRA (VIA CAMPINAS)',
+    linhaCustom: '',
+    motivo: 'Recolhido para a garagem devido a mau funcionamento.'
+  });
+  document.getElementById('resumoNaoCump').value = resumoOcorrencias.length;
+  calcResumoPerc();
+  renderResumoOcorrencias();
+}
+
+function removeResumoOcorrencia(idx){
+  resumoOcorrencias.splice(idx, 1);
+  document.getElementById('resumoNaoCump').value = resumoOcorrencias.length;
+  calcResumoPerc();
+  renderResumoOcorrencias();
+}
+
+function updateResumoOcorrencia(idx, field, val){
+  resumoOcorrencias[idx][field] = val;
+  if(field === 'linha') renderResumoOcorrencias();
+  renderResumoPreview();
+}
+
+function renderResumoOcorrencias(){
+  const box = document.getElementById('resumoOcorrenciasList');
+  if(!box) return;
+  box.innerHTML = resumoOcorrencias.map((oc, idx) => {
+    const isCustom = oc.linha === 'OUTRA';
+    return `<div class="ocorrencia-item">
+      <div class="ocorrencia-top">
+        <span>Ocorrência #${idx + 1}</span>
+        <button type="button" class="btn danger small" style="padding:4px 8px;font-size:11px" onclick="removeResumoOcorrencia(${idx})">Remover</button>
+      </div>
+      <div class="grid2">
+        <div>
+          <label style="margin-top:0">Veículo</label>
+          <input type="text" class="field" value="${esc(oc.veiculo)}" placeholder="Ex: 99995" oninput="updateResumoOcorrencia(${idx},'veiculo',this.value)">
+        </div>
+        <div>
+          <label style="margin-top:0">Linha</label>
+          <select class="field" onchange="updateResumoOcorrencia(${idx},'linha',this.value)">
+            ${LINHAS_RESUMO_SFC.map(ln => `<option value="${esc(ln)}" ${oc.linha===ln?'selected':''}>${esc(ln)}</option>`).join('')}
+            <option value="OUTRA" ${isCustom?'selected':''}>Outra linha (Digitar)...</option>
+          </select>
+        </div>
+      </div>
+      ${isCustom ? `
+        <div>
+          <label>Nome da Linha</label>
+          <input type="text" class="field" value="${esc(oc.linhaCustom)}" placeholder="Digite a linha" oninput="updateResumoOcorrencia(${idx},'linhaCustom',this.value)">
+        </div>
+      ` : ''}
+      <div>
+        <label>Motivo</label>
+        <input type="text" class="field" value="${esc(oc.motivo)}" placeholder="Descreva a ocorrência" oninput="updateResumoOcorrencia(${idx},'motivo',this.value)">
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function formatDateBR(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function buildResumoTexto(){
+  initResumoDefaults();
+  const dt = formatDateBR(document.getElementById('resumoData').value);
+  const perc = (document.getElementById('resumoPerc').value || '100').trim();
+  const naoCump = document.getElementById('resumoNaoCump').value || '0';
+
+  if(resumoEstilo === 'direto'){
+    let txt = `*Resumo Operacional - São Francisco do Conde (${dt})*\n\n`;
+    txt += `• *Viagens Cumpridas:* ${perc}%\n`;
+    txt += `• *Viagens Não Cumpridas:* ${naoCump}`;
+    if(resumoOcorrencias.length > 0 && parseInt(naoCump, 10) > 0){
+      const detalhes = resumoOcorrencias.map(oc => {
+        const linhaNome = oc.linha === 'OUTRA' ? (oc.linhaCustom || 'Linha N/I') : oc.linha;
+        const veicTxt = oc.veiculo ? `Veículo ${oc.veiculo}` : 'Veículo N/I';
+        return `${veicTxt} (${linhaNome}) recolhido à garagem por ${oc.motivo.replace(/^recolhido para a garagem devido a\s*/i, '').replace(/\.$/, '')}.`;
+      });
+      txt += `\n\n*Obs.:* ${detalhes.join(' | ')}`;
+    }
+    return txt;
+  }
+
+  let txt = `📊 *Resumo Operacional — São Francisco do Conde*\n📅 Data: ${dt}\n\n`;
+  txt += `✅ *Viagens Cumpridas:* ${perc}%\n❌ *Viagens Não Cumpridas:* ${naoCump}`;
+  if(resumoOcorrencias.length > 0 && parseInt(naoCump, 10) > 0){
+    txt += `\n\n⚠️ *${resumoOcorrencias.length > 1 ? 'Ocorrências' : 'Ocorrência'}:*`;
+    resumoOcorrencias.forEach((oc, i) => {
+      const linhaNome = oc.linha === 'OUTRA' ? (oc.linhaCustom || 'Não informada') : oc.linha;
+      const veicTxt = oc.veiculo || 'N/I';
+      const prefix = resumoOcorrencias.length > 1 ? `\n\n*${i+1}.* ` : '\n';
+      txt += `${prefix}• *Linha:* ${linhaNome}\n• *Veículo:* ${veicTxt}\n• *Motivo:* ${oc.motivo}`;
+    });
+  }
+  return txt;
+}
+
+function renderResumoPreview(){
+  initResumoDefaults();
+  const el = document.getElementById('resumoPreview');
+  if(el) el.textContent = buildResumoTexto();
+}
+
+function copyResumoWhatsApp(){
+  const txt = buildResumoTexto();
+  navigator.clipboard.writeText(txt).then(() => toast('Resumo copiado para o WhatsApp!'));
+}
+
+function saveResumoToHistory(){
+  initResumoDefaults();
+  const dataIso = document.getElementById('resumoData').value;
+  const perc = document.getElementById('resumoPerc').value || '100';
+  const naoCump = parseInt(document.getElementById('resumoNaoCump').value, 10) || 0;
+  const texto = buildResumoTexto();
+
+  db.resumos.unshift({
+    id: crypto.randomUUID(),
+    data: dataIso,
+    dataBR: formatDateBR(dataIso),
+    perc: perc,
+    naoCumpridas: naoCump,
+    ocorrencias: JSON.parse(JSON.stringify(resumoOcorrencias)),
+    texto: texto,
+    registradoEm: now().toISOString()
+  });
+
+  save();
+  renderResumoHistory();
+  toast('Resumo salvo no histórico compartilhado!');
+}
+
+function deleteResumoItem(id){
+  if(confirm('Excluir este resumo do histórico?')){
+    db.resumos = db.resumos.filter(r => r.id !== id);
+    save();
+    renderResumoHistory();
+    toast('Resumo removido.');
+  }
+}
+
+function renderResumoHistory(){
+  const box = document.getElementById('resumoHistoryList');
+  if(!box) return;
+  if(!db.resumos || !db.resumos.length){
+    box.innerHTML = '<div class="empty">Nenhum resumo salvo no histórico ainda.</div>';
+    return;
+  }
+  box.innerHTML = db.resumos.map(r => `
+    <div class="resumo-hist-item">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <b>📅 ${esc(r.dataBR || formatDateBR(r.data))} • ${esc(r.perc)}% cumpridas • ${esc(r.naoCumpridas)} não cumprida(s)</b>
+        <button type="button" class="btn danger small" style="padding:4px 8px;font-size:11px" onclick="deleteResumoItem('${r.id}')">🗑</button>
+      </div>
+      <div class="muted" style="margin-top:4px;white-space:pre-line">${esc(r.texto)}</div>
+    </div>
+  `).join('');
+}
+
 function openEditSchedModal(code, nome){
   currentEditingLineCode = code;
   let t = getDayType();
@@ -1145,13 +1583,16 @@ setInterval(()=>{
   if(document.getElementById('p-linhas').classList.contains('active')) renderLinhas();
 }, 30000);
 
+setInterval(()=>{
+  syncFromCloud(false);
+}, 60000);
+
 window.onload = function(){
-  renderPanel();
-  renderLinhas();
-  renderMotoristas();
-  renderPernoite();
-  renderCad();
-  renderFilters();
+  initResumoDefaults();
+  renderAllViews();
+  renderResumoOcorrencias();
+  renderResumoPreview();
+  syncFromCloud(false);
 };
 </script>
 </body>
