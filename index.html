@@ -274,13 +274,12 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
       <label>Linha / Roteiro (Opcional)</label>
       <input id="diarioLinha" type="text" class="field" list="sugestoesLinhas" placeholder="Ex: R07 - Santa Elisa">
       <datalist id="sugestoesLinhas">
-        <option value="SEDE">
-        <option value="R05 - JABEQUARA">
-        <option value="R07 - SANTA ELISA / ROSEIRA (VIA CAMPINAS)">
-        <option value="R08 - CURUPEBA">
-        <option value="R09 - FERROLHO">
-        <option value="R10 - SANTO ESTEVÃO">
-        <option value="R11 - COROADO">
+        <option value="R05 (99991) - JABEQUARA X SEDE">
+        <option value="R07 (99995) - SANTA ELISA X ROSEIRA">
+        <option value="R08 (99989) - CURUPEBA X SEDE">
+        <option value="R09 (99993) - FERROLHO X SEDE">
+        <option value="R10 (99997) - SANTO ESTEVÃO X SEDE">
+        <option value="R11 (99987) - COROADO X SEDE">
       </datalist>
     </div>
   </div>
@@ -311,7 +310,11 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <div class="card">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
     <h3 style="margin:0">📚 Histórico de Ocorrências Salvas</h3>
-    <button type="button" class="btn secondary small" onclick="exportDiarioExcel()">⬇ Exportar Diário (Excel)</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button type="button" class="btn secondary small" onclick="exportDiarioPDF()">📄 Gerar PDF</button>
+      <button type="button" class="btn secondary small" onclick="exportDiarioWord()">📝 Baixar Word (.doc)</button>
+      <button type="button" class="btn secondary small" onclick="exportDiarioExcel()">⬇ Excel</button>
+    </div>
   </div>
   <div class="filters" style="margin-bottom:10px">
     <input id="searchDiario" class="search" placeholder="🔎 Buscar por categoria, veículo, motorista, linha..." oninput="renderDiarioList()">
@@ -529,13 +532,12 @@ const PERIODS={'Checagem Diária Validador':'SHIFT_8AM','Checagem de Cartão SD'
 const ACTS=Object.keys(PERIODS);
 
 const LINHAS_RESUMO_SFC = [
-  'SEDE',
-  'R05 - JABEQUARA',
-  'R07 - SANTA ELISA / ROSEIRA (VIA CAMPINAS)',
-  'R08 - CURUPEBA',
-  'R09 - FERROLHO',
-  'R10 - SANTO ESTEVÃO',
-  'R11 - COROADO'
+  'R05 (99991) - JABEQUARA X SEDE',
+  'R07 (99995) - SANTA ELISA X ROSEIRA',
+  'R08 (99989) - CURUPEBA X SEDE',
+  'R09 (99993) - FERROLHO X SEDE',
+  'R10 (99997) - SANTO ESTEVÃO X SEDE',
+  'R11 (99987) - COROADO X SEDE'
 ];
 
 function getShift8AMStart(){
@@ -596,7 +598,7 @@ let db = loadDB(), currentVehicle = null, pendingJustActivity = null, currentEdi
 let resumoEstilo = 'visual';
 let quickPanelFilter = 'all';
 let resumoOcorrencias = [
-  { veiculo: '99995', linha: 'R07 - SANTA ELISA / ROSEIRA (VIA CAMPINAS)', linhaCustom: '', motivo: 'Recolhido para a garagem devido a mau funcionamento.' }
+  { veiculo: '99995', linha: 'R07 (99995) - SANTA ELISA X ROSEIRA', linhaCustom: '', motivo: 'Recolhido para a garagem devido a mau funcionamento.' }
 ];
 
 const DEFAULT_LINHAS = [
@@ -1409,7 +1411,7 @@ function calcResumoPerc(){
 function addResumoOcorrencia(){
   resumoOcorrencias.push({
     veiculo: '',
-    linha: 'R07 - SANTA ELISA / ROSEIRA (VIA CAMPINAS)',
+    linha: 'R07 (99995) - SANTA ELISA X ROSEIRA',
     linhaCustom: '',
     motivo: 'Recolhido para a garagem devido a mau funcionamento.'
   });
@@ -1738,10 +1740,128 @@ function renderDiarioList(){
   }).join('');
 }
 
+function getFilteredDiarioItems(){
+  const q = (document.getElementById('searchDiario')?.value || '').toLowerCase();
+  const stFilter = document.getElementById('filterDiarioStatus')?.value || '';
+  const dtIni = document.getElementById('diarioHistIni')?.value || '';
+  const dtFim = document.getElementById('diarioHistFim')?.value || '';
+
+  return (db.ocorrenciasAgenda || []).filter(item => {
+    if(stFilter && item.status !== stFilter) return false;
+    const iDate = item.data || '';
+    if(dtIni && iDate && iDate < dtIni) return false;
+    if(dtFim && iDate && iDate > dtFim) return false;
+    if(!q) return true;
+    const blob = `${item.dataBR||item.data} ${item.hora} ${item.categoria} ${item.veiculo} ${item.linha} ${item.motorista} ${item.descricao}`.toLowerCase();
+    return blob.includes(q);
+  });
+}
+
+function buildDiarioReportHTML(items, forWord = false){
+  const dtIni = document.getElementById('diarioHistIni')?.value || '';
+  const dtFim = document.getElementById('diarioHistFim')?.value || '';
+  const stFilter = document.getElementById('filterDiarioStatus')?.value || 'Todas';
+  const q = (document.getElementById('searchDiario')?.value || '').trim();
+
+  const periodoTxt = (dtIni || dtFim)
+    ? `${dtIni ? formatDateBR(dtIni) : 'Início'} até ${dtFim ? formatDateBR(dtFim) : 'Atual'}`
+    : 'Todos os períodos';
+
+  const abertos = items.filter(i => i.status !== 'Resolvido').length;
+  const resolvidos = items.filter(i => i.status === 'Resolvido').length;
+
+  const rowsHtml = items.map(item => `
+    <tr>
+      <td style="padding:7px;border:1px solid #cbd5e1;white-space:nowrap">${esc(item.dataBR || formatDateBR(item.data))} ${esc(item.hora || '')}</td>
+      <td style="padding:7px;border:1px solid #cbd5e1"><b>${esc(item.categoria || '')}</b></td>
+      <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.veiculo || '-')}</td>
+      <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.linha || '-')}</td>
+      <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.motorista || '-')}</td>
+      <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.status || '')}</td>
+      <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.descricao || '-')}</td>
+    </tr>
+  `).join('');
+
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Diário de Ocorrências — Atlântico</title>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;color:#173247;margin:24px;font-size:12px}
+  h1{margin:0 0 4px;font-size:20px;color:#07898c}
+  .sub{color:#52606d;margin-bottom:14px;font-size:12px}
+  .meta{background:#f1f5f9;border:1px solid #cbd5e1;border-radius:8px;padding:10px 12px;margin-bottom:14px;line-height:1.5}
+  table{width:100%;border-collapse:collapse;margin-top:8px}
+  th{background:#07898c;color:#fff;text-align:left;padding:8px;border:1px solid #066f72;font-size:11px}
+  ${forWord ? '' : '@media print{body{margin:10mm}}'}
+</style>
+</head>
+<body>
+  <h1>Atlântico — Diário de Ocorrências Operacionais</h1>
+  <div class="sub">Unidade São Francisco do Conde • Gerado em ${esc(fmt(now()))}</div>
+  <div class="meta">
+    <b>Período:</b> ${esc(periodoTxt)} &nbsp;|&nbsp;
+    <b>Situação:</b> ${esc(stFilter)}
+    ${q ? ` &nbsp;|&nbsp; <b>Busca:</b> ${esc(q)}` : ''}<br>
+    <b>Total de registros:</b> ${items.length} &nbsp;|&nbsp;
+    <b>Em aberto:</b> ${abertos} &nbsp;|&nbsp;
+    <b>Resolvidos:</b> ${resolvidos}
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Data / Hora</th>
+        <th>Categoria / Falha</th>
+        <th>Veículo</th>
+        <th>Linha / Roteiro</th>
+        <th>Motorista</th>
+        <th>Situação</th>
+        <th>Descrição</th>
+      </tr>
+    </thead>
+    <tbody>${rowsHtml}</tbody>
+  </table>
+</body>
+</html>`;
+}
+
+function exportDiarioPDF(){
+  const items = getFilteredDiarioItems();
+  if(!items.length) return alert('Não há registros no diário para gerar o PDF.');
+  const win = window.open('', '_blank');
+  if(!win) return alert('Permita pop-ups no navegador para gerar o PDF.');
+  win.document.open();
+  win.document.write(buildDiarioReportHTML(items, false));
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); }, 350);
+  toast('Relatório PDF pronto para salvar/imprimir!');
+}
+
+function exportDiarioWord(){
+  const items = getFilteredDiarioItems();
+  if(!items.length) return alert('Não há registros no diário para exportar em Word.');
+  const htmlDoc = buildDiarioReportHTML(items, true);
+  const blob = new Blob(['﻿', htmlDoc], { type: 'application/msword;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = now();
+  const stamp = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  a.href = url;
+  a.download = `atlantico_diario_ocorrencias_${stamp}.doc`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Arquivo Word (.doc) do diário baixado!');
+}
+
 function exportDiarioExcel(){
   if(typeof XLSX==='undefined') return alert('Biblioteca do Excel indisponível.');
-  if(!db.ocorrenciasAgenda || !db.ocorrenciasAgenda.length) return alert('Não há registros no diário para exportar.');
-  const rows = db.ocorrenciasAgenda.map(item => ({
+  const items = getFilteredDiarioItems();
+  if(!items.length) return alert('Não há registros no diário para exportar.');
+  const rows = items.map(item => ({
     'Data': item.dataBR || formatDateBR(item.data),
     'Hora': item.hora || '',
     'Categoria / Falha': item.categoria || '',
