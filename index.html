@@ -287,7 +287,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
   <div class="grid2">
     <div>
       <label>Motorista (Opcional)</label>
-      <input id="diarioMotorista" type="text" class="field" list="sugestoesMotoristas" placeholder="Nome do motorista">
+      <input id="diarioMotorista" type="text" class="field" list="sugestoesMotoristas" placeholder="Selecione ou digite: Nome - Matrícula">
       <datalist id="sugestoesMotoristas"></datalist>
     </div>
     <div>
@@ -538,6 +538,30 @@ const LINHAS_RESUMO_SFC = [
   'R09 (99993) - FERROLHO X SEDE',
   'R10 (99997) - SANTO ESTEVÃO X SEDE',
   'R11 (99987) - COROADO X SEDE'
+];
+
+const MOTORISTAS_OCORRENCIAS = [
+  'Agildo Silva de Oliveira - 93011',
+  'Anderson Americo Amorim da Silva - 93012',
+  'Antonio Carlos Brito Filho - 93013',
+  'Antonio Cesar Silva - 93944',
+  'Carlos Alberto Moraes Silva - 90164',
+  'Edenilson Bispo Barreto - 93015',
+  'Everardo de Oliveira Silva - 93829',
+  'Gilmar Barcelar Costa - 93017',
+  'Ivan Santana da Silva - 93018',
+  'Julival Xavier da Silva - 93019',
+  'Marcos Araujo Sena - 93020',
+  'Mauricio de Santana de Jesus - 93021',
+  'Miqueias da Silva de Souza - 93366',
+  'Paulo Henrique de Lima - 93022',
+  'Railton Ferreira Fonseca Junior - 93023',
+  'Regivaldo Pereira dos Santos - 93024',
+  'Rodrigo de Jesus Costa - 93025',
+  'Roque Soares de Souza de Jesus - 93026',
+  'Sandro Ailton Ramos - 93027',
+  'Sergio Almeida de Jesus da Silva - 93028',
+  'Silas Silva Santos - 93029'
 ];
 
 function getShift8AMStart(){
@@ -1630,7 +1654,16 @@ function renderDiarioDatalists(){
   }
   const mList = document.getElementById('sugestoesMotoristas');
   if(mList){
-    mList.innerHTML = db.motoristas.map(m => `<option value="${esc(m.name)}">`).join('');
+    const lista = [...MOTORISTAS_OCORRENCIAS];
+    (db.motoristas || []).forEach(m => {
+      if(!m || !m.name) return;
+      const nm = m.name.trim();
+      const low = nm.toLowerCase();
+      if(!lista.some(x => x.toLowerCase().includes(low))){
+        lista.push(nm);
+      }
+    });
+    mList.innerHTML = lista.map(item => `<option value="${esc(item)}">`).join('');
   }
 }
 
