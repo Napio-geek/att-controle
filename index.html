@@ -395,6 +395,12 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <div class="card">
   <h3 style="margin-top:0">☁️ Sincronização com Nuvem</h3>
   <div id="cloudInfoBox" class="notice" style="margin-bottom:10px">Verificando status...</div>
+  <label for="syncUrlInput" style="margin-top:8px">URL do Web App (Google Apps Script)</label>
+  <input id="syncUrlInput" type="url" class="field" placeholder="https://script.google.com/macros/s/.../exec">
+  <div class="actions" style="margin-top:8px;margin-bottom:10px">
+    <button type="button" class="btn secondary small" onclick="saveSyncUrl()">💾 Salvar URL</button>
+    <button type="button" class="btn secondary small" onclick="resetSyncUrlToDefault()">↩ Restaurar Link Padrão</button>
+  </div>
   <div class="actions">
     <button type="button" class="btn secondary" onclick="syncFromCloud(true)">🔄 Baixar / Atualizar da Nuvem</button>
     <button type="button" class="btn" onclick="mergeLocalToCloud()">🔀 Mesclar e Enviar para Nuvem</button>
@@ -525,7 +531,11 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
 <script>
 const KEY = 'atlantico-controle-atividades-v1';
-const URL_PLANILHA = localStorage.getItem('atlantico-sync-url') || '';
+const DEFAULT_SYNC_URL = 'https://script.google.com/macros/s/AKfycbxzQColA5RJ-KhxujDPQNINafx22G1QfxllYz6DVAS-9eOaZvgKJLsaBtNUfrxXj0DeJQ/exec';
+function getSyncUrl() {
+  return (localStorage.getItem('atlantico-sync-url') || '').trim() || DEFAULT_SYNC_URL;
+}
+let URL_PLANILHA = getSyncUrl();
 const ACTS = ['Checagem Diária Validador', 'Checagem de Cartão SD', 'Checagem de Câmera'];
 const PERIODS = { 'Checagem Diária Validador': 'SHIFT_8AM', 'Checagem de Cartão SD': 3 * 24 * 60 * 60 * 1000, 'Checagem de Câmera': 7 * 24 * 60 * 60 * 1000 };
 
@@ -646,6 +656,31 @@ const DIAS_SEMANA = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta',
 let currentDay = DIAS_SEMANA[new Date().getDay()];
 if(currentDay === 'domingo') currentDay = 'segunda';
 
+
+function refreshSyncUrlInput(){
+  const inp = document.getElementById('syncUrlInput');
+  if(inp) inp.value = getSyncUrl();
+}
+
+function saveSyncUrl(){
+  const inp = document.getElementById('syncUrlInput');
+  const val = (inp ? inp.value : '').trim();
+  if(!val) return alert('Informe uma URL válida do Google Apps Script.');
+  localStorage.setItem('atlantico-sync-url', val);
+  URL_PLANILHA = getSyncUrl();
+  refreshSyncUrlInput();
+  toast('URL de sincronização salva!');
+  syncFromCloud(true);
+}
+
+function resetSyncUrlToDefault(){
+  localStorage.setItem('atlantico-sync-url', DEFAULT_SYNC_URL);
+  URL_PLANILHA = getSyncUrl();
+  refreshSyncUrlInput();
+  toast('Link padrão restaurado!');
+  syncFromCloud(true);
+}
+
 function setSyncBadge(text){
   const el = document.getElementById('syncStatus');
   if(el) el.textContent = text;
@@ -662,10 +697,11 @@ function save(pushCloud = true){
 }
 
 async function pushToCloud(payload){
+  URL_PLANILHA = getSyncUrl();
   if(!URL_PLANILHA) return;
   try{
     setSyncBadge('☁️ Salvando...');
-    await fetch(URL_PLANILHA, {
+    await fetch(getSyncUrl(), {
       method: 'POST',
       body: JSON.stringify(payload)
     });
@@ -759,10 +795,11 @@ function renderAllViews(){
 }
 
 async function syncFromCloud(manual = false){
+  URL_PLANILHA = getSyncUrl();
   if(!URL_PLANILHA) return;
   try{
     setSyncBadge('☁️ Atualizando...');
-    const resp = await fetch(URL_PLANILHA);
+    const resp = await fetch(getSyncUrl());
     const raw = await resp.json();
     const cloudData = normalizeDB(raw);
     cleanExpiredDailyJustifications(cloudData);
@@ -787,10 +824,11 @@ async function syncFromCloud(manual = false){
 }
 
 async function mergeLocalToCloud(){
+  URL_PLANILHA = getSyncUrl();
   if(!URL_PLANILHA) return;
   try{
     setSyncBadge('☁️ Mesclando...');
-    const resp = await fetch(URL_PLANILHA);
+    const resp = await fetch(getSyncUrl());
     const raw = await resp.json();
     db = mergeDBs(raw, db);
     save(true);
@@ -850,7 +888,7 @@ function show(p, id){
   if(p==='resumo') { initResumoDefaults(); renderResumoOcorrencias(); renderResumoPreview(); renderResumoHistory(); }
   if(p==='diario') { initDiarioDefaults(); renderDiarioDatalists(); renderDiarioList(); }
   if(p==='cadastros') { renderCad(); renderMotoristas(); }
-  if(p==='exportacao') renderFilters();
+  if(p==='exportacao') { renderFilters(); refreshSyncUrlInput(); }
   if(p==='detail') renderDetail(id);
   window.scrollTo(0,0);
 }
@@ -2435,6 +2473,7 @@ window.onload = function(){
   initResumoDefaults();
   initDiarioDefaults();
   renderAllViews();
+  refreshSyncUrlInput();
   renderResumoOcorrencias();
   renderResumoPreview();
   syncFromCloud(false);
