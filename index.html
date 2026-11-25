@@ -78,8 +78,12 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 .wa-box{background:#e5ddd5;padding:12px;border-radius:12px;margin:12px 0}
 .wa-bubble{background:#dcf8c6;padding:12px;border-radius:10px;font-size:13px;line-height:1.45;white-space:pre-wrap;color:#111b21;box-shadow:0 1px 2px #0002}
 .resumo-hist-item{border:1px solid var(--bd);border-radius:12px;padding:12px;margin-top:10px;background:#fafcfd}
-.diario-card{background:#fff;border:1px solid var(--bd);border-left:5px solid var(--o);border-radius:14px;padding:14px;margin:10px 0;box-shadow:0 2px 8px #0000000b}
-.diario-card.resolvido{border-left-color:var(--g)}
+.diario-card{background:#fff;border:1px solid var(--bd);border-left:5px solid #f59e0b;border-radius:14px;padding:14px;margin:10px 0;box-shadow:0 2px 8px #0000000b}
+.diario-card.aberto{border-left-color:#f59e0b;background:#fffdf7}
+.diario-card.resolvido{border-left-color:#16a765;background:#f7fdf9}
+.diario-status-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap}
+.diario-status-pill.aberto{background:#d97706}
+.diario-status-pill.resolvido{background:#16a765}
 .diario-meta{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;font-size:12px}
 .diario-tag{background:#eaf1f2;color:var(--txt);padding:4px 8px;border-radius:8px;font-weight:700}
 .pernoite-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
@@ -179,8 +183,21 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
       <input id="resumoData" type="date" class="field" oninput="renderResumoOcorrencias();renderResumoPreview()">
     </div>
     <div>
+      <label>Motorista (Nome e Matrícula)</label>
+      <select id="resumoMotorista" class="field" onchange="renderResumoPreview()">
+        <option value="">-- Selecione o motorista --</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div>
       <label>Viagens Programadas (Opcional)</label>
       <input id="resumoProg" type="number" min="0" class="field" placeholder="Ex: 57" oninput="calcResumoPerc()">
+    </div>
+    <div>
+      <label>Turno / Observação Geral (Opcional)</label>
+      <input id="resumoTurnoObs" type="text" class="field" placeholder="Ex: Operação manhã/tarde" oninput="renderResumoPreview()">
     </div>
   </div>
 
@@ -290,32 +307,20 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
         <option value="">-- Selecione --</option>
         <option value="1">Serviço 1</option>
         <option value="2">Serviço 2</option>
-        <option value="3">Serviço 3</option>
-        <option value="4">Serviço 4</option>
       </select>
     </div>
     <div>
       <label>Sentido da Viagem</label>
-      <select id="diarioSentido" class="field" onchange="syncDiarioHorariosOptions()">
+      <select id="diarioSentido" class="field">
         <option value="">-- Selecione --</option>
-        <option value="Ida">Ida</option>
-        <option value="Volta">Volta</option>
         <option value="Ida e Volta">Ida e Volta</option>
       </select>
     </div>
   </div>
 
-  <div class="grid2">
-    <div>
-      <label>Horário da Viagem (Carta Horária)</label>
-      <select id="diarioHorarioSelect" class="field" onchange="onDiarioHorarioSelectChange()">
-        <option value="">-- Selecione o horário --</option>
-      </select>
-    </div>
-    <div>
-      <label>Horário (Digitar / Ajustar)</label>
-      <input id="diarioHorario" type="text" class="field" placeholder="Ex: 06:20">
-    </div>
+  <div>
+    <label>Horário da Viagem</label>
+    <input id="diarioHorario" type="text" class="field" placeholder="Ex: 06:20">
   </div>
 
   <label>Situação</label>
@@ -623,7 +628,29 @@ const QUADRO_CARTA_HORARIA = {
 };
 
 const LINHAS_RESUMO_SFC = Object.keys(QUADRO_CARTA_HORARIA);
-const MOTORISTAS_OCORRENCIAS = [];
+const MOTORISTAS_OCORRENCIAS = [
+  'Agildo Silva de Oliveira - 93011',
+  'Anderson Americo Amorim da Silva - 93012',
+  'Antonio Carlos Brito Filho - 93013',
+  'Antonio Cesar Silva - 93944',
+  'Carlos Alberto Moraes Silva - 90164',
+  'Edenilson Bispo Barreto - 93015',
+  'Everardo de Oliveira Silva - 93829',
+  'Gilmar Barcelar Costa - 93017',
+  'Ivan Santana da Silva - 93018',
+  'Julival Xavier da Silva - 93019',
+  'Marcos Araujo Sena - 93020',
+  'Mauricio de Santana de Jesus - 93021',
+  'Miqueias da Silva de Souza - 93366',
+  'Paulo Henrique de Lima - 93022',
+  'Railton Ferreira Fonseca Junior - 93023',
+  'Regivaldo Pereira dos Santos - 93024',
+  'Rodrigo de Jesus Costa - 93025',
+  'Roque Soares de Souza de Jesus - 93026',
+  'Sandro Ailton Ramos - 93027',
+  'Sergio Almeida de Jesus da Silva - 93028',
+  'Silas Silva Santos - 93029'
+];
 
 function getShift8AMStart(){
   const d = new Date();
@@ -641,7 +668,29 @@ function normalizeDB(data){
   if(!Array.isArray(data.motoristas)) data.motoristas = [];
   if(data.motoristas.length === 0) {
     data.motoristas = [
-  { id: 'drv-93011', name: 'Agildo Silva de Oliveira (93011)', matricula: '93011' },
+  { id: 'drv-93011', name: 'Agildo Silva de Oliveira - 93011', matricula: '93011' },
+  { id: 'drv-93012', name: 'Anderson Americo Amorim da Silva - 93012', matricula: '93012' },
+  { id: 'drv-93013', name: 'Antonio Carlos Brito Filho - 93013', matricula: '93013' },
+  { id: 'drv-93944', name: 'Antonio Cesar Silva - 93944', matricula: '93944' },
+  { id: 'drv-90164', name: 'Carlos Alberto Moraes Silva - 90164', matricula: '90164' },
+  { id: 'drv-93015', name: 'Edenilson Bispo Barreto - 93015', matricula: '93015' },
+  { id: 'drv-93829', name: 'Everardo de Oliveira Silva - 93829', matricula: '93829' },
+  { id: 'drv-93017', name: 'Gilmar Barcelar Costa - 93017', matricula: '93017' },
+  { id: 'drv-93018', name: 'Ivan Santana da Silva - 93018', matricula: '93018' },
+  { id: 'drv-93019', name: 'Julival Xavier da Silva - 93019', matricula: '93019' },
+  { id: 'drv-93020', name: 'Marcos Araujo Sena - 93020', matricula: '93020' },
+  { id: 'drv-93021', name: 'Mauricio de Santana de Jesus - 93021', matricula: '93021' },
+  { id: 'drv-93366', name: 'Miqueias da Silva de Souza - 93366', matricula: '93366' },
+  { id: 'drv-93022', name: 'Paulo Henrique de Lima - 93022', matricula: '93022' },
+  { id: 'drv-93023', name: 'Railton Ferreira Fonseca Junior - 93023', matricula: '93023' },
+  { id: 'drv-93024', name: 'Regivaldo Pereira dos Santos - 93024', matricula: '93024' },
+  { id: 'drv-93025', name: 'Rodrigo de Jesus Costa - 93025', matricula: '93025' },
+  { id: 'drv-93026', name: 'Roque Soares de Souza de Jesus - 93026', matricula: '93026' },
+  { id: 'drv-93027', name: 'Sandro Ailton Ramos - 93027', matricula: '93027' },
+  { id: 'drv-93028', name: 'Sergio Almeida de Jesus da Silva - 93028', matricula: '93028' },
+  { id: 'drv-93029', name: 'Silas Silva Santos - 93029', matricula: '93029' }
+];
+  },
   { id: 'drv-93012', name: 'Anderson Americo Amorim da Silva (93012)', matricula: '93012' },
   { id: 'drv-93013', name: 'Antonio Carlos Brito Filho (93013)', matricula: '93013' },
   { id: 'drv-93944', name: 'Antonio Cesar Silva (93944)', matricula: '93944' },
@@ -1522,6 +1571,21 @@ function exportWhatsAppPernoite(){
 }
 
 /* --- RESUMO OPERACIONAL (WHATSAPP) --- */
+function populateResumoMotoristas(){
+  const sel = document.getElementById('resumoMotorista');
+  if(!sel) return;
+  const prev = sel.value;
+  const list = [...MOTORISTAS_OCORRENCIAS];
+  (db.motoristas || []).forEach(m => {
+    const nm = (m && m.name ? m.name : '').trim();
+    if(nm && !list.some(x => x.toLowerCase() === nm.toLowerCase())) list.push(nm);
+  });
+  list.sort((a,b) => a.localeCompare(b, 'pt', {sensitivity:'accent'}));
+  sel.innerHTML = '<option value="">-- Selecione o motorista --</option>' +
+    list.map(nm => `<option value="${esc(nm)}">${esc(nm)}</option>`).join('');
+  if(prev && list.includes(prev)) sel.value = prev;
+}
+
 function initResumoDefaults(){
   const elData = document.getElementById('resumoData');
   if(elData && !elData.value){
@@ -1531,6 +1595,7 @@ function initResumoDefaults(){
     const dd = String(h.getDate()).padStart(2,'0');
     elData.value = `${yyyy}-${mm}-${dd}`;
   }
+  populateResumoMotoristas();
 }
 
 function setResumoEstilo(estilo){
@@ -1656,7 +1721,6 @@ function renderResumoOcorrencias(){
 
   box.innerHTML = resumoOcorrencias.map((oc, idx) => {
     const isCustom = oc.linha === 'OUTRA';
-    const cartaOpts = !isCustom ? getCartaHorariosOptionsForResumo(oc.linha, oc.sentido || 'Ida') : [];
     return `<div class="ocorrencia-item">
       <div class="ocorrencia-top">
         <span>Ocorrência #${idx + 1}</span>
@@ -1684,30 +1748,23 @@ function renderResumoOcorrencias(){
       ` : ''}
       <div class="grid2">
         <div>
+          <label>Serviço</label>
+          <select class="field" onchange="updateResumoOcorrencia(${idx},'servico',this.value)">
+            <option value="">-- Selecione --</option>
+            <option value="1" ${String(oc.servico||'').replace(/^0+/,'')==='1'?'selected':''}>Serviço 1</option>
+            <option value="2" ${String(oc.servico||'').replace(/^0+/,'')==='2'?'selected':''}>Serviço 2</option>
+          </select>
+        </div>
+        <div>
           <label>Sentido</label>
           <select class="field" onchange="updateResumoOcorrencia(${idx},'sentido',this.value)">
-            <option value="Ida" ${(oc.sentido||'Ida')==='Ida'?'selected':''}>Ida</option>
-            <option value="Volta" ${oc.sentido==='Volta'?'selected':''}>Volta</option>
-            <option value="Ida e Volta" ${oc.sentido==='Ida e Volta'?'selected':''}>Ida e Volta</option>
+            <option value="Ida e Volta" ${(oc.sentido||'Ida e Volta')==='Ida e Volta'?'selected':''}>Ida e Volta</option>
           </select>
-        </div>
-        <div>
-          <label>Serviço</label>
-          <input type="text" class="field" value="${esc(oc.servico||'')}" placeholder="Ex: 01 ou Serviço 01" oninput="updateResumoOcorrencia(${idx},'servico',this.value)">
         </div>
       </div>
-      <div class="grid2">
-        <div>
-          <label>Horários (Carta Horária)</label>
-          <select class="field" onchange="applyResumoHorarioSelect(${idx},this.value)">
-            <option value="">-- Puxar da carta horária --</option>
-            ${cartaOpts.map(opt => `<option value="${esc(opt)}">${esc(opt)}</option>`).join('')}
-          </select>
-        </div>
-        <div>
-          <label>Horário(s) da Ocorrência</label>
-          <input type="text" class="field" value="${esc(oc.horario||'')}" placeholder="Ex: 06:20 ou 06:20 / 07:30" oninput="updateResumoOcorrencia(${idx},'horario',this.value)">
-        </div>
+      <div>
+        <label>Horário(s) da Ocorrência</label>
+        <input type="text" class="field" value="${esc(oc.horario||'')}" placeholder="Ex: 06:20 ou 06:20 / 07:30" oninput="updateResumoOcorrencia(${idx},'horario',this.value)">
       </div>
       <div>
         <label>Motivo</label>
@@ -1726,12 +1783,14 @@ function formatDateBR(iso){
 function buildResumoTexto(){
   initResumoDefaults();
   const dt = formatDateBR(document.getElementById('resumoData').value);
+  const drv = (document.getElementById('resumoMotorista')?.value || '').trim();
   const perc = (document.getElementById('resumoPerc').value || '100').trim();
   const naoCump = document.getElementById('resumoNaoCump').value || '0';
 
   if(resumoEstilo === 'direto'){
-    let txt = `*Resumo Operacional - São Francisco do Conde (${dt})*\n\n`;
-    txt += `• *Viagens Cumpridas:* ${perc}%\n`;
+    let txt = `*Resumo Operacional - São Francisco do Conde (${dt})*\n`;
+    if(drv) txt += `• *Motorista:* ${drv}\n`;
+    txt += `\n• *Viagens Cumpridas:* ${perc}%\n`;
     txt += `• *Viagens Não Cumpridas:* ${naoCump}`;
     if(resumoOcorrencias.length > 0 && parseInt(naoCump, 10) > 0){
       const detalhes = resumoOcorrencias.map(oc => {
@@ -1749,8 +1808,9 @@ function buildResumoTexto(){
     return txt;
   }
 
-  let txt = `📊 *Resumo Operacional — São Francisco do Conde*\n📅 Data: ${dt}\n\n`;
-  txt += `✅ *Viagens Cumpridas:* ${perc}%\n❌ *Viagens Não Cumpridas:* ${naoCump}`;
+  let txt = `📊 *Resumo Operacional — São Francisco do Conde*\n📅 Data: ${dt}`;
+  if(drv) txt += `\n👨‍✈️ *Motorista:* ${drv}`;
+  txt += `\n\n✅ *Viagens Cumpridas:* ${perc}%\n❌ *Viagens Não Cumpridas:* ${naoCump}`;
   if(resumoOcorrencias.length > 0 && parseInt(naoCump, 10) > 0){
     txt += `\n\n⚠️ *${resumoOcorrencias.length > 1 ? 'Ocorrências' : 'Ocorrência'}:*`;
     resumoOcorrencias.forEach((oc, i) => {
@@ -1860,32 +1920,7 @@ function getDiarioTipoDia(){
   return 'util';
 }
 
-function syncDiarioHorariosOptions(){
-  const linha = getDiarioLinhaValue();
-  const sentido = document.getElementById('diarioSentido')?.value || 'Ida';
-  const selEl = document.getElementById('diarioHorarioSelect');
-  if(!selEl) return;
-  const linhaData = QUADRO_CARTA_HORARIA[linha];
-  if(!linhaData){
-    selEl.innerHTML = '<option value="">-- Selecione linha e sentido --</option>';
-    return;
-  }
-  const tipoDia = getDiarioTipoDia();
-  const block = linhaData[tipoDia] || linhaData.util || {};
-  let opts = [];
-  if(sentido === 'Volta'){
-    opts = (block.volta || []).map(t => `${t.horario} (${t.viagem}ª Viagem - ${t.roteiro})`);
-  } else if(sentido === 'Ida e Volta'){
-    opts = [
-      ...(block.ida || []).map(t => `${t.horario} (Ida - ${t.viagem}ª Viagem)`),
-      ...(block.volta || []).map(t => `${t.horario} (Volta - ${t.viagem}ª Viagem)`)
-    ];
-  } else {
-    opts = (block.ida || []).map(t => `${t.horario} (${t.viagem}ª Viagem - ${t.roteiro})`);
-  }
-  selEl.innerHTML = '<option value="">-- Selecione o horário --</option>' +
-    opts.map(o => `<option value="${esc(o)}">${esc(o)}</option>`).join('');
-}
+function syncDiarioHorariosOptions(){}
 
 function onDiarioHorarioSelectChange(){
   const val = document.getElementById('diarioHorarioSelect')?.value || '';
@@ -1985,7 +2020,6 @@ function addDiarioOcorrencia(){
   if(document.getElementById('diarioServico')) document.getElementById('diarioServico').value = '';
   if(document.getElementById('diarioSentido')) document.getElementById('diarioSentido').value = '';
   if(document.getElementById('diarioHorario')) document.getElementById('diarioHorario').value = '';
-  if(document.getElementById('diarioHorarioSelect')) document.getElementById('diarioHorarioSelect').value = '';
   document.getElementById('diarioDescricao').value = '';
   const h = now();
   document.getElementById('diarioHora').value = `${String(h.getHours()).padStart(2,'0')}:${String(h.getMinutes()).padStart(2,'0')}`;
@@ -2041,10 +2075,11 @@ function renderDiarioList(){
   box.innerHTML = filtered.map(item => {
     const isRes = item.status === 'Resolvido';
     const statusIcon = isRes ? '✅' : '⏳';
-    return `<div class="diario-card ${isRes ? 'resolvido' : ''}">
+    const stClass = isRes ? 'resolvido' : 'aberto';
+    return `<div class="diario-card ${stClass}">
       <div class="activity-head">
         <h3>${statusIcon} ${esc(item.categoria)}</h3>
-        <span class="badge ${isRes ? 'g' : 'o'}">${statusIcon} ${esc(item.status)}</span>
+        <span class="diario-status-pill ${stClass}">${statusIcon} ${esc(item.status)}</span>
       </div>
       <div class="diario-meta">
         <span class="diario-tag">📅 ${esc(item.dataBR || formatDateBR(item.data))} ${item.hora ? 'às '+esc(item.hora) : ''}</span>
