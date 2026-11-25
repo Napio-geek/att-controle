@@ -235,8 +235,1976 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
   <div id="resumoHistoryList"></div>
 </div>
 </section>
+</main>
+
+<div id="toast" class="toast"></div>
+</div>
+
+<script>
+const KEY = 'atlantico-controle-atividades-v1';
+const URL_PLANILHA = localStorage.getItem('atlantico-sync-url') || '';
+const ACTS = ['Checagem Diária Validador', 'Checagem de Cartão SD', 'Checagem de Câmera'];
+const PERIODS = { 'Checagem Diária Validador': 'SHIFT_8AM', 'Checagem de Cartão SD': 3 * 24 * 60 * 60 * 1000, 'Checagem de Câmera': 7 * 24 * 60 * 60 * 1000 };
+const LINHAS_RESUMO_SFC = Object.keys(QUADRO_CARTA_HORARIA = {
+  "R05 (99991) - JABEQUARA X SEDE": {
+    "roteiroPadrao": "SEDE - JABEQUARA / JABEQUARA - SEDE",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:30",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:00",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 3,
+          "horario": "12:30",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 4,
+          "horario": "16:30",
+          "roteiro": "SEDE - JABEQUARA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "07:30",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "10:30",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:00",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:20",
+          "roteiro": "JABEQUARA - SEDE"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:30",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "SEDE - JABEQUARA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "JABEQUARA - SEDE"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "SEDE - JABEQUARA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "11:00",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "JABEQUARA - SEDE"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "SEDE - JABEQUARA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "11:00",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "JABEQUARA - SEDE"
+        }
+      ]
+    }
+  },
+  "R10 (99997) - SANTO ESTEVÃO X SEDE": {
+    "roteiroPadrao": "SANTO ESTEVÃO - SEDE / SEDE - SANTO ESTEVÃO",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:10",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "07:50",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "10:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "12:30",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 5,
+          "horario": "15:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 6,
+          "horario": "17:30",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "06:10",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 2,
+          "horario": "07:50",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 3,
+          "horario": "10:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 4,
+          "horario": "12:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 5,
+          "horario": "15:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 6,
+          "horario": "17:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "06:10",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 3,
+          "horario": "12:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 4,
+          "horario": "15:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:30",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:20",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "09:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 2,
+          "horario": "13:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 3,
+          "horario": "16:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:10",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:30",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:20",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "09:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 2,
+          "horario": "13:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 3,
+          "horario": "16:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:10",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        }
+      ]
+    }
+  },
+  "R09 (99993) - FERROLHO X SEDE": {
+    "roteiroPadrao": "FERROLHO - SEDE / SEDE - FERROLHO",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "07:50",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "10:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "12:30",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 5,
+          "horario": "15:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 6,
+          "horario": "17:30",
+          "roteiro": "FERROLHO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 2,
+          "horario": "07:50",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 3,
+          "horario": "10:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 4,
+          "horario": "12:30",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 5,
+          "horario": "15:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 6,
+          "horario": "17:30",
+          "roteiro": "SEDE - FERROLHO"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "18:00",
+          "roteiro": "FERROLHO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 2,
+          "horario": "12:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 3,
+          "horario": "17:00",
+          "roteiro": "SEDE - FERROLHO"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "14:30",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "17:00",
+          "roteiro": "FERROLHO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 3,
+          "horario": "18:00",
+          "roteiro": "SEDE - FERROLHO"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "14:30",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "17:00",
+          "roteiro": "FERROLHO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 3,
+          "horario": "18:00",
+          "roteiro": "SEDE - FERROLHO"
+        }
+      ]
+    }
+  },
+  "R08 (99989) - CURUPEBA X SEDE": {
+    "roteiroPadrao": "CURUPEBA - SEDE / SEDE - CURUPEBA",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:10",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:00",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "13:00",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "15:40",
+          "roteiro": "CURUPEBA - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "07:30",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:40",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:10",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "SEDE - CURUPEBA"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:10",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:30",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "CURUPEBA - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:30",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:10",
+          "roteiro": "SEDE - CURUPEBA"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:30",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "CURUPEBA - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:30",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:10",
+          "roteiro": "SEDE - CURUPEBA"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:30",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "CURUPEBA - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:30",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:10",
+          "roteiro": "SEDE - CURUPEBA"
+        }
+      ]
+    }
+  },
+  "R11 (99987) - COROADO X SEDE": {
+    "roteiroPadrao": "SEDE - COROADO / COROADO - SEDE",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:30",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "SEDE - COROADO"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "12:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:30",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:00",
+          "roteiro": "COROADO - SEDE"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "07:00",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:00",
+          "roteiro": "SEDE - COROADO"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "12:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "17:00",
+          "roteiro": "COROADO - SEDE"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "SEDE - COROADO"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "18:00",
+          "roteiro": "COROADO - SEDE"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "SEDE - COROADO"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "18:00",
+          "roteiro": "COROADO - SEDE"
+        }
+      ]
+    }
+  },
+  "R07 (99995) - SANTA ELISA X ROSEIRA": {
+    "roteiroPadrao": "SANTA ELISA / ROSEIRA",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 3,
+          "horario": "13:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 4,
+          "horario": "15:30",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 5,
+          "horario": "18:00",
+          "roteiro": "SANTA ELISA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "07:30",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "ROSEIRA"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "07:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 2,
+          "horario": "12:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 3,
+          "horario": "16:00",
+          "roteiro": "SANTA ELISA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 2,
+          "horario": "14:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 3,
+          "horario": "17:00",
+          "roteiro": "ROSEIRA"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "SANTA ELISA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "ROSEIRA"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "SANTA ELISA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "ROSEIRA"
+        }
+      ]
+    }
+  }
+};);
+const MOTORISTAS_OCORRENCIAS = [];
 
 const QUADRO_CARTA_HORARIA = {
+  "R05 (99991) - JABEQUARA X SEDE": {
+    "roteiroPadrao": "SEDE - JABEQUARA / JABEQUARA - SEDE",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:30",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:00",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 3,
+          "horario": "12:30",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 4,
+          "horario": "16:30",
+          "roteiro": "SEDE - JABEQUARA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "07:30",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "10:30",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:00",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:20",
+          "roteiro": "JABEQUARA - SEDE"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:30",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "SEDE - JABEQUARA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "JABEQUARA - SEDE"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "SEDE - JABEQUARA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "11:00",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "JABEQUARA - SEDE"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "SEDE - JABEQUARA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "11:00",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "JABEQUARA - SEDE"
+        }
+      ]
+    }
+  },
+  "R10 (99997) - SANTO ESTEVÃO X SEDE": {
+    "roteiroPadrao": "SANTO ESTEVÃO - SEDE / SEDE - SANTO ESTEVÃO",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:10",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "07:50",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "10:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "12:30",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 5,
+          "horario": "15:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 6,
+          "horario": "17:30",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "06:10",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 2,
+          "horario": "07:50",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 3,
+          "horario": "10:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 4,
+          "horario": "12:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 5,
+          "horario": "15:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 6,
+          "horario": "17:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "06:10",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 3,
+          "horario": "12:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 4,
+          "horario": "15:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:30",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:20",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "09:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 2,
+          "horario": "13:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 3,
+          "horario": "16:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:10",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:30",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:20",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "09:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 2,
+          "horario": "13:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 3,
+          "horario": "16:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:10",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        }
+      ]
+    }
+  },
+  "R09 (99993) - FERROLHO X SEDE": {
+    "roteiroPadrao": "FERROLHO - SEDE / SEDE - FERROLHO",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "07:50",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "10:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "12:30",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 5,
+          "horario": "15:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 6,
+          "horario": "17:30",
+          "roteiro": "FERROLHO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 2,
+          "horario": "07:50",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 3,
+          "horario": "10:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 4,
+          "horario": "12:30",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 5,
+          "horario": "15:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 6,
+          "horario": "17:30",
+          "roteiro": "SEDE - FERROLHO"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "18:00",
+          "roteiro": "FERROLHO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 2,
+          "horario": "12:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 3,
+          "horario": "17:00",
+          "roteiro": "SEDE - FERROLHO"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "14:30",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "17:00",
+          "roteiro": "FERROLHO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 3,
+          "horario": "18:00",
+          "roteiro": "SEDE - FERROLHO"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "14:30",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "17:00",
+          "roteiro": "FERROLHO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 3,
+          "horario": "18:00",
+          "roteiro": "SEDE - FERROLHO"
+        }
+      ]
+    }
+  },
+  "R08 (99989) - CURUPEBA X SEDE": {
+    "roteiroPadrao": "CURUPEBA - SEDE / SEDE - CURUPEBA",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:10",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:00",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "13:00",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "15:40",
+          "roteiro": "CURUPEBA - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "07:30",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:40",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:10",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "SEDE - CURUPEBA"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:10",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:30",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "CURUPEBA - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:30",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:10",
+          "roteiro": "SEDE - CURUPEBA"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:30",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "CURUPEBA - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:30",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:10",
+          "roteiro": "SEDE - CURUPEBA"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:30",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "CURUPEBA - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:30",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:10",
+          "roteiro": "SEDE - CURUPEBA"
+        }
+      ]
+    }
+  },
+  "R11 (99987) - COROADO X SEDE": {
+    "roteiroPadrao": "SEDE - COROADO / COROADO - SEDE",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:30",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "SEDE - COROADO"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "12:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:30",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:00",
+          "roteiro": "COROADO - SEDE"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "07:00",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:00",
+          "roteiro": "SEDE - COROADO"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "12:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "17:00",
+          "roteiro": "COROADO - SEDE"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "SEDE - COROADO"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "18:00",
+          "roteiro": "COROADO - SEDE"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "SEDE - COROADO"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "18:00",
+          "roteiro": "COROADO - SEDE"
+        }
+      ]
+    }
+  },
+  "R07 (99995) - SANTA ELISA X ROSEIRA": {
+    "roteiroPadrao": "SANTA ELISA / ROSEIRA",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 3,
+          "horario": "13:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 4,
+          "horario": "15:30",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 5,
+          "horario": "18:00",
+          "roteiro": "SANTA ELISA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "07:30",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "ROSEIRA"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "07:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 2,
+          "horario": "12:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 3,
+          "horario": "16:00",
+          "roteiro": "SANTA ELISA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 2,
+          "horario": "14:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 3,
+          "horario": "17:00",
+          "roteiro": "ROSEIRA"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "SANTA ELISA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "ROSEIRA"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "SANTA ELISA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "ROSEIRA"
+        }
+      ]
+    }
+  }
+}; = {
   "R05 (99991) - JABEQUARA X SEDE": {
     "roteiroPadrao": "SEDE - JABEQUARA / JABEQUARA - SEDE",
     "util": {
@@ -2052,7 +4020,10 @@ function exportWhatsAppPernoite(){
   texto += `🟢 *Dormem na Garagem (Dentro):*\n${dentroList.length ? dentroList.join(', ') : 'Nenhum'}\n\n`;
   texto += `🟠 *Dormem Fora (Rua / Base):*\n${foraList.length ? foraList.join(', ') : 'Nenhum'}`;
 
-  navigator.clipboard.writeText(texto).then(() => toast('Relatório de pernoite copiad/* --- RESUMO OPERACIONAL (WHATSAPP) --- */
+  navigator.clipboard.writeText(texto).then(() => toast('Relatório de pernoite copiado!'));
+}
+
+/* --- RESUMO OPERACIONAL (WHATSAPP) --- */
 function initResumoDefaults(){
   const elData = document.getElementById('resumoData');
   if(elData && !elData.value){
