@@ -185,22 +185,14 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
       <input id="resumoData" type="date" class="field" oninput="renderResumoOcorrencias();renderResumoPreview()">
     </div>
     <div>
-      <label>Motorista (Nome e Matrícula)</label>
-      <select id="resumoMotorista" class="field" onchange="renderResumoPreview()">
-        <option value="">-- Selecione o motorista --</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="grid2">
-    <div>
-      <label>Viagens Programadas (Opcional)</label>
-      <input id="resumoProg" type="number" min="0" class="field" placeholder="Ex: 57" oninput="calcResumoPerc()">
-    </div>
-    <div>
       <label>Turno / Observação Geral (Opcional)</label>
       <input id="resumoTurnoObs" type="text" class="field" placeholder="Ex: Operação manhã/tarde" oninput="renderResumoPreview()">
     </div>
+  </div>
+
+  <div>
+    <label>Viagens Programadas (Opcional)</label>
+    <input id="resumoProg" type="number" min="0" class="field" placeholder="Ex: 57" oninput="calcResumoPerc()">
   </div>
 
   <div class="grid2">
@@ -749,7 +741,7 @@ let currentEditingLineCode = null;
 let resumoEstilo = 'visual';
 let quickPanelFilter = 'all';
 let resumoOcorrencias = [
-  { veiculo: '99995', linha: 'R07 (99995) - SANTA ELISA X ROSEIRA', linhaCustom: '', servico: '1', sentido: 'Ida', horario: '06:20', motivo: 'Recolhido para a garagem devido a mau funcionamento.' }
+  { motorista: '', veiculo: '99995', linha: 'R07 (99995) - SANTA ELISA X ROSEIRA', linhaCustom: '', servico: '1', sentido: 'Ida', horario: '06:20', motivo: 'Recolhido para a garagem devido a mau funcionamento.' }
 ];
 
 const DEFAULT_LINHAS = [
@@ -1594,16 +1586,21 @@ function exportWhatsAppPernoite(){
   navigator.clipboard.writeText(texto).then(() => toast('Relatório de pernoite copiado!'));
 }
 
-function populateResumoMotoristas(){
-  const sel = document.getElementById('resumoMotorista');
-  if(!sel) return;
-  const prev = sel.value;
+function getAllMotoristasList(){
   const list = [...MOTORISTAS_OCORRENCIAS];
   (db.motoristas || []).forEach(m => {
     const nm = (m && m.name ? m.name : '').trim();
     if(nm && !list.some(x => x.toLowerCase() === nm.toLowerCase())) list.push(nm);
   });
   list.sort((a,b) => a.localeCompare(b, 'pt', {sensitivity:'accent'}));
+  return list;
+}
+
+function populateResumoMotoristas(){
+  const sel = document.getElementById('resumoMotorista');
+  if(!sel) return;
+  const prev = sel.value;
+  const list = getAllMotoristasList();
   sel.innerHTML = '<option value="">-- Selecione o motorista --</option>' +
     list.map(nm => `<option value="${esc(nm)}">${esc(nm)}</option>`).join('');
   if(prev && list.includes(prev)) sel.value = prev;
@@ -1640,6 +1637,7 @@ function calcResumoPerc(){
 
 function addResumoOcorrencia(){
   resumoOcorrencias.push({
+    motorista: '',
     veiculo: '',
     linha: 'R07 (99995) - SANTA ELISA X ROSEIRA',
     linhaCustom: '',
@@ -1664,6 +1662,7 @@ function importOcorrenciasFromDiario(){
     const ln = m.linha || 'SEDE';
     const isKnown = LINHAS_RESUMO_SFC.includes(ln);
     return {
+      motorista: m.motorista || '',
       veiculo: m.veiculo || '',
       linha: isKnown ? ln : 'OUTRA',
       linhaCustom: isKnown ? '' : ln,
@@ -1702,14 +1701,25 @@ function renderResumoOcorrencias(){
   const box = document.getElementById('resumoOcorrenciasList');
   if(!box) return;
   const veicOptions = (db.veiculos || []).map(v => `<option value="${esc(v.codigo)}">`).join('');
+  const motList = getAllMotoristasList();
 
   box.innerHTML = resumoOcorrencias.map((oc, idx) => {
     const isCustom = oc.linha === 'OUTRA';
     const sentidoVal = normalizeSentido(oc.sentido);
+    const motCurrent = oc.motorista || '';
+    const motInList = motList.some(m => m === motCurrent);
     return `<div class="ocorrencia-item">
       <div class="ocorrencia-top">
         <span>Ocorrência #${idx + 1}</span>
         <button type="button" class="btn danger small" style="padding:4px 8px;font-size:11px" onclick="removeResumoOcorrencia(${idx})">Remover</button>
+      </div>
+      <div>
+        <label style="margin-top:0">Motorista (Nome e Matrícula)</label>
+        <select class="field" onchange="updateResumoOcorrencia(${idx},'motorista',this.value)">
+          <option value="">-- Selecione o motorista --</option>
+          ${!motInList && motCurrent ? `<option value="${esc(motCurrent)}" selected>${esc(motCurrent)}</option>` : ''}
+          ${motList.map(nm => `<option value="${esc(nm)}" ${motCurrent===nm?'selected':''}>${esc(nm)}</option>`).join('')}
+        </select>
       </div>
       <div class="grid2">
         <div>
@@ -1769,14 +1779,12 @@ function formatDateBR(iso){
 function buildResumoTexto(){
   initResumoDefaults();
   const dt = formatDateBR(document.getElementById('resumoData').value);
-  const drv = (document.getElementById('resumoMotorista')?.value || '').trim();
   const turnoObs = (document.getElementById('resumoTurnoObs')?.value || '').trim();
   const perc = (document.getElementById('resumoPerc').value || '100').trim();
   const naoCump = document.getElementById('resumoNaoCump').value || '0';
 
   if(resumoEstilo === 'direto'){
     let txt = `*Resumo Operacional - São Francisco do Conde (${dt})*\n`;
-    if(drv) txt += `• *Motorista:* ${drv}\n`;
     if(turnoObs) txt += `• *Observação:* ${turnoObs}\n`;
     txt += `\n• *Viagens Cumpridas:* ${perc}%\n`;
     txt += `• *Viagens Não Cumpridas:* ${naoCump}`;
@@ -1784,8 +1792,10 @@ function buildResumoTexto(){
       const detalhes = resumoOcorrencias.map(oc => {
         const linhaNome = oc.linha === 'OUTRA' ? (oc.linhaCustom || 'Linha N/I') : oc.linha;
         const veicTxt = oc.veiculo ? `Prefixo ${oc.veiculo}` : 'Prefixo N/I';
+        const drvOc = (oc.motorista || '').trim();
         const sentidoLimpo = normalizeSentido(oc.sentido);
         const extras = [];
+        if(drvOc) extras.push(`Motorista: ${drvOc}`);
         if(oc.servico) extras.push(`Serviço ${oc.servico.replace(/^servi[çc]o\s*/i, '').trim()}`);
         if(sentidoLimpo) extras.push(`Sentido ${sentidoLimpo}`);
         if(oc.horario) extras.push(`Horário ${oc.horario}`);
@@ -1798,7 +1808,6 @@ function buildResumoTexto(){
   }
 
   let txt = `📊 *Resumo Operacional — São Francisco do Conde*\n📅 Data: ${dt}`;
-  if(drv) txt += `\n👨‍✈️ *Motorista:* ${drv}`;
   if(turnoObs) txt += `\n📝 *Observação:* ${turnoObs}`;
   txt += `\n\n✅ *Viagens Cumpridas:* ${perc}%\n❌ *Viagens Não Cumpridas:* ${naoCump}`;
   if(resumoOcorrencias.length > 0 && parseInt(naoCump, 10) > 0){
@@ -1806,14 +1815,16 @@ function buildResumoTexto(){
     resumoOcorrencias.forEach((oc, i) => {
       const linhaNome = oc.linha === 'OUTRA' ? (oc.linhaCustom || 'Não informada') : oc.linha;
       const veicTxt = oc.veiculo || 'N/I';
+      const drvOc = (oc.motorista || '').trim();
       const sentidoLimpo = normalizeSentido(oc.sentido);
       const prefix = resumoOcorrencias.length > 1 ? `\n\n*${i+1}.* ` : '\n';
-      txt += `${prefix}• *Linha:* ${linhaNome}`;
-      txt += `\n• *Prefixo:* ${veicTxt}`;
-      if(oc.servico) txt += `\n• *Serviço:* ${oc.servico}`;
-      if(sentidoLimpo) txt += `\n• *Sentido:* ${sentidoLimpo}`;
-      if(oc.horario) txt += `\n• *Horário:* ${oc.horario}`;
-      txt += `\n• *Motivo:* ${oc.motivo}`;
+      txt += `${prefix}- *Linha:* ${linhaNome}`;
+      txt += `\n- *Prefixo:* ${veicTxt}`;
+      if(drvOc) txt += `\n- *Motorista:* ${drvOc}`;
+      if(oc.servico) txt += `\n- *Serviço:* ${oc.servico}`;
+      if(sentidoLimpo) txt += `\n- *Sentido:* ${sentidoLimpo}`;
+      if(oc.horario) txt += `\n- *Horário:* ${oc.horario}`;
+      txt += `\n- *Motivo:* ${oc.motivo}`;
     });
   }
   return txt;
