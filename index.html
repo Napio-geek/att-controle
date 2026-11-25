@@ -283,6 +283,41 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
     </div>
   </div>
 
+  <div class="grid2">
+    <div>
+      <label>Serviço</label>
+      <select id="diarioServico" class="field">
+        <option value="">-- Selecione --</option>
+        <option value="1">Serviço 1</option>
+        <option value="2">Serviço 2</option>
+        <option value="3">Serviço 3</option>
+        <option value="4">Serviço 4</option>
+      </select>
+    </div>
+    <div>
+      <label>Sentido da Viagem</label>
+      <select id="diarioSentido" class="field" onchange="syncDiarioHorariosOptions()">
+        <option value="">-- Selecione --</option>
+        <option value="Ida">Ida</option>
+        <option value="Volta">Volta</option>
+        <option value="Ida e Volta">Ida e Volta</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <label>Horário da Viagem (Carta Horária)</label>
+      <select id="diarioHorarioSelect" class="field" onchange="onDiarioHorarioSelectChange()">
+        <option value="">-- Selecione o horário --</option>
+      </select>
+    </div>
+    <div>
+      <label>Horário (Digitar / Ajustar)</label>
+      <input id="diarioHorario" type="text" class="field" placeholder="Ex: 06:20">
+    </div>
+  </div>
+
   <label>Situação</label>
   <select id="diarioStatus" class="field">
     <option value="Em aberto">Em aberto</option>
@@ -359,8 +394,16 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <div id="cadBlocoEquipe" style="display:none">
   <div class="card">
     <h3 style="margin-top:0">Novo Motorista</h3>
-    <label>Nome Completo</label>
-    <input id="newDriverName" type="text" class="field" placeholder="Digite o nome do motorista">
+    <div class="grid2">
+      <div>
+        <label>Nome Completo</label>
+        <input id="newDriverName" type="text" class="field" placeholder="Digite o nome do motorista">
+      </div>
+      <div>
+        <label>Matrícula</label>
+        <input id="newDriverMat" type="text" class="field" placeholder="Ex: 93011">
+      </div>
+    </div>
     <div style="margin-top:12px">
       <button type="button" class="btn" onclick="addDriver()">＋ Cadastrar Motorista</button>
     </div>
@@ -596,6 +639,31 @@ function normalizeDB(data){
   if(!data || typeof data !== 'object') data = {};
   if(!Array.isArray(data.veiculos)) data.veiculos = [];
   if(!Array.isArray(data.motoristas)) data.motoristas = [];
+  if(data.motoristas.length === 0) {
+    data.motoristas = [
+  { id: 'drv-93011', name: 'Agildo Silva de Oliveira (93011)', matricula: '93011' },
+  { id: 'drv-93012', name: 'Anderson Americo Amorim da Silva (93012)', matricula: '93012' },
+  { id: 'drv-93013', name: 'Antonio Carlos Brito Filho (93013)', matricula: '93013' },
+  { id: 'drv-93944', name: 'Antonio Cesar Silva (93944)', matricula: '93944' },
+  { id: 'drv-90164', name: 'Carlos Alberto Moraes Silva (90164)', matricula: '90164' },
+  { id: 'drv-93015', name: 'Edenilson Bispo Barreto (93015)', matricula: '93015' },
+  { id: 'drv-93829', name: 'Everardo de Oliveira Silva (93829)', matricula: '93829' },
+  { id: 'drv-93017', name: 'Gilmar Barcelar Costa (93017)', matricula: '93017' },
+  { id: 'drv-93018', name: 'Ivan Santana da Silva (93018)', matricula: '93018' },
+  { id: 'drv-93019', name: 'Julival Xavier da Silva (93019)', matricula: '93019' },
+  { id: 'drv-93020', name: 'Marcos Araujo Sena (93020)', matricula: '93020' },
+  { id: 'drv-93021', name: 'Mauricio de Santana de Jesus (93021)', matricula: '93021' },
+  { id: 'drv-93366', name: 'Miqueias da Silva de Souza (93366)', matricula: '93366' },
+  { id: 'drv-93022', name: 'Paulo Henrique de Lima (93022)', matricula: '93022' },
+  { id: 'drv-93023', name: 'Railton Ferreira Fonseca Junior (93023)', matricula: '93023' },
+  { id: 'drv-93024', name: 'Regivaldo Pereira dos Santos (93024)', matricula: '93024' },
+  { id: 'drv-93025', name: 'Rodrigo de Jesus Costa (93025)', matricula: '93025' },
+  { id: 'drv-93026', name: 'Roque Soares de Souza de Jesus (93026)', matricula: '93026' },
+  { id: 'drv-93027', name: 'Sandro Ailton Ramos (93027)', matricula: '93027' },
+  { id: 'drv-93028', name: 'Sergio Almeida de Jesus da Silva (93028)', matricula: '93028' },
+  { id: 'drv-93029', name: 'Silas Silva Santos (93029)', matricula: '93029' }
+];
+  }
   if(!Array.isArray(data.historico)) data.historico = [];
   if(!Array.isArray(data.resumos)) data.resumos = [];
   if(!Array.isArray(data.ocorrenciasAgenda)) data.ocorrenciasAgenda = [];
@@ -886,7 +954,7 @@ function show(p, id){
   if(p==='painel') renderPanel();
   if(p==='linhas') renderLinhas();
   if(p==='resumo') { initResumoDefaults(); renderResumoOcorrencias(); renderResumoPreview(); renderResumoHistory(); }
-  if(p==='diario') { initDiarioDefaults(); renderDiarioDatalists(); renderDiarioList(); }
+  if(p==='diario') { initDiarioDefaults(); renderDiarioDatalists(); syncDiarioHorariosOptions(); renderDiarioList(); }
   if(p==='cadastros') { renderCad(); renderMotoristas(); }
   if(p==='exportacao') { renderFilters(); refreshSyncUrlInput(); }
   if(p==='detail') renderDetail(id);
@@ -1130,16 +1198,20 @@ function renderMotoristas(){
 
 function addDriver(){
   let nameInput = document.getElementById('newDriverName');
-  let name = nameInput.value.trim();
-  if(!name) return alert('Digite o nome do motorista.');
+  let matInput = document.getElementById('newDriverMat');
+  let rawName = nameInput.value.trim();
+  let mat = matInput ? matInput.value.trim() : '';
+  if(!rawName) return alert('Digite o nome do motorista.');
+  let name = mat && !rawName.includes(mat) ? `${rawName} (${mat})` : rawName;
   
   let nomeLimpo = name.toLowerCase().replace(/\s+/g, ' ');
   let existe = db.motoristas.some(d => d.name.toLowerCase().replace(/\s+/g, ' ') === nomeLimpo);
   if(existe) return alert('Já existe um motorista cadastrado com este nome!');
 
-  db.motoristas.push({ id: crypto.randomUUID(), name: name });
+  db.motoristas.push({ id: crypto.randomUUID(), name: name, matricula: mat });
   save();
   nameInput.value = '';
+  if(matInput) matInput.value = '';
   renderMotoristas();
   toast('Motorista cadastrado!');
 }
@@ -1776,6 +1848,52 @@ function getDiarioLinhaValue(){
   return sel.trim();
 }
 
+function getDiarioTipoDia(){
+  const iso = document.getElementById('diarioData')?.value || '';
+  if(!iso) return 'util';
+  const parts = iso.split('-').map(Number);
+  if(parts.length !== 3) return 'util';
+  const dt = new Date(parts[0], parts[1]-1, parts[2]);
+  const dow = dt.getDay();
+  if(dow === 0) return 'dom';
+  if(dow === 6) return 'sab';
+  return 'util';
+}
+
+function syncDiarioHorariosOptions(){
+  const linha = getDiarioLinhaValue();
+  const sentido = document.getElementById('diarioSentido')?.value || 'Ida';
+  const selEl = document.getElementById('diarioHorarioSelect');
+  if(!selEl) return;
+  const linhaData = QUADRO_CARTA_HORARIA[linha];
+  if(!linhaData){
+    selEl.innerHTML = '<option value="">-- Selecione linha e sentido --</option>';
+    return;
+  }
+  const tipoDia = getDiarioTipoDia();
+  const block = linhaData[tipoDia] || linhaData.util || {};
+  let opts = [];
+  if(sentido === 'Volta'){
+    opts = (block.volta || []).map(t => `${t.horario} (${t.viagem}ª Viagem - ${t.roteiro})`);
+  } else if(sentido === 'Ida e Volta'){
+    opts = [
+      ...(block.ida || []).map(t => `${t.horario} (Ida - ${t.viagem}ª Viagem)`),
+      ...(block.volta || []).map(t => `${t.horario} (Volta - ${t.viagem}ª Viagem)`)
+    ];
+  } else {
+    opts = (block.ida || []).map(t => `${t.horario} (${t.viagem}ª Viagem - ${t.roteiro})`);
+  }
+  selEl.innerHTML = '<option value="">-- Selecione o horário --</option>' +
+    opts.map(o => `<option value="${esc(o)}">${esc(o)}</option>`).join('');
+}
+
+function onDiarioHorarioSelectChange(){
+  const val = document.getElementById('diarioHorarioSelect')?.value || '';
+  if(!val) return;
+  const hInput = document.getElementById('diarioHorario');
+  if(hInput) hInput.value = val.split(' ')[0];
+}
+
 function onDiarioLinhaChange(){
   const sel = document.getElementById('diarioLinha')?.value || '';
   const customInput = document.getElementById('diarioLinhaCustom');
@@ -1787,6 +1905,7 @@ function onDiarioLinhaChange(){
   if(m && vInput && !vInput.value.trim()){
     vInput.value = m[1];
   }
+  syncDiarioHorariosOptions();
 }
 
 function initDiarioDefaults(){
@@ -1834,6 +1953,9 @@ function addDiarioOcorrencia(){
   const veiculo = document.getElementById('diarioVeiculo').value.trim();
   const linha = getDiarioLinhaValue();
   const motorista = document.getElementById('diarioMotorista').value.trim();
+  const servico = document.getElementById('diarioServico')?.value || '';
+  const sentido = document.getElementById('diarioSentido')?.value || '';
+  const horario = (document.getElementById('diarioHorario')?.value || '').trim();
   const status = document.getElementById('diarioStatus').value;
   const descricao = document.getElementById('diarioDescricao').value.trim();
 
@@ -1848,6 +1970,9 @@ function addDiarioOcorrencia(){
     veiculo: veiculo,
     linha: linha,
     motorista: motorista,
+    servico: servico,
+    sentido: sentido,
+    horario: horario,
     status: status,
     descricao: descricao,
     criadoEm: now().toISOString()
@@ -1857,6 +1982,10 @@ function addDiarioOcorrencia(){
   document.getElementById('diarioCategoria').value = '';
   document.getElementById('diarioVeiculo').value = '';
   document.getElementById('diarioMotorista').value = '';
+  if(document.getElementById('diarioServico')) document.getElementById('diarioServico').value = '';
+  if(document.getElementById('diarioSentido')) document.getElementById('diarioSentido').value = '';
+  if(document.getElementById('diarioHorario')) document.getElementById('diarioHorario').value = '';
+  if(document.getElementById('diarioHorarioSelect')) document.getElementById('diarioHorarioSelect').value = '';
   document.getElementById('diarioDescricao').value = '';
   const h = now();
   document.getElementById('diarioHora').value = `${String(h.getHours()).padStart(2,'0')}:${String(h.getMinutes()).padStart(2,'0')}`;
@@ -1911,15 +2040,19 @@ function renderDiarioList(){
 
   box.innerHTML = filtered.map(item => {
     const isRes = item.status === 'Resolvido';
+    const statusIcon = isRes ? '✅' : '⏳';
     return `<div class="diario-card ${isRes ? 'resolvido' : ''}">
       <div class="activity-head">
-        <h3>${esc(item.categoria)}</h3>
-        <span class="badge ${isRes ? 'g' : 'o'}">${esc(item.status)}</span>
+        <h3>${statusIcon} ${esc(item.categoria)}</h3>
+        <span class="badge ${isRes ? 'g' : 'o'}">${statusIcon} ${esc(item.status)}</span>
       </div>
       <div class="diario-meta">
         <span class="diario-tag">📅 ${esc(item.dataBR || formatDateBR(item.data))} ${item.hora ? 'às '+esc(item.hora) : ''}</span>
         ${item.veiculo ? `<span class="diario-tag">🚌 Veículo: ${esc(item.veiculo)}</span>` : ''}
         ${item.linha ? `<span class="diario-tag">📍 ${esc(item.linha)}</span>` : ''}
+        ${item.servico ? `<span class="diario-tag">🧾 Serviço ${esc(item.servico)}</span>` : ''}
+        ${item.sentido ? `<span class="diario-tag">↔️ ${esc(item.sentido)}</span>` : ''}
+        ${item.horario ? `<span class="diario-tag">⏰ Viagem: ${esc(item.horario)}</span>` : ''}
         ${item.motorista ? `<span class="diario-tag">👨‍✈️ ${esc(item.motorista)}</span>` : ''}
       </div>
       ${item.descricao ? `<p style="margin:6px 0;font-size:13px;color:var(--txt);white-space:pre-line">${esc(item.descricao)}</p>` : ''}
