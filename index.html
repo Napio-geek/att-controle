@@ -313,10 +313,11 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
       </select>
     </div>
     <div>
-      <label>Sentido da Viagem</label>
+      <label>Sentido da Viagem (Ida OU Volta)</label>
       <select id="diarioSentido" class="field">
-        <option value="">-- Selecione --</option>
-        <option value="Ida e Volta">Ida e Volta</option>
+        <option value="">-- Selecione Ida ou Volta --</option>
+        <option value="Ida">Ida</option>
+        <option value="Volta">Volta</option>
       </select>
     </div>
   </div>
@@ -663,6 +664,12 @@ const MOTORISTAS_OCORRENCIAS = [
   'Silas Silva Santos - 93029'
 ];
 
+function normalizeSentido(val){
+  const v = String(val || '').trim();
+  if(v === 'Ida' || v === 'Volta') return v;
+  return 'Ida';
+}
+
 function createUid(){
   if(window.crypto && typeof window.crypto.randomUUID === 'function'){
     return window.crypto.randomUUID();
@@ -693,6 +700,11 @@ function normalizeDB(data){
   if(!Array.isArray(data.historico)) data.historico = [];
   if(!Array.isArray(data.resumos)) data.resumos = [];
   if(!Array.isArray(data.ocorrenciasAgenda)) data.ocorrenciasAgenda = [];
+  data.ocorrenciasAgenda = data.ocorrenciasAgenda.map(item => {
+    if(!item || typeof item !== 'object') return item;
+    if(item.sentido === 'Ida' || item.sentido === 'Volta' || item.sentido === '') return item;
+    return Object.assign({}, item, { sentido: normalizeSentido(item.sentido) });
+  });
   if(!data.escalas || typeof data.escalas !== 'object') data.escalas = {};
   if(!data.linhasCustom || typeof data.linhasCustom !== 'object') data.linhasCustom = {};
   if(!data.pernoite || typeof data.pernoite !== 'object') data.pernoite = {};
@@ -737,7 +749,7 @@ let currentEditingLineCode = null;
 let resumoEstilo = 'visual';
 let quickPanelFilter = 'all';
 let resumoOcorrencias = [
-  { veiculo: '99995', linha: 'R07 (99995) - SANTA ELISA X ROSEIRA', linhaCustom: '', servico: '01', sentido: 'Ida', horario: '06:20', motivo: 'Recolhido para a garagem devido a mau funcionamento.' }
+  { veiculo: '99995', linha: 'R07 (99995) - SANTA ELISA X ROSEIRA', linhaCustom: '', servico: '1', sentido: 'Ida', horario: '06:20', motivo: 'Recolhido para a garagem devido a mau funcionamento.' }
 ];
 
 const DEFAULT_LINHAS = [
@@ -745,7 +757,7 @@ const DEFAULT_LINHAS = [
   { code: "99997", nome: "R10 - SANTO ESTEVAO / SEDE", cruzado: true, sched: { util: { ida: "06:10, 07:50, 10:00, 12:30, 15:00, 17:30", volta: "06:10, 07:50, 10:00, 12:30, 15:00, 17:30" }, sab: { ida: "06:10, 09:30, 12:30, 15:30", volta: "08:00, 11:00, 14:00, 17:00" }, dom: { ida: "09:30, 13:00, 16:00", volta: "08:00, 11:00, 14:30, 17:20" } } },
   { code: "99993", nome: "R09 - FERROLHO / SEDE", cruzado: true, sched: { util: { ida: "06:20, 07:50, 10:00, 12:30, 15:00, 17:30", volta: "06:20, 07:50, 10:00, 12:30, 15:00, 17:30" }, sab: { ida: "06:20, 12:00, 16:00", volta: "08:00, 16:00" }, dom: { ida: "12:00, 16:00", volta: "10:00, 14:30, 17:00" } } },
   { code: "99989", nome: "R08 - CURUPEBA / SEDE", cruzado: false, sched: { util: { ida: "07:30, 11:40, 14:10, 17:00", volta: "06:10, 09:00, 13:00, 15:40" }, sab: { ida: "08:00, 11:00, 15:30, 18:10", volta: "06:10, 09:30, 14:00, 17:00" }, dom: { ida: "08:00, 11:00, 15:30, 18:10", volta: "06:20, 09:30, 14:30, 17:00" } } },
-  { code: "99987", nome: "R11 - COROADO / SEDE (Ida e Volta)", cruzado: false, sched: { util: { ida: "06:20, 09:30, 14:00, 17:00", volta: "08:00, 12:00, 15:30, 18:00" }, sab: { ida: "07:00, 11:00, 15:00", volta: "08:00, 12:00, 15:30, 17:00" }, dom: { ida: "10:00, 17:00", volta: "12:00, 18:00" } } },
+  { code: "99987", nome: "R11 - COROADO / SEDE (Ida ou Volta)", cruzado: false, sched: { util: { ida: "06:20, 09:30, 14:00, 17:00", volta: "08:00, 12:00, 15:30, 18:00" }, sab: { ida: "07:00, 11:00, 15:00", volta: "08:00, 12:00, 15:30, 17:00" }, dom: { ida: "10:00, 17:00", volta: "12:00, 18:00" } } },
   { code: "99995", nome: "R07 - SANTA ELISA / ROSEIRA", cruzado: false, sched: { util: { ida: "06:20, 09:00, 13:00, 15:30, 18:00", volta: "07:30, 11:00, 14:00, 17:00" }, sab: { ida: "07:00, 12:00, 16:00", volta: "08:00, 14:00, 17:00" }, dom: { ida: "12:00, 17:00", volta: "10:00, 16:00" } } }
 ];
 
@@ -957,7 +969,7 @@ async function mergeLocalToCloud(){
 }
 
 function now(){ return new Date(); }
-function esc(s){ return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function fmt(v){ return new Date(v).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}); }
 
 function hasCameraIssue(v){
@@ -1341,8 +1353,8 @@ function renderLinhas(){
           return `<div class="cross-row ${isActive ? 'active' : ''}">
             ${isActive ? '<span class="cross-badge">EM ANDAMENTO</span>' : ''}
             <div>⏰ <b>${idx + 1}ª Viagem (${esc(hIda)})</b></div>
-            <div style="margin-top:2px">• Sede ➔ Destino: <b>${esc(carroIda)}</b></div>
-            <div>• Destino ➔ Sede: <b>${esc(carroVolta)}</b></div>
+            <div style="margin-top:2px">• Ida (Sede ➔ Destino): <b>${esc(carroIda)}</b></div>
+            <div>• Volta (Destino ➔ Sede): <b>${esc(carroVolta)}</b></div>
           </div>`;
         }).join('');
 
@@ -1632,7 +1644,7 @@ function addResumoOcorrencia(){
     linha: 'R07 (99995) - SANTA ELISA X ROSEIRA',
     linhaCustom: '',
     servico: '',
-    sentido: 'Ida e Volta',
+    sentido: 'Ida',
     horario: '',
     motivo: 'Recolhido para a garagem devido a mau funcionamento.'
   });
@@ -1656,7 +1668,7 @@ function importOcorrenciasFromDiario(){
       linha: isKnown ? ln : 'OUTRA',
       linhaCustom: isKnown ? '' : ln,
       servico: m.servico || '',
-      sentido: m.sentido || 'Ida e Volta',
+      sentido: normalizeSentido(m.sentido),
       horario: m.horario || m.hora || '',
       motivo: m.descricao ? `${m.categoria}: ${m.descricao}` : (m.categoria || 'Ocorrência operacional.')
     };
@@ -1675,7 +1687,7 @@ function removeResumoOcorrencia(idx){
 }
 
 function updateResumoOcorrencia(idx, field, val){
-  resumoOcorrencias[idx][field] = val;
+  resumoOcorrencias[idx][field] = field === 'sentido' ? normalizeSentido(val) : val;
   if(field === 'linha'){
     const m = String(val || '').match(/\((\d+)\)/);
     if(m && !resumoOcorrencias[idx].veiculo){
@@ -1693,6 +1705,7 @@ function renderResumoOcorrencias(){
 
   box.innerHTML = resumoOcorrencias.map((oc, idx) => {
     const isCustom = oc.linha === 'OUTRA';
+    const sentidoVal = normalizeSentido(oc.sentido);
     return `<div class="ocorrencia-item">
       <div class="ocorrencia-top">
         <span>Ocorrência #${idx + 1}</span>
@@ -1728,9 +1741,10 @@ function renderResumoOcorrencias(){
           </select>
         </div>
         <div>
-          <label>Sentido</label>
+          <label>Sentido da Viagem (Ida OU Volta)</label>
           <select class="field" onchange="updateResumoOcorrencia(${idx},'sentido',this.value)">
-            <option value="Ida e Volta" ${(oc.sentido||'Ida e Volta')==='Ida e Volta'?'selected':''}>Ida e Volta</option>
+            <option value="Ida" ${sentidoVal==='Ida'?'selected':''}>Ida</option>
+            <option value="Volta" ${sentidoVal==='Volta'?'selected':''}>Volta</option>
           </select>
         </div>
       </div>
@@ -1770,9 +1784,10 @@ function buildResumoTexto(){
       const detalhes = resumoOcorrencias.map(oc => {
         const linhaNome = oc.linha === 'OUTRA' ? (oc.linhaCustom || 'Linha N/I') : oc.linha;
         const veicTxt = oc.veiculo ? `Prefixo ${oc.veiculo}` : 'Prefixo N/I';
+        const sentidoLimpo = normalizeSentido(oc.sentido);
         const extras = [];
         if(oc.servico) extras.push(`Serviço ${oc.servico.replace(/^servi[çc]o\s*/i, '').trim()}`);
-        if(oc.sentido) extras.push(`Sentido ${oc.sentido}`);
+        if(sentidoLimpo) extras.push(`Sentido ${sentidoLimpo}`);
         if(oc.horario) extras.push(`Horário ${oc.horario}`);
         const extraStr = extras.length ? ` [${extras.join(' • ')}]` : '';
         return `${veicTxt} (${linhaNome})${extraStr} — ${oc.motivo.replace(/\.$/, '')}.`;
@@ -1791,11 +1806,12 @@ function buildResumoTexto(){
     resumoOcorrencias.forEach((oc, i) => {
       const linhaNome = oc.linha === 'OUTRA' ? (oc.linhaCustom || 'Não informada') : oc.linha;
       const veicTxt = oc.veiculo || 'N/I';
+      const sentidoLimpo = normalizeSentido(oc.sentido);
       const prefix = resumoOcorrencias.length > 1 ? `\n\n*${i+1}.* ` : '\n';
       txt += `${prefix}• *Linha:* ${linhaNome}`;
       txt += `\n• *Prefixo:* ${veicTxt}`;
       if(oc.servico) txt += `\n• *Serviço:* ${oc.servico}`;
-      if(oc.sentido) txt += `\n• *Sentido:* ${oc.sentido}`;
+      if(sentidoLimpo) txt += `\n• *Sentido:* ${sentidoLimpo}`;
       if(oc.horario) txt += `\n• *Horário:* ${oc.horario}`;
       txt += `\n• *Motivo:* ${oc.motivo}`;
     });
@@ -1819,6 +1835,7 @@ function saveResumoToHistory(){
   const dataIso = document.getElementById('resumoData').value;
   const perc = document.getElementById('resumoPerc').value || '100';
   const naoCump = parseInt(document.getElementById('resumoNaoCump').value, 10) || 0;
+  const ocorrenciasLimpa = resumoOcorrencias.map(oc => Object.assign({}, oc, { sentido: normalizeSentido(oc.sentido) }));
   const texto = buildResumoTexto();
 
   db.resumos.unshift({
@@ -1827,7 +1844,7 @@ function saveResumoToHistory(){
     dataBR: formatDateBR(dataIso),
     perc: perc,
     naoCumpridas: naoCump,
-    ocorrencias: JSON.parse(JSON.stringify(resumoOcorrencias)),
+    ocorrencias: ocorrenciasLimpa,
     texto: texto,
     registradoEm: now().toISOString()
   });
@@ -1944,7 +1961,8 @@ function addDiarioOcorrencia(){
   const linha = getDiarioLinhaValue();
   const motorista = document.getElementById('diarioMotorista').value.trim();
   const servico = document.getElementById('diarioServico')?.value || '';
-  const sentido = document.getElementById('diarioSentido')?.value || '';
+  const sentidoRaw = document.getElementById('diarioSentido')?.value || '';
+  const sentido = (sentidoRaw === 'Ida' || sentidoRaw === 'Volta') ? sentidoRaw : '';
   const horario = (document.getElementById('diarioHorario')?.value || '').trim();
   const status = document.getElementById('diarioStatus').value;
   const descricao = document.getElementById('diarioDescricao').value.trim();
@@ -2021,7 +2039,7 @@ function renderDiarioList(){
     if(dtIni && iDate && iDate < dtIni) return false;
     if(dtFim && iDate && iDate > dtFim) return false;
     if(!q) return true;
-    const blob = `${item.dataBR||item.data} ${item.hora} ${item.categoria} ${item.veiculo} ${item.linha} ${item.motorista} ${item.descricao}`.toLowerCase();
+    const blob = `${item.dataBR||item.data} ${item.hora} ${item.categoria} ${item.veiculo} ${item.linha} ${item.sentido||''} ${item.motorista} ${item.descricao}`.toLowerCase();
     return blob.includes(q);
   });
 
@@ -2034,6 +2052,7 @@ function renderDiarioList(){
     const isRes = item.status === 'Resolvido';
     const statusIcon = isRes ? '✅' : '⏳';
     const stClass = isRes ? 'resolvido' : 'aberto';
+    const sentidoBadge = (item.sentido === 'Ida' || item.sentido === 'Volta') ? item.sentido : '';
     return `<div class="diario-card ${stClass}">
       <div class="activity-head">
         <h3>${statusIcon} ${esc(item.categoria)}</h3>
@@ -2044,7 +2063,7 @@ function renderDiarioList(){
         ${item.veiculo ? `<span class="diario-tag">🚌 Veículo: ${esc(item.veiculo)}</span>` : ''}
         ${item.linha ? `<span class="diario-tag">📍 ${esc(item.linha)}</span>` : ''}
         ${item.servico ? `<span class="diario-tag">🧾 Serviço ${esc(item.servico)}</span>` : ''}
-        ${item.sentido ? `<span class="diario-tag">↔️ ${esc(item.sentido)}</span>` : ''}
+        ${sentidoBadge ? `<span class="diario-tag">↔️ Sentido: ${esc(sentidoBadge)}</span>` : ''}
         ${item.horario ? `<span class="diario-tag">⏰ Viagem: ${esc(item.horario)}</span>` : ''}
         ${item.motorista ? `<span class="diario-tag">👨‍✈️ ${esc(item.motorista)}</span>` : ''}
       </div>
@@ -2069,7 +2088,7 @@ function getFilteredDiarioItems(){
     if(dtIni && iDate && iDate < dtIni) return false;
     if(dtFim && iDate && iDate > dtFim) return false;
     if(!q) return true;
-    const blob = `${item.dataBR||item.data} ${item.hora} ${item.categoria} ${item.veiculo} ${item.linha} ${item.motorista} ${item.descricao}`.toLowerCase();
+    const blob = `${item.dataBR||item.data} ${item.hora} ${item.categoria} ${item.veiculo} ${item.linha} ${item.sentido||''} ${item.motorista} ${item.descricao}`.toLowerCase();
     return blob.includes(q);
   });
 }
@@ -2093,6 +2112,7 @@ function buildDiarioReportHTML(items, forWord = false){
       <td style="padding:7px;border:1px solid #cbd5e1"><b>${esc(item.categoria || '')}</b></td>
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.veiculo || '-')}</td>
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.linha || '-')}</td>
+      <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.sentido || '-')}</td>
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.motorista || '-')}</td>
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.status || '')}</td>
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.descricao || '-')}</td>
@@ -2132,6 +2152,7 @@ function buildDiarioReportHTML(items, forWord = false){
         <th>Categoria / Falha</th>
         <th>Veículo</th>
         <th>Linha</th>
+        <th>Sentido</th>
         <th>Motorista</th>
         <th>Situação</th>
         <th>Descrição</th>
@@ -2199,6 +2220,7 @@ function exportDiarioExcel(){
     'Categoria / Falha': item.categoria || '',
     'Veículo': item.veiculo || '',
     'Linha': item.linha || '',
+    'Sentido': item.sentido || '',
     'Motorista': item.motorista || '',
     'Situação': item.status || '',
     'Descrição': item.descricao || ''
