@@ -245,7 +245,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
   <div class="grid2">
     <div>
       <label>Data do Ocorrido</label>
-      <input id="diarioData" type="date" class="field">
+      <input id="diarioData" type="date" class="field" onchange="document.getElementById('diarioTipoDia').value=detectTipoDiaFromDate(this.value);onDiarioHorarioContextChange(true)">
     </div>
     <div>
       <label>Hora</label>
@@ -266,21 +266,85 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
   <div class="grid2">
     <div>
-      <label>Veículo (Opcional)</label>
+      <label>Tipo de Dia (Quadro de Horários)</label>
+      <select id="diarioTipoDia" class="field" onchange="onDiarioHorarioContextChange()">
+        <option value="util">Dias Úteis (Seg a Sex)</option>
+        <option value="sab">Sábado</option>
+        <option value="dom">Domingo</option>
+        <option value="feriado">Feriado (Base Domingo)</option>
+      </select>
+    </div>
+    <div>
+      <label>Linha</label>
+      <select id="diarioLinha" class="field" onchange="onDiarioLinhaChange()">
+        <option value="">-- Selecione ou digite abaixo --</option>
+        <option value="R05 (99991) - JABEQUARA X SEDE">R05 (99991) - JABEQUARA X SEDE</option>
+        <option value="R07 (99995) - SANTA ELISA X ROSEIRA">R07 (99995) - SANTA ELISA X ROSEIRA</option>
+        <option value="R08 (99989) - CURUPEBA X SEDE">R08 (99989) - CURUPEBA X SEDE</option>
+        <option value="R09 (99993) - FERROLHO X SEDE">R09 (99993) - FERROLHO X SEDE</option>
+        <option value="R10 (99997) - SANTO ESTEVÃO X SEDE">R10 (99997) - SANTO ESTEVÃO X SEDE</option>
+        <option value="R11 (99987) - COROADO X SEDE">R11 (99987) - COROADO X SEDE</option>
+        <option value="OUTRA">Outra linha (Digitar livremente)</option>
+      </select>
+      <input id="diarioLinhaCustom" type="text" class="field" style="display:none;margin-top:6px" placeholder="Digite a linha" oninput="updateDiarioAutoSentence()">
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <label>Sentido da Viagem</label>
+      <select id="diarioSentido" class="field" onchange="onDiarioHorarioContextChange()">
+        <option value="Ida">Ida</option>
+        <option value="Volta">Volta</option>
+        <option value="Ida e Volta">Ida e Volta</option>
+      </select>
+    </div>
+    <div>
+      <label>Horário / Viagem da Carta Horária</label>
+      <select id="diarioHorarioSelect" class="field" onchange="onDiarioHorarioSelectChange()">
+        <option value="">-- Selecione o horário --</option>
+      </select>
+      <div class="grid2" style="gap:8px;margin-top:6px">
+        <input id="diarioHorario" type="text" class="field" placeholder="Horário (Ex: 06:20)" oninput="updateDiarioAutoSentence()">
+        <input id="diarioViagem" type="text" class="field" placeholder="Viagem (Ex: 1ª Viagem)" oninput="updateDiarioAutoSentence()">
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <label>Serviço</label>
+      <input id="diarioServico" type="text" class="field" placeholder="Ex: Serviço 01 ou 01" oninput="updateDiarioAutoSentence()">
+    </div>
+    <div>
+      <label>Roteiro</label>
+      <input id="diarioRoteiro" type="text" class="field" list="sugestoesRoteiros" placeholder="Ex: SANTA ELISA ou SEDE - JABEQUARA" oninput="updateDiarioAutoSentence()">
+      <datalist id="sugestoesRoteiros">
+        <option value="SEDE - JABEQUARA">
+        <option value="JABEQUARA - SEDE">
+        <option value="SANTO ESTEVÃO - SEDE">
+        <option value="SEDE - SANTO ESTEVÃO">
+        <option value="FERROLHO - SEDE">
+        <option value="SEDE - FERROLHO">
+        <option value="CURUPEBA - SEDE">
+        <option value="SEDE - CURUPEBA">
+        <option value="SEDE - COROADO">
+        <option value="COROADO - SEDE">
+        <option value="SANTA ELISA">
+        <option value="ROSEIRA">
+      </datalist>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <label>Veículo Principal</label>
       <input id="diarioVeiculo" type="text" class="field" list="sugestoesVeiculos" placeholder="Ex: 99995">
       <datalist id="sugestoesVeiculos"></datalist>
     </div>
     <div>
-      <label>Linha / Roteiro (Opcional)</label>
-      <input id="diarioLinha" type="text" class="field" list="sugestoesLinhas" placeholder="Ex: R07 - Santa Elisa">
-      <datalist id="sugestoesLinhas">
-        <option value="R05 (99991) - JABEQUARA X SEDE">
-        <option value="R07 (99995) - SANTA ELISA X ROSEIRA">
-        <option value="R08 (99989) - CURUPEBA X SEDE">
-        <option value="R09 (99993) - FERROLHO X SEDE">
-        <option value="R10 (99997) - SANTO ESTEVÃO X SEDE">
-        <option value="R11 (99987) - COROADO X SEDE">
-      </datalist>
+      <label>Veículo Substituto / Reserva</label>
+      <input id="diarioVeiculoReserva" type="text" class="field" list="sugestoesVeiculos" placeholder="Ex: Reserva 99990 ou Sem substituto">
     </div>
   </div>
 
@@ -298,6 +362,19 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
       </select>
     </div>
   </div>
+
+  <label>Ação Tomada</label>
+  <input id="diarioAcaoTomada" type="text" class="field" list="sugestoesAcoes" placeholder="Ex: Recolhido para garagem, Substituído por veículo reserva...">
+  <datalist id="sugestoesAcoes">
+    <option value="Recolhido para garagem">
+    <option value="Substituído por veículo reserva">
+    <option value="Acionada manutenção">
+    <option value="Motorista orientado">
+    <option value="Viagem remanejada">
+  </datalist>
+
+  <label>Resumo Automático da Viagem / Roteiro</label>
+  <input id="diarioFraseMontada" type="text" class="field" readonly style="background:#f1f6f7;color:var(--txt);font-weight:700">
 
   <label>Descrição detalhada do que aconteceu</label>
   <textarea id="diarioDescricao" class="field" style="height:85px" placeholder="Descreva os detalhes, horário da falha, quem informou ou o que foi feito..."></textarea>
@@ -563,6 +640,986 @@ const MOTORISTAS_OCORRENCIAS = [
   'Sergio Almeida de Jesus da Silva - 93028',
   'Silas Silva Santos - 93029'
 ];
+
+const QUADRO_CARTA_HORARIA = {
+  "R05 (99991) - JABEQUARA X SEDE": {
+    "roteiroPadrao": "SEDE - JABEQUARA / JABEQUARA - SEDE",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:30",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:00",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 3,
+          "horario": "12:30",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 4,
+          "horario": "16:30",
+          "roteiro": "SEDE - JABEQUARA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "07:30",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "10:30",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:00",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:20",
+          "roteiro": "JABEQUARA - SEDE"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:30",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "SEDE - JABEQUARA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "JABEQUARA - SEDE"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "SEDE - JABEQUARA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "11:00",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "JABEQUARA - SEDE"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "SEDE - JABEQUARA"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "SEDE - JABEQUARA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "11:00",
+          "roteiro": "JABEQUARA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "JABEQUARA - SEDE"
+        }
+      ]
+    }
+  },
+  "R10 (99997) - SANTO ESTEVÃO X SEDE": {
+    "roteiroPadrao": "SANTO ESTEVÃO - SEDE / SEDE - SANTO ESTEVÃO",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:10",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "07:50",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "10:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "12:30",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 5,
+          "horario": "15:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 6,
+          "horario": "17:30",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "06:10",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 2,
+          "horario": "07:50",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 3,
+          "horario": "10:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 4,
+          "horario": "12:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 5,
+          "horario": "15:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 6,
+          "horario": "17:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "06:10",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 3,
+          "horario": "12:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 4,
+          "horario": "15:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:30",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:20",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "09:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 2,
+          "horario": "13:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 3,
+          "horario": "16:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:10",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:30",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:20",
+          "roteiro": "SANTO ESTEVÃO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "09:30",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 2,
+          "horario": "13:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 3,
+          "horario": "16:00",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:10",
+          "roteiro": "SEDE - SANTO ESTEVÃO"
+        }
+      ]
+    }
+  },
+  "R09 (99993) - FERROLHO X SEDE": {
+    "roteiroPadrao": "FERROLHO - SEDE / SEDE - FERROLHO",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "07:50",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "10:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "12:30",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 5,
+          "horario": "15:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 6,
+          "horario": "17:30",
+          "roteiro": "FERROLHO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 2,
+          "horario": "07:50",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 3,
+          "horario": "10:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 4,
+          "horario": "12:30",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 5,
+          "horario": "15:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 6,
+          "horario": "17:30",
+          "roteiro": "SEDE - FERROLHO"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "18:00",
+          "roteiro": "FERROLHO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 2,
+          "horario": "12:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 3,
+          "horario": "17:00",
+          "roteiro": "SEDE - FERROLHO"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "14:30",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "17:00",
+          "roteiro": "FERROLHO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 3,
+          "horario": "18:00",
+          "roteiro": "SEDE - FERROLHO"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "14:30",
+          "roteiro": "FERROLHO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "17:00",
+          "roteiro": "FERROLHO - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "SEDE - FERROLHO"
+        },
+        {
+          "viagem": 3,
+          "horario": "18:00",
+          "roteiro": "SEDE - FERROLHO"
+        }
+      ]
+    }
+  },
+  "R08 (99989) - CURUPEBA X SEDE": {
+    "roteiroPadrao": "CURUPEBA - SEDE / SEDE - CURUPEBA",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:10",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:00",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "13:00",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "15:40",
+          "roteiro": "CURUPEBA - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "07:30",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:40",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:10",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "SEDE - CURUPEBA"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:10",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:30",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "CURUPEBA - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:30",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:10",
+          "roteiro": "SEDE - CURUPEBA"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:30",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "CURUPEBA - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:30",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:10",
+          "roteiro": "SEDE - CURUPEBA"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:30",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "CURUPEBA - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "CURUPEBA - SEDE"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:30",
+          "roteiro": "SEDE - CURUPEBA"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:10",
+          "roteiro": "SEDE - CURUPEBA"
+        }
+      ]
+    }
+  },
+  "R11 (99987) - COROADO X SEDE": {
+    "roteiroPadrao": "SEDE - COROADO / COROADO - SEDE",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:30",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "SEDE - COROADO"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "12:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:30",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 4,
+          "horario": "18:00",
+          "roteiro": "COROADO - SEDE"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "07:00",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 3,
+          "horario": "15:00",
+          "roteiro": "SEDE - COROADO"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "12:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 3,
+          "horario": "17:00",
+          "roteiro": "COROADO - SEDE"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "SEDE - COROADO"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "18:00",
+          "roteiro": "COROADO - SEDE"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "SEDE - COROADO"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "SEDE - COROADO"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "COROADO - SEDE"
+        },
+        {
+          "viagem": 2,
+          "horario": "18:00",
+          "roteiro": "COROADO - SEDE"
+        }
+      ]
+    }
+  },
+  "R07 (99995) - SANTA ELISA X ROSEIRA": {
+    "roteiroPadrao": "SANTA ELISA / ROSEIRA",
+    "util": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "06:20",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 2,
+          "horario": "09:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 3,
+          "horario": "13:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 4,
+          "horario": "15:30",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 5,
+          "horario": "18:00",
+          "roteiro": "SANTA ELISA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "07:30",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 2,
+          "horario": "11:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 3,
+          "horario": "14:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 4,
+          "horario": "17:00",
+          "roteiro": "ROSEIRA"
+        }
+      ]
+    },
+    "sab": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "07:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 2,
+          "horario": "12:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 3,
+          "horario": "16:00",
+          "roteiro": "SANTA ELISA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "08:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 2,
+          "horario": "14:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 3,
+          "horario": "17:00",
+          "roteiro": "ROSEIRA"
+        }
+      ]
+    },
+    "dom": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "SANTA ELISA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "ROSEIRA"
+        }
+      ]
+    },
+    "feriado": {
+      "ida": [
+        {
+          "viagem": 1,
+          "horario": "12:00",
+          "roteiro": "SANTA ELISA"
+        },
+        {
+          "viagem": 2,
+          "horario": "17:00",
+          "roteiro": "SANTA ELISA"
+        }
+      ],
+      "volta": [
+        {
+          "viagem": 1,
+          "horario": "10:00",
+          "roteiro": "ROSEIRA"
+        },
+        {
+          "viagem": 2,
+          "horario": "16:00",
+          "roteiro": "ROSEIRA"
+        }
+      ]
+    }
+  }
+};
 
 function getShift8AMStart(){
   const d = new Date();
@@ -1630,21 +2687,156 @@ function renderResumoHistory(){
 }
 
 /* --- DIÁRIO DE OCORRÊNCIAS (AGENDA SEPARADA) --- */
+function detectTipoDiaFromDate(isoDate){
+  if(!isoDate) return 'util';
+  const parts = isoDate.split('-').map(Number);
+  if(parts.length !== 3) return 'util';
+  const dt = new Date(parts[0], parts[1]-1, parts[2]);
+  const dow = dt.getDay();
+  if(dow === 0) return 'dom';
+  if(dow === 6) return 'sab';
+  return 'util';
+}
+
+function getDiarioLinhaValue(){
+  const sel = document.getElementById('diarioLinha')?.value || '';
+  if(sel === 'OUTRA'){
+    return (document.getElementById('diarioLinhaCustom')?.value || '').trim();
+  }
+  return sel.trim();
+}
+
+function onDiarioLinhaChange(){
+  const sel = document.getElementById('diarioLinha')?.value || '';
+  const customInput = document.getElementById('diarioLinhaCustom');
+  if(customInput){
+    customInput.style.display = sel === 'OUTRA' ? 'block' : 'none';
+  }
+  const m = sel.match(/\((\d+)\)/);
+  const vInput = document.getElementById('diarioVeiculo');
+  if(m && vInput && !vInput.value.trim()){
+    vInput.value = m[1];
+  }
+  onDiarioHorarioContextChange(true);
+}
+
+function onDiarioHorarioContextChange(resetRoteiro = false){
+  const linha = getDiarioLinhaValue();
+  const tipoDia = document.getElementById('diarioTipoDia')?.value || 'util';
+  const sentido = document.getElementById('diarioSentido')?.value || 'Ida';
+  const hSel = document.getElementById('diarioHorarioSelect');
+  const rotInput = document.getElementById('diarioRoteiro');
+  const hInput = document.getElementById('diarioHorario');
+  const vInput = document.getElementById('diarioViagem');
+
+  const linhaData = QUADRO_CARTA_HORARIA[linha];
+  if(!hSel) return;
+
+  if(!linhaData){
+    hSel.innerHTML = '<option value="">-- Selecione uma linha da carta ou digite abaixo --</option>';
+    updateDiarioAutoSentence();
+    return;
+  }
+
+  if(rotInput && (resetRoteiro || !rotInput.value.trim())){
+    if(sentido === 'Ida' && linhaData[tipoDia]?.ida?.[0]?.roteiro){
+      rotInput.value = linhaData[tipoDia].ida[0].roteiro;
+    } else if(sentido === 'Volta' && linhaData[tipoDia]?.volta?.[0]?.roteiro){
+      rotInput.value = linhaData[tipoDia].volta[0].roteiro;
+    } else {
+      rotInput.value = linhaData.roteiroPadrao || '';
+    }
+  }
+
+  let trips = [];
+  if(sentido === 'Volta'){
+    trips = (linhaData[tipoDia]?.volta || []).map(t => ({ ...t, sentidoLabel: 'Volta' }));
+  } else if(sentido === 'Ida e Volta'){
+    const idaT = (linhaData[tipoDia]?.ida || []).map(t => ({ ...t, sentidoLabel: 'Ida' }));
+    const voltaT = (linhaData[tipoDia]?.volta || []).map(t => ({ ...t, sentidoLabel: 'Volta' }));
+    trips = [...idaT, ...voltaT];
+  } else {
+    trips = (linhaData[tipoDia]?.ida || []).map(t => ({ ...t, sentidoLabel: 'Ida' }));
+  }
+
+  hSel.innerHTML = '<option value="">-- Selecionar da carta horária (' + sentido + ') --</option>' +
+    trips.map(t => {
+      const vLabel = `${t.viagem}ª Viagem`;
+      const extraSent = sentido === 'Ida e Volta' ? ` [${t.sentidoLabel}]` : '';
+      return `<option value="${esc(t.horario)}" data-viagem="${esc(vLabel)}" data-roteiro="${esc(t.roteiro)}">${esc(vLabel)} — ${esc(t.horario)} (${esc(t.roteiro)})${esc(extraSent)}</option>`;
+    }).join('');
+
+  if(trips.length > 0 && hInput && (resetRoteiro || !hInput.value.trim())){
+    hSel.value = trips[0].horario;
+    if(vInput) vInput.value = `${trips[0].viagem}ª Viagem`;
+    if(hInput) hInput.value = trips[0].horario;
+    if(rotInput && trips[0].roteiro) rotInput.value = trips[0].roteiro;
+  }
+
+  updateDiarioAutoSentence();
+}
+
+function onDiarioHorarioSelectChange(){
+  const hSel = document.getElementById('diarioHorarioSelect');
+  const hInput = document.getElementById('diarioHorario');
+  const vInput = document.getElementById('diarioViagem');
+  const rotInput = document.getElementById('diarioRoteiro');
+  if(!hSel) return;
+  const opt = hSel.options[hSel.selectedIndex];
+  if(opt && opt.value){
+    if(hInput) hInput.value = opt.value;
+    const vData = opt.getAttribute('data-viagem');
+    const rData = opt.getAttribute('data-roteiro');
+    if(vInput && vData) vInput.value = vData;
+    if(rotInput && rData) rotInput.value = rData;
+  }
+  updateDiarioAutoSentence();
+}
+
+function buildDiarioSentenceFromFields(){
+  const servico = (document.getElementById('diarioServico')?.value || '').trim();
+  const viagem = (document.getElementById('diarioViagem')?.value || '').trim();
+  const roteiro = (document.getElementById('diarioRoteiro')?.value || '').trim();
+  const linha = getDiarioLinhaValue();
+  const horario = (document.getElementById('diarioHorario')?.value || '').trim();
+  const sentido = (document.getElementById('diarioSentido')?.value || '').trim();
+
+  let parts = [];
+  if(viagem) parts.push(`Viagem ${viagem.replace(/\s*viagem$/i, '').trim()}`);
+  if(servico) parts.push(`(Serviço ${servico.replace(/^servi[çc]o\s*/i, '').trim()})`);
+  if(roteiro) parts.push(`do roteiro ${roteiro}`);
+  if(linha) parts.push(`da linha ${linha}`);
+  if(horario) parts.push(`no horário ${horario}`);
+  if(sentido) parts.push(`(${sentido})`);
+
+  return parts.join(' ').replace(/\s+/g, ' ').trim();
+}
+
+function updateDiarioAutoSentence(){
+  const out = document.getElementById('diarioFraseMontada');
+  if(out){
+    out.value = buildDiarioSentenceFromFields();
+  }
+}
+
 function initDiarioDefaults(){
   const dEl = document.getElementById('diarioData');
   const hEl = document.getElementById('diarioHora');
+  const tdEl = document.getElementById('diarioTipoDia');
   const h = now();
   if(dEl && !dEl.value){
     const yyyy = h.getFullYear();
     const mm = String(h.getMonth()+1).padStart(2,'0');
     const dd = String(h.getDate()).padStart(2,'0');
     dEl.value = `${yyyy}-${mm}-${dd}`;
+    if(tdEl) tdEl.value = detectTipoDiaFromDate(dEl.value);
   }
   if(hEl && !hEl.value){
     const hh = String(h.getHours()).padStart(2,'0');
     const mi = String(h.getMinutes()).padStart(2,'0');
     hEl.value = `${hh}:${mi}`;
   }
+  onDiarioHorarioContextChange(false);
 }
 
 function renderDiarioDatalists(){
@@ -1671,24 +2863,42 @@ function addDiarioOcorrencia(){
   initDiarioDefaults();
   const data = document.getElementById('diarioData').value;
   const hora = document.getElementById('diarioHora').value;
+  const tipoDia = document.getElementById('diarioTipoDia').value;
   const categoria = document.getElementById('diarioCategoria').value.trim();
   const veiculo = document.getElementById('diarioVeiculo').value.trim();
-  const linha = document.getElementById('diarioLinha').value.trim();
+  const veiculoReserva = document.getElementById('diarioVeiculoReserva').value.trim();
+  const linha = getDiarioLinhaValue();
+  const sentido = document.getElementById('diarioSentido').value;
+  const horario = document.getElementById('diarioHorario').value.trim();
+  const viagem = document.getElementById('diarioViagem').value.trim();
+  const servico = document.getElementById('diarioServico').value.trim();
+  const roteiro = document.getElementById('diarioRoteiro').value.trim();
   const motorista = document.getElementById('diarioMotorista').value.trim();
+  const acaoTomada = document.getElementById('diarioAcaoTomada').value.trim();
+  const fraseMontada = buildDiarioSentenceFromFields();
   const status = document.getElementById('diarioStatus').value;
   const descricao = document.getElementById('diarioDescricao').value.trim();
 
-  if(!categoria && !descricao) return alert('Informe a categoria da falha ou descreva o ocorrido.');
+  if(!categoria && !descricao && !fraseMontada) return alert('Informe a categoria da falha, dados da viagem ou descreva o ocorrido.');
 
   db.ocorrenciasAgenda.unshift({
     id: crypto.randomUUID(),
     data: data,
     dataBR: formatDateBR(data),
     hora: hora,
+    tipoDia: tipoDia,
     categoria: categoria || 'Registro Operacional',
     veiculo: veiculo,
+    veiculoReserva: veiculoReserva,
     linha: linha,
+    sentido: sentido,
+    horario: horario,
+    viagem: viagem,
+    servico: servico,
+    roteiro: roteiro,
     motorista: motorista,
+    acaoTomada: acaoTomada,
+    fraseMontada: fraseMontada,
     status: status,
     descricao: descricao,
     criadoEm: now().toISOString()
@@ -1697,9 +2907,15 @@ function addDiarioOcorrencia(){
   save();
   document.getElementById('diarioCategoria').value = '';
   document.getElementById('diarioVeiculo').value = '';
-  document.getElementById('diarioLinha').value = '';
+  document.getElementById('diarioVeiculoReserva').value = '';
+  document.getElementById('diarioHorario').value = '';
+  document.getElementById('diarioViagem').value = '';
+  document.getElementById('diarioServico').value = '';
+  document.getElementById('diarioRoteiro').value = '';
   document.getElementById('diarioMotorista').value = '';
+  document.getElementById('diarioAcaoTomada').value = '';
   document.getElementById('diarioDescricao').value = '';
+  updateDiarioAutoSentence();
   const h = now();
   document.getElementById('diarioHora').value = `${String(h.getHours()).padStart(2,'0')}:${String(h.getMinutes()).padStart(2,'0')}`;
 
@@ -1742,7 +2958,7 @@ function renderDiarioList(){
     if(dtIni && iDate && iDate < dtIni) return false;
     if(dtFim && iDate && iDate > dtFim) return false;
     if(!q) return true;
-    const blob = `${item.dataBR||item.data} ${item.hora} ${item.categoria} ${item.veiculo} ${item.linha} ${item.motorista} ${item.descricao}`.toLowerCase();
+    const blob = `${item.dataBR||item.data} ${item.hora} ${item.categoria} ${item.veiculo} ${item.veiculoReserva||''} ${item.linha} ${item.roteiro||''} ${item.servico||''} ${item.viagem||''} ${item.horario||''} ${item.sentido||''} ${item.acaoTomada||''} ${item.fraseMontada||''} ${item.motorista} ${item.descricao}`.toLowerCase();
     return blob.includes(q);
   });
 
@@ -1753,6 +2969,7 @@ function renderDiarioList(){
 
   box.innerHTML = filtered.map(item => {
     const isRes = item.status === 'Resolvido';
+    const frase = item.fraseMontada || '';
     return `<div class="diario-card ${isRes ? 'resolvido' : ''}">
       <div class="activity-head">
         <h3>${esc(item.categoria)}</h3>
@@ -1761,9 +2978,17 @@ function renderDiarioList(){
       <div class="diario-meta">
         <span class="diario-tag">📅 ${esc(item.dataBR || formatDateBR(item.data))} ${item.hora ? 'às '+esc(item.hora) : ''}</span>
         ${item.veiculo ? `<span class="diario-tag">🚌 Veículo: ${esc(item.veiculo)}</span>` : ''}
+        ${item.veiculoReserva ? `<span class="diario-tag">🔄 Reserva/Substituto: ${esc(item.veiculoReserva)}</span>` : ''}
         ${item.linha ? `<span class="diario-tag">📍 ${esc(item.linha)}</span>` : ''}
+        ${item.servico ? `<span class="diario-tag">🗂️ Serviço: ${esc(item.servico)}</span>` : ''}
+        ${item.viagem ? `<span class="diario-tag">🔁 ${esc(item.viagem)}</span>` : ''}
+        ${item.horario ? `<span class="diario-tag">⏰ Horário: ${esc(item.horario)}</span>` : ''}
+        ${item.sentido ? `<span class="diario-tag">↕️ ${esc(item.sentido)}</span>` : ''}
+        ${item.roteiro ? `<span class="diario-tag">🧭 Roteiro: ${esc(item.roteiro)}</span>` : ''}
         ${item.motorista ? `<span class="diario-tag">👨‍✈️ ${esc(item.motorista)}</span>` : ''}
+        ${item.acaoTomada ? `<span class="diario-tag">🛠️ Ação: ${esc(item.acaoTomada)}</span>` : ''}
       </div>
+      ${frase ? `<p style="margin:6px 0;font-size:13px;font-weight:700;color:var(--p)">${esc(frase)}</p>` : ''}
       ${item.descricao ? `<p style="margin:6px 0;font-size:13px;color:var(--txt);white-space:pre-line">${esc(item.descricao)}</p>` : ''}
       <div class="act-btns">
         <button type="button" class="btn secondary small" onclick="toggleDiarioStatus('${item.id}')">${isRes ? '↩ Reabrir' : '✅ Marcar Resolvido'}</button>
@@ -1785,7 +3010,7 @@ function getFilteredDiarioItems(){
     if(dtIni && iDate && iDate < dtIni) return false;
     if(dtFim && iDate && iDate > dtFim) return false;
     if(!q) return true;
-    const blob = `${item.dataBR||item.data} ${item.hora} ${item.categoria} ${item.veiculo} ${item.linha} ${item.motorista} ${item.descricao}`.toLowerCase();
+    const blob = `${item.dataBR||item.data} ${item.hora} ${item.categoria} ${item.veiculo} ${item.veiculoReserva||''} ${item.linha} ${item.roteiro||''} ${item.servico||''} ${item.viagem||''} ${item.horario||''} ${item.sentido||''} ${item.acaoTomada||''} ${item.fraseMontada||''} ${item.motorista} ${item.descricao}`.toLowerCase();
     return blob.includes(q);
   });
 }
@@ -1808,10 +3033,15 @@ function buildDiarioReportHTML(items, forWord = false){
       <td style="padding:7px;border:1px solid #cbd5e1;white-space:nowrap">${esc(item.dataBR || formatDateBR(item.data))} ${esc(item.hora || '')}</td>
       <td style="padding:7px;border:1px solid #cbd5e1"><b>${esc(item.categoria || '')}</b></td>
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.veiculo || '-')}</td>
+      <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.veiculoReserva || '-')}</td>
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.linha || '-')}</td>
+      <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.servico || '-')} / ${esc(item.viagem || '-')}</td>
+      <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.horario || '-')} (${esc(item.sentido || '-')})</td>
+      <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.roteiro || '-')}</td>
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.motorista || '-')}</td>
+      <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.acaoTomada || '-')}</td>
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.status || '')}</td>
-      <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.descricao || '-')}</td>
+      <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.fraseMontada ? (item.fraseMontada + (item.descricao ? ' — ' + item.descricao : '')) : (item.descricao || '-'))}</td>
     </tr>
   `).join('');
 
@@ -1821,12 +3051,12 @@ function buildDiarioReportHTML(items, forWord = false){
 <meta charset="UTF-8">
 <title>Diário de Ocorrências — Atlântico</title>
 <style>
-  body{font-family:Arial,Helvetica,sans-serif;color:#173247;margin:24px;font-size:12px}
+  body{font-family:Arial,Helvetica,sans-serif;color:#173247;margin:24px;font-size:11px}
   h1{margin:0 0 4px;font-size:20px;color:#07898c}
   .sub{color:#52606d;margin-bottom:14px;font-size:12px}
   .meta{background:#f1f5f9;border:1px solid #cbd5e1;border-radius:8px;padding:10px 12px;margin-bottom:14px;line-height:1.5}
   table{width:100%;border-collapse:collapse;margin-top:8px}
-  th{background:#07898c;color:#fff;text-align:left;padding:8px;border:1px solid #066f72;font-size:11px}
+  th{background:#07898c;color:#fff;text-align:left;padding:7px;border:1px solid #066f72;font-size:10px}
   ${forWord ? '' : '@media print{body{margin:10mm}}'}
 </style>
 </head>
@@ -1847,10 +3077,15 @@ function buildDiarioReportHTML(items, forWord = false){
         <th>Data / Hora</th>
         <th>Categoria / Falha</th>
         <th>Veículo</th>
-        <th>Linha / Roteiro</th>
+        <th>Reserva / Substituto</th>
+        <th>Linha</th>
+        <th>Serviço / Viagem</th>
+        <th>Horário / Sentido</th>
+        <th>Roteiro</th>
         <th>Motorista</th>
+        <th>Ação Tomada</th>
         <th>Situação</th>
-        <th>Descrição</th>
+        <th>Resumo / Descrição</th>
       </tr>
     </thead>
     <tbody>${rowsHtml}</tbody>
@@ -1876,7 +3111,7 @@ function exportDiarioWord(){
   const items = getFilteredDiarioItems();
   if(!items.length) return alert('Não há registros no diário para exportar em Word.');
   const htmlDoc = buildDiarioReportHTML(items, true);
-  const blob = new Blob(['﻿', htmlDoc], { type: 'application/msword;charset=utf-8' });
+  const blob = new Blob(['\ufeff', htmlDoc], { type: 'application/msword;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   const d = now();
@@ -1899,8 +3134,16 @@ function exportDiarioExcel(){
     'Hora': item.hora || '',
     'Categoria / Falha': item.categoria || '',
     'Veículo': item.veiculo || '',
-    'Linha / Roteiro': item.linha || '',
+    'Veículo Reserva / Substituto': item.veiculoReserva || '',
+    'Linha': item.linha || '',
+    'Serviço': item.servico || '',
+    'Viagem': item.viagem || '',
+    'Horário': item.horario || '',
+    'Sentido': item.sentido || '',
+    'Roteiro': item.roteiro || '',
     'Motorista': item.motorista || '',
+    'Ação Tomada': item.acaoTomada || '',
+    'Resumo Automático': item.fraseMontada || '',
     'Situação': item.status || '',
     'Descrição': item.descricao || ''
   }));
