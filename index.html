@@ -145,7 +145,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <input id="searchPanel" class="search" placeholder="🔎 Buscar por código do veículo, ordem ou roteiro..." oninput="renderPanel()">
 <div id="panelList"></div>
 </section>
-
 <section id="p-linhas" class="page">
 <h1>Escala e Logística de Linhas</h1>
 <p class="muted">Gerencie horários, veículos e turnos de motoristas (Manhã / Tarde).</p>
@@ -169,7 +168,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
 <div class="lines-grid" id="linesGrid"></div>
 </section>
-
 <section id="p-resumo" class="page">
 <h1>Resumo Operacional e Ocorrências</h1>
 <p class="muted">Gere o resumo diário de São Francisco do Conde e registre ocorrências no histórico compartilhado.</p>
@@ -235,7 +233,292 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
   <div id="resumoHistoryList"></div>
 </div>
 </section>
+<section id="p-diario" class="page">
+<h1>Diário de Ocorrências</h1>
+<p class="muted">Registre falhas, avarias, ocorrências de linha e acompanhe o que está em aberto ou resolvido.</p>
+
+<div class="card">
+  <div class="grid2">
+    <div>
+      <label>Data</label>
+      <input id="diarioData" type="date" class="field">
+    </div>
+    <div>
+      <label>Hora</label>
+      <input id="diarioHora" type="time" class="field">
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <label>Categoria / Falha</label>
+      <input id="diarioCategoria" type="text" class="field" placeholder="Ex: Validador, Câmera, Mecânica, Atraso...">
+    </div>
+    <div>
+      <label>Veículo (Prefixo / Ordem)</label>
+      <input id="diarioVeiculo" type="text" class="field" list="sugestoesVeiculos" placeholder="Ex: 99995">
+      <datalist id="sugestoesVeiculos"></datalist>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <label>Linha</label>
+      <select id="diarioLinha" class="field" onchange="onDiarioLinhaChange()">
+        <option value="">-- Selecione a linha --</option>
+        <option value="R05 (99991) - JABEQUARA X SEDE">R05 (99991) - JABEQUARA X SEDE</option>
+        <option value="R10 (99997) - SANTO ESTEVÃO X SEDE">R10 (99997) - SANTO ESTEVÃO X SEDE</option>
+        <option value="R09 (99993) - FERROLHO X SEDE">R09 (99993) - FERROLHO X SEDE</option>
+        <option value="R08 (99989) - CURUPEBA X SEDE">R08 (99989) - CURUPEBA X SEDE</option>
+        <option value="R11 (99987) - COROADO X SEDE">R11 (99987) - COROADO X SEDE</option>
+        <option value="R07 (99995) - SANTA ELISA X ROSEIRA">R07 (99995) - SANTA ELISA X ROSEIRA</option>
+        <option value="OUTRA">Outra linha (Digitar)...</option>
+      </select>
+      <input id="diarioLinhaCustom" type="text" class="field" style="display:none;margin-top:8px" placeholder="Digite a linha">
+    </div>
+    <div>
+      <label>Motorista</label>
+      <input id="diarioMotorista" type="text" class="field" list="sugestoesMotoristas" placeholder="Nome do motorista">
+      <datalist id="sugestoesMotoristas"></datalist>
+    </div>
+  </div>
+
+  <label>Situação</label>
+  <select id="diarioStatus" class="field">
+    <option value="Em aberto">Em aberto</option>
+    <option value="Resolvido">Resolvido</option>
+  </select>
+
+  <label>Descrição</label>
+  <textarea id="diarioDescricao" rows="3" class="field" placeholder="Detalhes da ocorrência..."></textarea>
+
+  <div style="margin-top:12px">
+    <button type="button" class="btn" onclick="addDiarioOcorrencia()">＋ Registrar no Diário</button>
+  </div>
+</div>
+
+<div class="card">
+  <h3>📋 Registros do Diário</h3>
+  <input id="searchDiario" class="search" placeholder="🔎 Buscar por veículo, linha, motorista, falha..." oninput="renderDiarioList()" style="margin-bottom:10px">
+  <div class="filters" style="margin-bottom:10px">
+    <div>
+      <label>Situação</label>
+      <select id="filterDiarioStatus" class="field" onchange="renderDiarioList()">
+        <option value="">Todas</option>
+        <option value="Em aberto">Em aberto</option>
+        <option value="Resolvido">Resolvido</option>
+      </select>
+    </div>
+    <div>
+      <label>Período (Inicial / Final)</label>
+      <div class="grid2" style="gap:6px">
+        <input id="diarioHistIni" type="date" class="field" onchange="renderDiarioList()">
+        <input id="diarioHistFim" type="date" class="field" onchange="renderDiarioList()">
+      </div>
+    </div>
+  </div>
+  <div class="actions" style="margin-bottom:12px">
+    <button type="button" class="btn secondary" onclick="exportDiarioPDF()">📄 Imprimir / PDF</button>
+    <button type="button" class="btn secondary" onclick="exportDiarioWord()">📝 Exportar Word (.doc)</button>
+    <button type="button" class="btn secondary" onclick="exportDiarioExcel()">📊 Exportar Excel</button>
+  </div>
+  <div id="diarioHistoryList"></div>
+</div>
+</section>
+<section id="p-cadastros" class="page">
+<h1>Cadastros de Frota e Equipe</h1>
+<div class="actions" style="margin-bottom:14px">
+  <button type="button" id="tabCadVeiculos" class="btn active" onclick="setCadTab('veiculos')">🚌 Veículos</button>
+  <button type="button" id="tabCadEquipe" class="btn secondary" onclick="setCadTab('equipe')">👨‍✈️ Motoristas</button>
+</div>
+
+<div id="cadBlocoVeiculos">
+  <div class="card">
+    <h3 style="margin-top:0">Novo Veículo</h3>
+    <div class="grid2">
+      <div>
+        <label>Código / Prefixo</label>
+        <input id="newCode" type="text" class="field" placeholder="Ex: 99995">
+      </div>
+      <div>
+        <label>N° de Ordem</label>
+        <input id="newOrdem" type="text" class="field" placeholder="Ex: 01">
+      </div>
+    </div>
+    <label>Roteiro / Linha</label>
+    <input id="newRoute" type="text" class="field" placeholder="Ex: R07 - SANTA ELISA / ROSEIRA">
+    <div style="margin-top:12px">
+      <button type="button" class="btn" onclick="addVehicle()">＋ Cadastrar Veículo</button>
+    </div>
+  </div>
+
+  <input id="searchCad" class="search" placeholder="🔎 Buscar veículo cadastrado..." oninput="renderCad()">
+  <div id="cadList"></div>
+</div>
+
+<div id="cadBlocoEquipe" style="display:none">
+  <div class="card">
+    <h3 style="margin-top:0">Novo Motorista</h3>
+    <label>Nome Completo</label>
+    <input id="newDriverName" type="text" class="field" placeholder="Digite o nome do motorista">
+    <div style="margin-top:12px">
+      <button type="button" class="btn" onclick="addDriver()">＋ Cadastrar Motorista</button>
+    </div>
+  </div>
+  <div id="driverList"></div>
+</div>
+</section>
+<section id="p-exportacao" class="page">
+<h1>Exportação, Backup e Nuvem</h1>
+<p class="muted">Exporte relatórios em Excel, gere backups de segurança ou sincronize com a planilha.</p>
+
+<div class="card">
+  <h3 style="margin-top:0">📊 Relatórios e Planilhas</h3>
+  <div class="actions">
+    <button type="button" class="btn" onclick="exportExcel()">📊 Exportar Histórico (Excel)</button>
+    <button type="button" class="btn secondary" onclick="exportCameraSFC()">📷 Controle de Câmeras SFC (Excel)</button>
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">💾 Backup e Restauração (JSON)</h3>
+  <p class="muted">Salve uma cópia completa dos seus veículos, alocações de linhas, motoristas e histórico.</p>
+  <div class="actions">
+    <button type="button" class="btn" onclick="exportBackupJSON()">⬇️ Baixar Backup JSON</button>
+    <label class="btn secondary" style="text-align:center;margin:0;cursor:pointer">
+      ⬆️ Restaurar Backup JSON
+      <input type="file" accept=".json,application/json" style="display:none" onchange="importBackupJSON(event)">
+    </label>
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">☁️ Sincronização com Nuvem</h3>
+  <div id="cloudInfoBox" class="notice" style="margin-bottom:10px">Verificando status...</div>
+  <div class="actions">
+    <button type="button" class="btn secondary" onclick="syncFromCloud(true)">🔄 Baixar / Atualizar da Nuvem</button>
+    <button type="button" class="btn" onclick="mergeLocalToCloud()">🔀 Mesclar e Enviar para Nuvem</button>
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">🧹 Manutenção de Histórico</h3>
+  <label>Resetar histórico de um veículo específico</label>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <select id="resetSingleVeic" class="field" style="flex:1;min-width:200px"></select>
+    <button type="button" class="btn warning small" onclick="resetSingleVehicleHistory()">Resetar Veículo</button>
+  </div>
+  <div style="margin-top:14px">
+    <button type="button" class="btn danger" onclick="resetAllHistory()">🗑️ Apagar Todo o Histórico Geral</button>
+  </div>
+</div>
+</section>
+<section id="p-detail" class="page">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+  <button type="button" class="btn secondary small" onclick="show('painel')">← Voltar ao Painel</button>
+  <button type="button" class="btn secondary small" onclick="openRouteModal()">📍 Editar Roteiro</button>
+</div>
+<h1 id="detailTitle" style="margin-top:12px;margin-bottom:4px">Veículo</h1>
+<div id="detailRoute" class="route-badge">Roteiro: -</div>
+
+<div id="activities" style="margin-top:14px"></div>
+
+<div class="card">
+  <h3 style="margin-top:0">🕒 Histórico do Veículo</h3>
+  <div id="history"></div>
+</div>
+</section>
 </main>
+
+<nav class="nav">
+  <button type="button" id="nav-painel" class="active" onclick="show('painel')"><span class="ico">📊</span>Painel</button>
+  <button type="button" id="nav-linhas" onclick="show('linhas')"><span class="ico">🚌</span>Linhas</button>
+  <button type="button" id="nav-resumo" onclick="show('resumo')"><span class="ico">📱</span>Resumo</button>
+  <button type="button" id="nav-diario" onclick="show('diario')"><span class="ico">📓</span>Diário</button>
+  <button type="button" id="nav-cadastros" onclick="show('cadastros')"><span class="ico">➕</span>Cadastros</button>
+  <button type="button" id="nav-exportacao" onclick="show('exportacao')"><span class="ico">📤</span>Exportar</button>
+</nav>
+
+<div id="editSchedModal" class="modal-shield">
+  <div class="modalbox">
+    <h2>Editar Horários</h2>
+    <p id="editSchedLineTitle" style="font-weight:700;color:var(--p);margin-bottom:4px"></p>
+    <p id="editDayTitle" style="font-size:12px;margin-top:0"></p>
+    <label>Horários de IDA (separados por vírgula)</label>
+    <input id="editIdaInput" type="text" class="field">
+    <label>Horários de VOLTA (separados por vírgula)</label>
+    <input id="editVoltaInput" type="text" class="field">
+    <div class="modal-actions">
+      <button type="button" class="btn secondary" onclick="closeEditSchedModal()">Cancelar</button>
+      <button type="button" class="btn" onclick="saveLineSchedUpdate()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="cameraModal" class="modal-shield">
+  <div class="modalbox">
+    <h2>📷 Checagem de Câmeras / DVR</h2>
+    <p id="cameraModalSub"></p>
+    <div class="grid2">
+      <div>
+        <label>DVR Gravando?</label>
+        <select id="camDvr" class="field"><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select>
+      </div>
+      <div>
+        <label>Câmera 1</label>
+        <select id="cam1" class="field"><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div>
+        <label>Câmera 2</label>
+        <select id="cam2" class="field"><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select>
+      </div>
+      <div>
+        <label>Câmera 3</label>
+        <select id="cam3" class="field"><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select>
+      </div>
+    </div>
+    <label>Câmera 4</label>
+    <select id="cam4" class="field"><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select>
+    <label>Observação</label>
+    <input id="camObs" type="text" class="field" placeholder="Ex: Câmera 2 sem imagem...">
+    <div class="modal-actions">
+      <button type="button" class="btn secondary" onclick="closeCameraModal()">Cancelar</button>
+      <button type="button" class="btn" onclick="saveCameraCheck()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="routeModal" class="modal-shield">
+  <div class="modalbox">
+    <h2>Editar Roteiro do Veículo</h2>
+    <label>Roteiro / Linha</label>
+    <input id="editRouteInput" type="text" class="field" placeholder="Ex: R07 - SANTA ELISA / ROSEIRA">
+    <div class="modal-actions">
+      <button type="button" class="btn secondary" onclick="closeRouteModal()">Cancelar</button>
+      <button type="button" class="btn" onclick="saveRouteUpdate()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="justModal" class="modal-shield">
+  <div class="modalbox">
+    <h2>⚠️ Justificar Pendência</h2>
+    <label>Motivo</label>
+    <select id="justSelect" class="field" onchange="toggleCustomJust(this)">
+      <option value="Veículo em manutenção / oficina">Veículo em manutenção / oficina</option>
+      <option value="Veículo recolhido / fora de operação">Veículo recolhido / fora de operação</option>
+      <option value="Aguardando troca de cartão / equipamento">Aguardando troca de cartão / equipamento</option>
+      <option value="Outro">Outro</option>
+    </select>
+    <input id="justCustom" type="text" class="field" style="display:none;margin-top:8px" placeholder="Digite o motivo">
+    <div class="modal-actions">
+      <button type="button" class="btn secondary" onclick="closeJustModal()">Cancelar</button>
+      <button type="button" class="btn" onclick="confirmJustification()">Confirmar</button>
+    </div>
+  </div>
+</div>
 
 <div id="toast" class="toast"></div>
 </div>
@@ -246,6 +529,45 @@ const URL_PLANILHA = localStorage.getItem('atlantico-sync-url') || '';
 const ACTS = ['Checagem Diária Validador', 'Checagem de Cartão SD', 'Checagem de Câmera'];
 const PERIODS = { 'Checagem Diária Validador': 'SHIFT_8AM', 'Checagem de Cartão SD': 3 * 24 * 60 * 60 * 1000, 'Checagem de Câmera': 7 * 24 * 60 * 60 * 1000 };
 
+
+const QUADRO_CARTA_HORARIA = {
+  "R05 (99991) - JABEQUARA X SEDE": {
+    roteiroPadrao: "SEDE - JABEQUARA / JABEQUARA - SEDE",
+    util: { ida: [{ viagem: 1, horario: "06:30", roteiro: "SEDE - JABEQUARA" }, { viagem: 2, horario: "09:00", roteiro: "SEDE - JABEQUARA" }, { viagem: 3, horario: "12:30", roteiro: "SEDE - JABEQUARA" }, { viagem: 4, horario: "16:30", roteiro: "SEDE - JABEQUARA" }], volta: [{ viagem: 1, horario: "07:30", roteiro: "JABEQUARA - SEDE" }, { viagem: 2, horario: "10:30", roteiro: "JABEQUARA - SEDE" }, { viagem: 3, horario: "15:00", roteiro: "JABEQUARA - SEDE" }, { viagem: 4, horario: "17:20", roteiro: "JABEQUARA - SEDE" }] },
+    sab: { ida: [{ viagem: 1, horario: "06:30", roteiro: "SEDE - JABEQUARA" }, { viagem: 2, horario: "16:00", roteiro: "SEDE - JABEQUARA" }], volta: [{ viagem: 1, horario: "08:00", roteiro: "JABEQUARA - SEDE" }, { viagem: 2, horario: "17:00", roteiro: "JABEQUARA - SEDE" }] },
+    dom: { ida: [{ viagem: 1, horario: "10:00", roteiro: "SEDE - JABEQUARA" }, { viagem: 2, horario: "16:00", roteiro: "SEDE - JABEQUARA" }], volta: [{ viagem: 1, horario: "11:00", roteiro: "JABEQUARA - SEDE" }, { viagem: 2, horario: "17:00", roteiro: "JABEQUARA - SEDE" }] }
+  },
+  "R07 (99995) - SANTA ELISA X ROSEIRA": {
+    roteiroPadrao: "SANTA ELISA - ROSEIRA / ROSEIRA - SANTA ELISA",
+    util: { ida: [{ viagem: 1, horario: "06:20", roteiro: "SANTA ELISA - ROSEIRA" }, { viagem: 2, horario: "09:00", roteiro: "SANTA ELISA - ROSEIRA" }, { viagem: 3, horario: "13:00", roteiro: "SANTA ELISA - ROSEIRA" }], volta: [{ viagem: 1, horario: "07:30", roteiro: "ROSEIRA - SANTA ELISA" }, { viagem: 2, horario: "11:00", roteiro: "ROSEIRA - SANTA ELISA" }, { viagem: 3, horario: "14:00", roteiro: "ROSEIRA - SANTA ELISA" }] },
+    sab: { ida: [{ viagem: 1, horario: "07:00", roteiro: "SANTA ELISA - ROSEIRA" }, { viagem: 2, horario: "12:00", roteiro: "SANTA ELISA - ROSEIRA" }], volta: [{ viagem: 1, horario: "08:00", roteiro: "ROSEIRA - SANTA ELISA" }, { viagem: 2, horario: "14:00", roteiro: "ROSEIRA - SANTA ELISA" }] },
+    dom: { ida: [{ viagem: 1, horario: "12:00", roteiro: "SANTA ELISA - ROSEIRA" }, { viagem: 2, horario: "17:00", roteiro: "SANTA ELISA - ROSEIRA" }], volta: [{ viagem: 1, horario: "10:00", roteiro: "ROSEIRA - SANTA ELISA" }, { viagem: 2, horario: "16:00", roteiro: "SANTA ELISA - ROSEIRA" }] }
+  },
+  "R08 (99989) - CURUPEBA X SEDE": {
+    roteiroPadrao: "CURUPEBA - SEDE / SEDE - CURUPEBA",
+    util: { ida: [{ viagem: 1, horario: "07:30", roteiro: "CURUPEBA - SEDE" }, { viagem: 2, horario: "11:40", roteiro: "CURUPEBA - SEDE" }], volta: [{ viagem: 1, horario: "06:10", roteiro: "SEDE - CURUPEBA" }, { viagem: 2, horario: "09:00", roteiro: "SEDE - CURUPEBA" }] },
+    sab: { ida: [{ viagem: 1, horario: "08:00", roteiro: "CURUPEBA - SEDE" }], volta: [{ viagem: 1, horario: "06:10", roteiro: "SEDE - CURUPEBA" }] },
+    dom: { ida: [{ viagem: 1, horario: "08:00", roteiro: "CURUPEBA - SEDE" }], volta: [{ viagem: 1, horario: "06:20", roteiro: "SEDE - CURUPEBA" }] }
+  },
+  "R09 (99993) - FERROLHO X SEDE": {
+    roteiroPadrao: "FERROLHO - SEDE / SEDE - FERROLHO",
+    util: { ida: [{ viagem: 1, horario: "06:20", roteiro: "FERROLHO - SEDE" }, { viagem: 2, horario: "07:50", roteiro: "FERROLHO - SEDE" }], volta: [{ viagem: 1, horario: "06:20", roteiro: "SEDE - FERROLHO" }, { viagem: 2, horario: "07:50", roteiro: "SEDE - FERROLHO" }] },
+    sab: { ida: [{ viagem: 1, horario: "06:20", roteiro: "FERROLHO - SEDE" }], volta: [{ viagem: 1, horario: "08:00", roteiro: "SEDE - FERROLHO" }] },
+    dom: { ida: [{ viagem: 1, horario: "12:00", roteiro: "FERROLHO - SEDE" }], volta: [{ viagem: 1, horario: "10:00", roteiro: "SEDE - FERROLHO" }] }
+  },
+  "R10 (99997) - SANTO ESTEVÃO X SEDE": {
+    roteiroPadrao: "SANTO ESTEVÃO - SEDE / SEDE - SANTO ESTEVÃO",
+    util: { ida: [{ viagem: 1, horario: "06:10", roteiro: "SANTO ESTEVÃO - SEDE" }, { viagem: 2, horario: "07:50", roteiro: "SANTO ESTEVÃO - SEDE" }], volta: [{ viagem: 1, horario: "06:10", roteiro: "SEDE - SANTO ESTEVÃO" }, { viagem: 2, horario: "07:50", roteiro: "SEDE - SANTO ESTEVÃO" }] },
+    sab: { ida: [{ viagem: 1, horario: "06:10", roteiro: "SANTO ESTEVÃO - SEDE" }], volta: [{ viagem: 1, horario: "08:00", roteiro: "SEDE - SANTO ESTEVÃO" }] },
+    dom: { ida: [{ viagem: 1, horario: "09:30", roteiro: "SANTO ESTEVÃO - SEDE" }], volta: [{ viagem: 1, horario: "08:00", roteiro: "SEDE - SANTO ESTEVÃO" }] }
+  },
+  "R11 (99987) - COROADO X SEDE": {
+    roteiroPadrao: "COROADO - SEDE / SEDE - COROADO",
+    util: { ida: [{ viagem: 1, horario: "06:20", roteiro: "COROADO - SEDE" }, { viagem: 2, horario: "09:30", roteiro: "COROADO - SEDE" }], volta: [{ viagem: 1, horario: "08:00", roteiro: "SEDE - COROADO" }, { viagem: 2, horario: "12:00", roteiro: "SEDE - COROADO" }] },
+    sab: { ida: [{ viagem: 1, horario: "07:00", roteiro: "COROADO - SEDE" }], volta: [{ viagem: 1, horario: "08:00", roteiro: "SEDE - COROADO" }] },
+    dom: { ida: [{ viagem: 1, horario: "10:00", roteiro: "COROADO - SEDE" }], volta: [{ viagem: 1, horario: "12:00", roteiro: "SEDE - COROADO" }] }
+  }
+};
 
 const LINHAS_RESUMO_SFC = Object.keys(QUADRO_CARTA_HORARIA);
 const MOTORISTAS_OCORRENCIAS = [];
