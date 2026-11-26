@@ -185,8 +185,8 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
       <input id="resumoData" type="date" class="field" oninput="renderResumoOcorrencias();renderResumoPreview()">
     </div>
     <div>
-      <label>Turno / Observação Geral (Opcional)</label>
-      <input id="resumoTurnoObs" type="text" class="field" placeholder="Ex: Operação manhã/tarde" oninput="renderResumoPreview()">
+      <label>Operação</label>
+      <input id="resumoTurnoObs" type="text" class="field" value="Linhas Urbanas" placeholder="Ex: Linhas Urbanas" oninput="renderResumoPreview()">
     </div>
   </div>
 
@@ -297,6 +297,15 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
   <div class="grid2">
     <div>
+      <label>Turno da Ocorrência</label>
+      <select id="diarioTurno" class="field">
+        <option value="">-- Selecione o turno --</option>
+        <option value="Manhã">Manhã</option>
+        <option value="Tarde">Tarde</option>
+        <option value="Noite">Noite</option>
+      </select>
+    </div>
+    <div>
       <label>Serviço</label>
       <select id="diarioServico" class="field">
         <option value="">-- Selecione --</option>
@@ -304,6 +313,9 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
         <option value="2">Serviço 2</option>
       </select>
     </div>
+  </div>
+
+  <div class="grid2">
     <div>
       <label>Sentido da Viagem (Ida OU Volta)</label>
       <select id="diarioSentido" class="field">
@@ -312,11 +324,10 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
         <option value="Volta">Volta</option>
       </select>
     </div>
-  </div>
-
-  <div>
-    <label>Horário da Viagem</label>
-    <input id="diarioHorario" type="text" class="field" placeholder="Ex: 06:20">
+    <div>
+      <label>Horário da Viagem</label>
+      <input id="diarioHorario" type="text" class="field" placeholder="Ex: 06:20">
+    </div>
   </div>
 
   <label>Situação</label>
@@ -741,7 +752,7 @@ let currentEditingLineCode = null;
 let resumoEstilo = 'visual';
 let quickPanelFilter = 'all';
 let resumoOcorrencias = [
-  { motorista: '', veiculo: '99995', linha: 'R07 (99995) - SANTA ELISA X ROSEIRA', linhaCustom: '', servico: '1', sentido: 'Ida', horario: '06:20', motivo: 'Recolhido para a garagem devido a mau funcionamento.' }
+  { motorista: '', turno: '', veiculo: '99995', linha: 'R07 (99995) - SANTA ELISA X ROSEIRA', linhaCustom: '', servico: '1', sentido: 'Ida', horario: '06:20', motivo: 'Recolhido para a garagem devido a mau funcionamento.' }
 ];
 
 const DEFAULT_LINHAS = [
@@ -1635,9 +1646,19 @@ function calcResumoPerc(){
   renderResumoPreview();
 }
 
+function inferTurnoFromHorario(hStr){
+  const m = String(hStr || '').match(/(\d{1,2}):(\d{2})/);
+  if(!m) return 'Manhã';
+  const hh = parseInt(m[1], 10);
+  if(hh >= 5 && hh < 12) return 'Manhã';
+  if(hh >= 12 && hh < 18) return 'Tarde';
+  return 'Noite';
+}
+
 function addResumoOcorrencia(){
   resumoOcorrencias.push({
     motorista: '',
+    turno: '',
     veiculo: '',
     linha: 'R07 (99995) - SANTA ELISA X ROSEIRA',
     linhaCustom: '',
@@ -1663,6 +1684,7 @@ function importOcorrenciasFromDiario(){
     const isKnown = LINHAS_RESUMO_SFC.includes(ln);
     return {
       motorista: m.motorista || '',
+      turno: m.turno || '',
       veiculo: m.veiculo || '',
       linha: isKnown ? ln : 'OUTRA',
       linhaCustom: isKnown ? '' : ln,
@@ -1713,13 +1735,24 @@ function renderResumoOcorrencias(){
         <span>Ocorrência #${idx + 1}</span>
         <button type="button" class="btn danger small" style="padding:4px 8px;font-size:11px" onclick="removeResumoOcorrencia(${idx})">Remover</button>
       </div>
-      <div>
-        <label style="margin-top:0">Motorista (Nome e Matrícula)</label>
-        <select class="field" onchange="updateResumoOcorrencia(${idx},'motorista',this.value)">
-          <option value="">-- Selecione o motorista --</option>
-          ${!motInList && motCurrent ? `<option value="${esc(motCurrent)}" selected>${esc(motCurrent)}</option>` : ''}
-          ${motList.map(nm => `<option value="${esc(nm)}" ${motCurrent===nm?'selected':''}>${esc(nm)}</option>`).join('')}
-        </select>
+      <div class="grid2">
+        <div>
+          <label style="margin-top:0">Motorista (Nome e Matrícula)</label>
+          <select class="field" onchange="updateResumoOcorrencia(${idx},'motorista',this.value)">
+            <option value="">-- Selecione o motorista --</option>
+            ${!motInList && motCurrent ? `<option value="${esc(motCurrent)}" selected>${esc(motCurrent)}</option>` : ''}
+            ${motList.map(nm => `<option value="${esc(nm)}" ${motCurrent===nm?'selected':''}>${esc(nm)}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="margin-top:0">Turno da Ocorrência</label>
+          <select class="field" onchange="updateResumoOcorrencia(${idx},'turno',this.value)">
+            <option value="">-- Selecione --</option>
+            <option value="Manhã" ${(oc.turno||'')==='Manhã'?'selected':''}>Manhã</option>
+            <option value="Tarde" ${(oc.turno||'')==='Tarde'?'selected':''}>Tarde</option>
+            <option value="Noite" ${(oc.turno||'')==='Noite'?'selected':''}>Noite</option>
+          </select>
+        </div>
       </div>
       <div class="grid2">
         <div>
@@ -1779,13 +1812,13 @@ function formatDateBR(iso){
 function buildResumoTexto(){
   initResumoDefaults();
   const dt = formatDateBR(document.getElementById('resumoData').value);
-  const turnoObs = (document.getElementById('resumoTurnoObs')?.value || '').trim();
+  const operacaoTxt = (document.getElementById('resumoTurnoObs')?.value || '').trim();
   const perc = (document.getElementById('resumoPerc').value || '100').trim();
   const naoCump = document.getElementById('resumoNaoCump').value || '0';
 
   if(resumoEstilo === 'direto'){
     let txt = `*Resumo Operacional - São Francisco do Conde (${dt})*\n`;
-    if(turnoObs) txt += `• *Observação:* ${turnoObs}\n`;
+    if(operacaoTxt) txt += `• *Operação:* ${operacaoTxt}\n`;
     txt += `\n• *Viagens Cumpridas:* ${perc}%\n`;
     txt += `• *Viagens Não Cumpridas:* ${naoCump}`;
     if(resumoOcorrencias.length > 0 && parseInt(naoCump, 10) > 0){
@@ -1793,8 +1826,10 @@ function buildResumoTexto(){
         const linhaNome = oc.linha === 'OUTRA' ? (oc.linhaCustom || 'Linha N/I') : oc.linha;
         const veicTxt = oc.veiculo ? `Prefixo ${oc.veiculo}` : 'Prefixo N/I';
         const drvOc = (oc.motorista || '').trim();
+        const turnoOc = (oc.turno || '').trim();
         const sentidoLimpo = normalizeSentido(oc.sentido);
         const extras = [];
+        if(turnoOc) extras.push(`Turno ${turnoOc}`);
         if(drvOc) extras.push(`Motorista: ${drvOc}`);
         if(oc.servico) extras.push(`Serviço ${oc.servico.replace(/^servi[çc]o\s*/i, '').trim()}`);
         if(sentidoLimpo) extras.push(`Sentido ${sentidoLimpo}`);
@@ -1807,8 +1842,9 @@ function buildResumoTexto(){
     return txt;
   }
 
-  let txt = `📊 *Resumo Operacional — São Francisco do Conde*\n📅 Data: ${dt}`;
-  if(turnoObs) txt += `\n📝 *Observação:* ${turnoObs}`;
+  let txt = `📊 *Resumo Operacional — São Francisco do Conde*`;
+  if(operacaoTxt) txt += `\n🚌 *Operação:* ${operacaoTxt}`;
+  txt += `\n📅 Data: ${dt}`;
   txt += `\n\n✅ *Viagens Cumpridas:* ${perc}%\n❌ *Viagens Não Cumpridas:* ${naoCump}`;
   if(resumoOcorrencias.length > 0 && parseInt(naoCump, 10) > 0){
     txt += `\n\n⚠️ *${resumoOcorrencias.length > 1 ? 'Ocorrências' : 'Ocorrência'}:*`;
@@ -1816,10 +1852,12 @@ function buildResumoTexto(){
       const linhaNome = oc.linha === 'OUTRA' ? (oc.linhaCustom || 'Não informada') : oc.linha;
       const veicTxt = oc.veiculo || 'N/I';
       const drvOc = (oc.motorista || '').trim();
+      const turnoOc = (oc.turno || '').trim();
       const sentidoLimpo = normalizeSentido(oc.sentido);
       const prefix = resumoOcorrencias.length > 1 ? `\n\n*${i+1}.* ` : '\n';
       txt += `${prefix}- *Linha:* ${linhaNome}`;
       txt += `\n- *Prefixo:* ${veicTxt}`;
+      if(turnoOc) txt += `\n- *Turno:* ${turnoOc}`;
       if(drvOc) txt += `\n- *Motorista:* ${drvOc}`;
       if(oc.servico) txt += `\n- *Serviço:* ${oc.servico}`;
       if(sentidoLimpo) txt += `\n- *Sentido:* ${sentidoLimpo}`;
@@ -1971,6 +2009,7 @@ function addDiarioOcorrencia(){
   const veiculo = document.getElementById('diarioVeiculo').value.trim();
   const linha = getDiarioLinhaValue();
   const motorista = document.getElementById('diarioMotorista').value.trim();
+  const turno = document.getElementById('diarioTurno')?.value || '';
   const servico = document.getElementById('diarioServico')?.value || '';
   const sentidoRaw = document.getElementById('diarioSentido')?.value || '';
   const sentido = (sentidoRaw === 'Ida' || sentidoRaw === 'Volta') ? sentidoRaw : '';
@@ -1992,6 +2031,7 @@ function addDiarioOcorrencia(){
     veiculo: veiculo,
     linha: linha,
     motorista: motorista,
+    turno: turno,
     servico: servico,
     sentido: sentido,
     horario: horario,
@@ -2004,6 +2044,7 @@ function addDiarioOcorrencia(){
   document.getElementById('diarioCategoria').value = '';
   document.getElementById('diarioVeiculo').value = '';
   document.getElementById('diarioMotorista').value = '';
+  if(document.getElementById('diarioTurno')) document.getElementById('diarioTurno').value = '';
   if(document.getElementById('diarioServico')) document.getElementById('diarioServico').value = '';
   if(document.getElementById('diarioSentido')) document.getElementById('diarioSentido').value = '';
   if(document.getElementById('diarioHorario')) document.getElementById('diarioHorario').value = '';
@@ -2073,6 +2114,7 @@ function renderDiarioList(){
         <span class="diario-tag">📅 ${esc(item.dataBR || formatDateBR(item.data))} ${item.hora ? 'às '+esc(item.hora) : ''}</span>
         ${item.veiculo ? `<span class="diario-tag">🚌 Veículo: ${esc(item.veiculo)}</span>` : ''}
         ${item.linha ? `<span class="diario-tag">📍 ${esc(item.linha)}</span>` : ''}
+        ${item.turno ? `<span class="diario-tag">🕒 Turno: ${esc(item.turno)}</span>` : ''}
         ${item.servico ? `<span class="diario-tag">🧾 Serviço ${esc(item.servico)}</span>` : ''}
         ${sentidoBadge ? `<span class="diario-tag">↔️ Sentido: ${esc(sentidoBadge)}</span>` : ''}
         ${item.horario ? `<span class="diario-tag">⏰ Viagem: ${esc(item.horario)}</span>` : ''}
