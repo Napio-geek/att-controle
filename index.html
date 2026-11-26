@@ -1745,9 +1745,9 @@ function renderResumoOcorrencias(){
           </select>
         </div>
         <div>
-          <label style="margin-top:0">Turno da Ocorrência</label>
+          <label style="margin-top:0">Turno (Opcional)</label>
           <select class="field" onchange="updateResumoOcorrencia(${idx},'turno',this.value)">
-            <option value="">-- Selecione --</option>
+            <option value="">-- Não informar --</option>
             <option value="Manhã" ${(oc.turno||'')==='Manhã'?'selected':''}>Manhã</option>
             <option value="Tarde" ${(oc.turno||'')==='Tarde'?'selected':''}>Tarde</option>
             <option value="Noite" ${(oc.turno||'')==='Noite'?'selected':''}>Noite</option>
@@ -2165,7 +2165,10 @@ function buildDiarioReportHTML(items, forWord = false){
       <td style="padding:7px;border:1px solid #cbd5e1"><b>${esc(item.categoria || '')}</b></td>
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.veiculo || '-')}</td>
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.linha || '-')}</td>
+      <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.turno || '-')}</td>
+      <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.servico || '-')}</td>
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.sentido || '-')}</td>
+      <td style="padding:7px;border:1px solid #cbd5e1;white-space:nowrap">${esc(item.horario || '-')}</td>
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.motorista || '-')}</td>
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.status || '')}</td>
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.descricao || '-')}</td>
@@ -2205,7 +2208,10 @@ function buildDiarioReportHTML(items, forWord = false){
         <th>Categoria / Falha</th>
         <th>Veículo</th>
         <th>Linha</th>
+        <th>Turno</th>
+        <th>Serviço</th>
         <th>Sentido</th>
+        <th>Horário da Viagem</th>
         <th>Motorista</th>
         <th>Situação</th>
         <th>Descrição</th>
@@ -2273,7 +2279,10 @@ function exportDiarioExcel(){
     'Categoria / Falha': item.categoria || '',
     'Veículo': item.veiculo || '',
     'Linha': item.linha || '',
+    'Turno': item.turno || '',
+    'Serviço': item.servico || '',
     'Sentido': item.sentido || '',
+    'Horário da Viagem': item.horario || '',
     'Motorista': item.motorista || '',
     'Situação': item.status || '',
     'Descrição': item.descricao || ''
