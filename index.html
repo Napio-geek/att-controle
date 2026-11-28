@@ -250,15 +250,9 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <p class="muted">Registre falhas, avarias, ocorrências de linha e acompanhe o que está em aberto ou resolvido.</p>
 
 <div class="card">
-  <div class="grid2">
-    <div>
-      <label>Data</label>
-      <input id="diarioData" type="date" class="field">
-    </div>
-    <div>
-      <label>Hora</label>
-      <input id="diarioHora" type="time" class="field">
-    </div>
+  <div>
+    <label>Data da Ocorrência</label>
+    <input id="diarioData" type="date" class="field">
   </div>
 
   <div class="grid2">
@@ -580,6 +574,93 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
     <div class="modal-actions">
       <button type="button" class="btn secondary" onclick="closeJustModal()">Cancelar</button>
       <button type="button" class="btn" onclick="confirmJustification()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="editDiarioModal" class="modal-shield">
+  <div class="modalbox" style="max-width:520px;max-height:90vh;overflow-y:auto">
+    <h2>✏️ Editar Ocorrência do Diário</h2>
+    <input type="hidden" id="editDiarioId">
+    <div>
+      <label>Data da Ocorrência</label>
+      <input id="editDiarioData" type="date" class="field">
+    </div>
+    <div class="grid2">
+      <div>
+        <label>Categoria / Falha</label>
+        <input id="editDiarioCategoria" type="text" class="field">
+      </div>
+      <div>
+        <label>Veículo (Prefixo / Ordem)</label>
+        <input id="editDiarioVeiculo" type="text" class="field" list="sugestoesVeiculos">
+      </div>
+    </div>
+    <div class="grid2">
+      <div>
+        <label>Linha</label>
+        <select id="editDiarioLinha" class="field" onchange="onEditDiarioLinhaChange()">
+          <option value="">-- Selecione a linha --</option>
+          <option value="R05 (99991) - JABEQUARA X SEDE">R05 (99991) - JABEQUARA X SEDE</option>
+          <option value="R10 (99997) - SANTO ESTEVÃO X SEDE">R10 (99997) - SANTO ESTEVÃO X SEDE</option>
+          <option value="R09 (99993) - FERROLHO X SEDE">R09 (99993) - FERROLHO X SEDE</option>
+          <option value="R08 (99989) - CURUPEBA X SEDE">R08 (99989) - CURUPEBA X SEDE</option>
+          <option value="R11 (99987) - COROADO X SEDE">R11 (99987) - COROADO X SEDE</option>
+          <option value="R07 (99995) - SANTA ELISA X ROSEIRA">R07 (99995) - SANTA ELISA X ROSEIRA</option>
+          <option value="OUTRA">Outra linha (Digitar)...</option>
+        </select>
+        <input id="editDiarioLinhaCustom" type="text" class="field" style="display:none;margin-top:8px" placeholder="Digite a linha">
+      </div>
+      <div>
+        <label>Motorista</label>
+        <input id="editDiarioMotorista" type="text" class="field" list="sugestoesMotoristas">
+      </div>
+    </div>
+    <div class="grid2">
+      <div>
+        <label>Turno da Ocorrência</label>
+        <select id="editDiarioTurno" class="field">
+          <option value="">-- Selecione o turno --</option>
+          <option value="Manhã">Manhã</option>
+          <option value="Tarde">Tarde</option>
+          <option value="Noite">Noite</option>
+        </select>
+      </div>
+      <div>
+        <label>Serviço</label>
+        <select id="editDiarioServico" class="field">
+          <option value="">-- Selecione --</option>
+          <option value="1">Serviço 1</option>
+          <option value="2">Serviço 2</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div>
+        <label>Sentido da Viagem</label>
+        <select id="editDiarioSentido" class="field">
+          <option value="">-- Selecione Ida ou Volta --</option>
+          <option value="Ida">Ida</option>
+          <option value="Volta">Volta</option>
+        </select>
+      </div>
+      <div>
+        <label>Horário da Viagem</label>
+        <input id="editDiarioHorario" type="text" class="field" placeholder="Ex: 06:20">
+      </div>
+    </div>
+    <label>Situação</label>
+    <select id="editDiarioStatus" class="field">
+      <option value="Em aberto">Em aberto</option>
+      <option value="Resolvido">Resolvido</option>
+    </select>
+    <label>Descrição da Ocorrência</label>
+    <textarea id="editDiarioDescricao" rows="3" class="field"></textarea>
+    <label>Solução / Providência Tomada</label>
+    <textarea id="editDiarioSolucao" rows="2" class="field" placeholder="Descreva a solução aplicada..."></textarea>
+    <div class="modal-actions">
+      <button type="button" class="btn secondary" onclick="closeEditDiarioModal()">Cancelar</button>
+      <button type="button" class="btn" onclick="saveEditDiarioOcorrencia()">Salvar Alterações</button>
     </div>
   </div>
 </div>
@@ -1966,18 +2047,12 @@ function onDiarioLinhaChange(){
 
 function initDiarioDefaults(){
   const dEl = document.getElementById('diarioData');
-  const hEl = document.getElementById('diarioHora');
   const h = now();
   if(dEl && !dEl.value){
     const yyyy = h.getFullYear();
     const mm = String(h.getMonth()+1).padStart(2,'0');
     const dd = String(h.getDate()).padStart(2,'0');
     dEl.value = `${yyyy}-${mm}-${dd}`;
-  }
-  if(hEl && !hEl.value){
-    const hh = String(h.getHours()).padStart(2,'0');
-    const mi = String(h.getMinutes()).padStart(2,'0');
-    hEl.value = `${hh}:${mi}`;
   }
 }
 
@@ -2004,7 +2079,7 @@ function renderDiarioDatalists(){
 function addDiarioOcorrencia(){
   initDiarioDefaults();
   const data = document.getElementById('diarioData').value;
-  const hora = document.getElementById('diarioHora').value;
+  const hora = '';
   const categoria = document.getElementById('diarioCategoria').value.trim();
   const veiculo = document.getElementById('diarioVeiculo').value.trim();
   const linha = getDiarioLinhaValue();
@@ -2049,22 +2124,115 @@ function addDiarioOcorrencia(){
   if(document.getElementById('diarioSentido')) document.getElementById('diarioSentido').value = '';
   if(document.getElementById('diarioHorario')) document.getElementById('diarioHorario').value = '';
   document.getElementById('diarioDescricao').value = '';
-  const h = now();
-  document.getElementById('diarioHora').value = `${String(h.getHours()).padStart(2,'0')}:${String(h.getMinutes()).padStart(2,'0')}`;
+
 
   renderDiarioList();
   renderPanel();
   toast('Ocorrência registrada no diário!');
 }
 
+function onEditDiarioLinhaChange(){
+  const sel = document.getElementById('editDiarioLinha')?.value || '';
+  const customInput = document.getElementById('editDiarioLinhaCustom');
+  if(customInput){
+    customInput.style.display = sel === 'OUTRA' ? 'block' : 'none';
+  }
+}
+
+function openEditDiarioModal(id, forceReopen = false){
+  const item = db.ocorrenciasAgenda.find(x => x.id === id);
+  if(!item) return;
+  renderDiarioDatalists();
+  document.getElementById('editDiarioId').value = item.id;
+  document.getElementById('editDiarioData').value = item.data || '';
+  document.getElementById('editDiarioCategoria').value = item.categoria || '';
+  document.getElementById('editDiarioVeiculo').value = item.veiculo || '';
+
+  const selLinha = document.getElementById('editDiarioLinha');
+  const customLinha = document.getElementById('editDiarioLinhaCustom');
+  const ln = (item.linha || '').trim();
+  const isKnown = Array.from(selLinha.options).some(o => o.value === ln && o.value !== 'OUTRA');
+  if(!ln){
+    selLinha.value = '';
+    customLinha.style.display = 'none';
+    customLinha.value = '';
+  } else if(isKnown){
+    selLinha.value = ln;
+    customLinha.style.display = 'none';
+    customLinha.value = '';
+  } else {
+    selLinha.value = 'OUTRA';
+    customLinha.style.display = 'block';
+    customLinha.value = ln;
+  }
+
+  document.getElementById('editDiarioMotorista').value = item.motorista || '';
+  document.getElementById('editDiarioTurno').value = item.turno || '';
+  document.getElementById('editDiarioServico').value = item.servico || '';
+  document.getElementById('editDiarioSentido').value = (item.sentido === 'Ida' || item.sentido === 'Volta') ? item.sentido : '';
+  document.getElementById('editDiarioHorario').value = item.horario || '';
+  document.getElementById('editDiarioStatus').value = forceReopen ? 'Em aberto' : (item.status || 'Em aberto');
+  document.getElementById('editDiarioDescricao').value = item.descricao || '';
+  document.getElementById('editDiarioSolucao').value = item.solucao || '';
+
+  document.getElementById('editDiarioModal').style.display = 'flex';
+}
+
+function closeEditDiarioModal(){
+  document.getElementById('editDiarioModal').style.display = 'none';
+}
+
+function saveEditDiarioOcorrencia(){
+  const id = document.getElementById('editDiarioId').value;
+  const item = db.ocorrenciasAgenda.find(x => x.id === id);
+  if(!item) return;
+
+  const data = document.getElementById('editDiarioData').value;
+  const selLinha = document.getElementById('editDiarioLinha').value;
+  const linha = selLinha === 'OUTRA'
+    ? (document.getElementById('editDiarioLinhaCustom').value || '').trim()
+    : selLinha.trim();
+  const sentidoRaw = document.getElementById('editDiarioSentido').value;
+
+  item.data = data;
+  item.dataBR = formatDateBR(data);
+  item.hora = '';
+  item.categoria = document.getElementById('editDiarioCategoria').value.trim() || 'Registro Operacional';
+  item.veiculo = document.getElementById('editDiarioVeiculo').value.trim();
+  item.linha = linha;
+  item.motorista = document.getElementById('editDiarioMotorista').value.trim();
+  item.turno = document.getElementById('editDiarioTurno').value;
+  item.servico = document.getElementById('editDiarioServico').value;
+  item.sentido = (sentidoRaw === 'Ida' || sentidoRaw === 'Volta') ? sentidoRaw : '';
+  item.horario = document.getElementById('editDiarioHorario').value.trim();
+  item.status = document.getElementById('editDiarioStatus').value;
+  item.descricao = document.getElementById('editDiarioDescricao').value.trim();
+  item.solucao = document.getElementById('editDiarioSolucao').value.trim();
+
+  save();
+  closeEditDiarioModal();
+  renderDiarioList();
+  renderPanel();
+  toast('Ocorrência atualizada com sucesso!');
+}
+
 function toggleDiarioStatus(id){
   const item = db.ocorrenciasAgenda.find(x => x.id === id);
   if(!item) return;
-  item.status = item.status === 'Resolvido' ? 'Em aberto' : 'Resolvido';
+  if(item.status === 'Resolvido'){
+    item.status = 'Em aberto';
+    save();
+    renderDiarioList();
+    renderPanel();
+    openEditDiarioModal(id, true);
+    toast('Ocorrência reaberta para edição!');
+    return;
+  }
+  item.status = 'Resolvido';
   save();
   renderDiarioList();
   renderPanel();
-  toast('Situação atualizada!');
+  toast('Ocorrência marcada como resolvida!');
 }
 
 function deleteDiarioOcorrencia(id){
@@ -2091,7 +2259,7 @@ function renderDiarioList(){
     if(dtIni && iDate && iDate < dtIni) return false;
     if(dtFim && iDate && iDate > dtFim) return false;
     if(!q) return true;
-    const blob = `${item.dataBR||item.data} ${item.hora} ${item.categoria} ${item.veiculo} ${item.linha} ${item.sentido||''} ${item.motorista} ${item.descricao}`.toLowerCase();
+    const blob = `${item.dataBR||item.data} ${item.hora} ${item.categoria} ${item.veiculo} ${item.linha} ${item.sentido||''} ${item.motorista} ${item.descricao} ${item.solucao||''}`.toLowerCase();
     return blob.includes(q);
   });
 
@@ -2121,7 +2289,9 @@ function renderDiarioList(){
         ${item.motorista ? `<span class="diario-tag">👨‍✈️ ${esc(item.motorista)}</span>` : ''}
       </div>
       ${item.descricao ? `<p style="margin:6px 0;font-size:13px;color:var(--txt);white-space:pre-line">${esc(item.descricao)}</p>` : ''}
+      ${item.solucao ? `<div style="margin:6px 0;padding:8px 10px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;font-size:13px;color:#065f46;white-space:pre-line"><b>💡 Solução:</b> ${esc(item.solucao)}</div>` : ''}
       <div class="act-btns">
+        <button type="button" class="btn secondary small" onclick="openEditDiarioModal('${esc(item.id)}')">✏️ Editar</button>
         <button type="button" class="btn secondary small" onclick="toggleDiarioStatus('${esc(item.id)}')">${isRes ? '↩ Reabrir' : '✅ Marcar Resolvido'}</button>
         <button type="button" class="btn danger small" onclick="deleteDiarioOcorrencia('${esc(item.id)}')">🗑️ Excluir</button>
       </div>
@@ -2172,6 +2342,7 @@ function buildDiarioReportHTML(items, forWord = false){
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.motorista || '-')}</td>
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.status || '')}</td>
       <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.descricao || '-')}</td>
+      <td style="padding:7px;border:1px solid #cbd5e1">${esc(item.solucao || '-')}</td>
     </tr>
   `).join('');
 
@@ -2215,6 +2386,7 @@ function buildDiarioReportHTML(items, forWord = false){
         <th>Motorista</th>
         <th>Situação</th>
         <th>Descrição</th>
+        <th>Solução</th>
       </tr>
     </thead>
     <tbody>${rowsHtml}</tbody>
@@ -2285,7 +2457,8 @@ function exportDiarioExcel(){
     'Horário da Viagem': item.horario || '',
     'Motorista': item.motorista || '',
     'Situação': item.status || '',
-    'Descrição': item.descricao || ''
+    'Descrição': item.descricao || '',
+    'Solução': item.solucao || ''
   }));
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
